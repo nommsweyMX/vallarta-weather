@@ -1,0 +1,2355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<title>Vallarta Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&family=Red+Hat+Text:wght@400;500;700&family=Red+Hat+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+/* Leaflet 1.9.4 core styles, inlined (BSD-2 © Leaflet contributors) */
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(images/marker-icon.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+.geomap{position:relative;isolation:isolate;z-index:1;height:460px;border-radius:3px;background:#dde6e8}
+.leaflet-container{font-family:var(--body);font-size:12px}
+.leaflet-tooltip.corlabel{font:700 11px "Red Hat Mono",monospace;letter-spacing:1px}
+.mtoggle{display:flex;gap:6px;margin:0 0 10px}
+.mtoggle button{font-family:var(--disp);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;padding:6px 13px;border:1px solid var(--line);background:var(--wash);color:var(--ink2);cursor:pointer;border-radius:3px}
+.mtoggle button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+</style>
+<style>
+/* ============ NOMMSWEY · Vallarta Weather — single-theme light (atlas chrome) ============ */
+:root{
+  --rh-red:#ee0000;--rh-red2:#be0000;--ink:#151515;--ink2:#3c3f42;--mut:#6a6e73;--faint:#9a9a9a;
+  --line:#e0e0e0;--bg:#f4f4f4;--card:#fff;--wash:#faf6f2;
+  --safe:#3e8635;--watch:#f0ab00;--watchtx:#9a6a00;--alert:#ee0000;
+  --rain:#1769d6;--ocean:#0a6a6a;--night:#27395c;--mamber:#cc7a00;--ai:#7c4dbe;--trop:#c2410c;
+  --disp:"Red Hat Display",-apple-system,sans-serif;--body:"Red Hat Text",-apple-system,sans-serif;--mono:"Red Hat Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+.mono{font-family:var(--mono)}
+a{color:#0066cc;text-decoration:none;font-weight:500}a:hover{text-decoration:underline}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ocean);outline-offset:2px}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:1000;background:var(--ink);color:#fff;display:flex;align-items:center;gap:12px;padding:9px clamp(14px,3vw,26px);border-bottom:3px solid var(--rh-red)}
+.bar .logo{height:34px;flex:none}
+.mode{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:4px;border:1px solid #ffffff2e;color:#cdd2d8;white-space:nowrap;cursor:default;margin-left:auto}
+.mode.live{color:#7fe0a8;border-color:#2c5c40;background:#1c3a2a55}
+.mode.mix{color:#f4c95d;border-color:#5c4a1c;background:#3a2f1655}
+.mode.snap{color:#7cc9e8;border-color:#1c485c;background:#16323a55}
+#langPill{display:inline-flex;align-items:center;gap:2px;border:1px solid #ffffff2e;border-radius:4px;padding:2px;background:#ffffff10}
+#langPill button{background:transparent;color:#cdd2d8;border:none;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:700;padding:5px 9px;cursor:pointer}
+#langPill button.on{background:var(--rh-red);color:#fff}
+
+/* page column */
+.wrap{max-width:900px;margin:0 auto;padding:clamp(18px,4vw,38px) clamp(14px,3.5vw,30px) 10px}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--rh-red);font-weight:700}
+h1.title{font-family:var(--disp);font-weight:900;font-size:clamp(30px,6.5vw,52px);letter-spacing:-1.5px;line-height:1.0;margin:6px 0 8px;text-wrap:balance}
+h1.title .r{color:var(--rh-red)}
+.sub{font-size:15.5px;color:var(--ink2);max-width:68ch}
+.stampline{font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--safe);animation:pl 2.4s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(62,134,53,.5)}70%{box-shadow:0 0 0 7px rgba(62,134,53,0)}100%{box-shadow:0 0 0 0 rgba(62,134,53,0)}}
+@media(prefers-reduced-motion:reduce){.pulse,.wz.t3,.arr.on .flow{animation:none!important}}
+
+/* jump nav */
+.jump{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 4px}
+.jump a{font-family:var(--disp);text-transform:uppercase;letter-spacing:.09em;font-size:12px;font-weight:700;color:var(--ink2);background:var(--card);border:1px solid var(--line);border-radius:3px;padding:7px 13px}
+.jump a:hover{background:var(--rh-red);border-color:var(--rh-red);color:#fff;text-decoration:none}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,250px) 1fr;gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px;margin-top:18px}
+@media(max-width:640px){.hero{grid-template-columns:1fr;text-align:center}}
+.dial-wrap{display:flex;flex-direction:column;align-items:center}
+.verdict{font-family:var(--disp);text-transform:uppercase;letter-spacing:.05em;font-size:22px;font-weight:900;margin-top:2px}
+.verdict-note{color:var(--mut);font-size:12.5px;text-align:center;margin-top:3px;max-width:26ch}
+.breakdown{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px;text-align:center;cursor:help}
+.hero-meta{display:flex;flex-direction:column;gap:13px;min-width:0}
+@media(max-width:640px){.hero-meta{align-items:center}}
+.odds{display:flex;gap:9px;flex-wrap:wrap}@media(max-width:640px){.odds{justify-content:center}}
+.chipbox{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:9px 13px;min-width:104px}
+.chipbox .k{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);display:block;font-family:var(--disp);font-weight:700}
+.chipbox .p{font-family:var(--mono);font-size:23px;font-weight:700;line-height:1.15}
+.chipbox .src{font-family:var(--mono);font-size:9px;color:var(--faint);display:block}
+.window-precip{font-family:var(--mono);font-size:12.5px;color:var(--mut)}
+.window-precip b{color:var(--ink);font-weight:700;font-size:21px}
+.ensline{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px}
+.now-row{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--mut)}
+@media(max-width:640px){.now-row{justify-content:center}}
+.now-row .v{color:var(--ink);font-size:14.5px;display:block;font-weight:700}
+.now-row .k{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.nowcast{background:var(--wash);border:1px solid var(--line);border-left:4px solid var(--rain);border-radius:3px;padding:9px 12px;min-width:0}
+.nc-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.nc-head .k{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.nc-word{font-family:var(--disp);font-weight:900;font-size:16px}
+.nc-line{font-family:var(--mono);font-size:11px;color:var(--ink2);margin-top:3px;line-height:1.7}
+.nc-line b{font-family:var(--disp);font-size:13.5px;color:var(--ocean);font-weight:800;font-variant-numeric:tabular-nums}
+.nc-bars{display:flex;gap:4px;align-items:flex-end;margin-top:7px}
+.nc-bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;text-align:center}
+.nc-bar i{display:block;background:var(--rain);border:1px solid rgba(0,0,0,.25);min-height:2px}
+.nc-bar span{font-family:var(--mono);font-size:8px;color:var(--faint)}
+.tafflag{font-family:var(--mono);font-size:11.5px;color:var(--rh-red2);background:#fff0f0;border:1px solid #f5c2c2;border-radius:3px;padding:7px 11px}
+
+/* title row + risk badge */
+.titlerow{display:flex;align-items:stretch;justify-content:space-between;gap:12px 18px;flex-wrap:wrap;margin-top:6px}
+.titlerow h1.title{margin-top:0}
+.titleleft{flex:1 1 420px;min-width:270px;display:flex;flex-direction:column;gap:12px}
+.minimap-wrap{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 8px 4px;max-width:560px}
+.minimap-wrap svg{display:block;width:100%;height:auto;border-radius:3px}
+.ministamp{font-family:var(--mono);font-size:10px;color:var(--ocean);padding:6px 4px 4px;line-height:1.5}
+.risk{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:11px 15px 12px;flex:0 1 320px;min-width:250px;max-width:340px;border-top:4px solid var(--faint);display:flex;flex-direction:column}
+@media(max-width:700px){.risk{max-width:none;flex:1 1 100%}}
+.risk .rk{font-family:var(--mono);font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--mut);font-weight:700}
+.risk .rl{font-family:var(--disp);font-weight:900;font-size:27px;letter-spacing:.02em;line-height:1.1}
+.risk .rrows{margin-top:7px;border-top:1px dashed var(--line);padding-top:7px;display:flex;flex-direction:column;gap:2px}
+.risk .rr{display:flex;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:10.5px;color:var(--mut)}
+.risk .rr{align-items:baseline}
+.risk .rr b{font-family:var(--disp);font-size:16px;color:var(--ocean);font-weight:800;font-variant-numeric:tabular-nums}
+.rtide{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:3px}
+.rr2{display:flex;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:10.5px;color:var(--mut);align-items:baseline}
+.rr2 b{font-family:var(--disp);font-size:15px;color:var(--ocean);font-weight:800;font-variant-numeric:tabular-nums}
+.rwhy{margin-top:auto;border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:5px}
+.rwhy .wl{display:grid;grid-template-columns:auto 1fr;gap:7px;font-size:10px;color:var(--mut);line-height:1.45;align-items:start}
+.rwhy .wl i{width:8px;height:8px;border-radius:50%;margin-top:3px;flex:none}
+.rwhy .wl b{color:var(--ink)}
+.rcontrib{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.rc{display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center}
+.rc .rck{font-family:var(--mono);font-size:8px;letter-spacing:1.1px;text-transform:uppercase;color:var(--faint);font-weight:700}
+.rc .rcv{font-family:var(--disp);font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;border-radius:3px;padding:2.5px 0;width:100%;border:1px solid rgba(0,0,0,.06)}
+.rc .rcw{font-family:var(--disp);font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:800}
+.rc svg{display:block}
+
+/* summary deck */
+.deck{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+@media(max-width:840px){.deck{grid-template-columns:1fr}}
+.dcard{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 15px 12px;display:flex;flex-direction:column;gap:9px}
+.dcard .dk{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--rh-red);font-weight:700;display:flex;align-items:center;gap:8px}
+.dcard .dk::after{content:"";flex:1;height:1px;background:var(--line)}
+.fl-badge{display:flex;align-items:center;gap:9px}
+.fl-badge .sw{width:26px;height:26px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.14)}
+.fl-name{font-family:var(--disp);font-weight:900;font-size:19px;letter-spacing:-.2px;line-height:1.05}
+.fl-scale{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
+.fl-cell{height:14px;border-radius:2px;opacity:.32;border:1px solid rgba(0,0,0,.08)}
+.fl-cell.on{opacity:1;outline:2px solid var(--ink);outline-offset:1.5px}
+.fl-note{font-size:11.5px;color:var(--mut);line-height:1.5}
+.dmeta{font-family:var(--mono);font-size:9.5px;color:var(--faint);line-height:1.6;margin-top:auto}
+.tm-line{font-family:var(--mono);font-size:11.5px;color:var(--ink2);line-height:1.8}
+.tm-line b{font-family:var(--disp);font-size:15px;color:var(--ocean);font-weight:800;font-variant-numeric:tabular-nums}
+.sky-legend{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-family:var(--mono);font-size:9.5px;color:var(--mut)}
+.sky-legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.sky-legend i{width:9px;height:9px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.08)}
+.am-total{font-family:var(--disp);font-weight:900;font-size:29px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.am-total small{font-family:var(--mono);font-size:12px;color:var(--mut);font-weight:400;letter-spacing:0}
+.am-sub{font-family:var(--mono);font-size:10.5px;color:var(--mut);line-height:1.8}
+.am-sub b{color:var(--ink)}
+.am-sub .mxv{font-family:var(--disp);font-size:13.5px;font-weight:800;color:var(--alert)}
+.am-sub .mnv{font-family:var(--disp);font-size:13.5px;font-weight:800;color:var(--ocean)}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px 20px 16px;margin-top:20px;scroll-margin-top:70px}
+.card>.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--rh-red);font-weight:700;display:flex;align-items:center;gap:10px}
+.card>.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+.card>h2{font-family:var(--disp);font-weight:900;font-size:clamp(20px,3.4vw,27px);letter-spacing:-.4px;margin:6px 0 2px;text-wrap:balance}
+.card>.lede{color:var(--mut);font-size:13px;margin-bottom:14px;max-width:72ch}
+.sec{font-family:var(--disp);text-transform:uppercase;letter-spacing:.15em;font-size:12.5px;color:var(--mut);margin:20px 0 10px;display:flex;align-items:center;gap:10px;font-weight:700}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec .src{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--faint);text-transform:none;font-weight:400}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big .n{font-family:var(--mono);font-size:38px;font-weight:700;line-height:1}
+.big .u{font-family:var(--mono);font-size:12.5px;color:var(--mut)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:600px){.grid3{grid-template-columns:1fr 1fr}}
+.metric{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:11px 12px}
+.metric .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);display:block;font-family:var(--disp);font-weight:700}
+.metric .v{font-family:var(--mono);font-size:20px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.metric .s{font-family:var(--mono);font-size:10px;color:var(--faint);display:block;margin-top:1px}
+.track{height:8px;border-radius:5px;position:relative;margin:10px 0 4px;background:linear-gradient(90deg,var(--safe),var(--watch),var(--alert))}
+.track .mk{position:absolute;top:-3px;width:3px;height:14px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 2px #fff}
+.note{color:var(--ink2);font-size:12.5px;border-top:1px dashed var(--line);padding-top:10px;margin-top:12px}
+.note b{color:var(--ink)}
+.err{color:#8a3a2e;font-size:12.5px;background:#fdf1ee;border:1px solid #ecc9c0;border-radius:3px;padding:10px 12px;margin-top:8px}
+.state{color:var(--mut);font-size:13px;padding:12px;text-align:center}
+.skel{opacity:.5;animation:sk 1.3s ease-in-out infinite}@keyframes sk{50%{opacity:.2}}
+.stamp{font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* spread + days + ingredients */
+.spread{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:13px 15px}
+.mrow{display:grid;grid-template-columns:64px 1fr 64px;gap:10px;align-items:center;margin:7px 0}
+.mrow .ml{font-family:var(--disp);text-transform:uppercase;letter-spacing:.06em;font-size:13px;font-weight:700}
+.mrow .ml .pat{font-family:var(--mono);font-size:8.5px;color:var(--ai);letter-spacing:.04em;display:block;text-transform:none;font-weight:400}
+.mbar{height:14px;background:#ecebe7;border-radius:2px;position:relative;overflow:hidden}
+.mbar i{display:block;height:100%}
+.mref{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--alert);opacity:.55}
+.mrow .mv{font-family:var(--mono);font-size:12px;text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+.agree{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut);margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+.agdot{width:9px;height:9px;border-radius:50%;flex:none}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.day{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:12px 10px;text-align:center}
+.day .dow{font-family:var(--disp);text-transform:uppercase;letter-spacing:.1em;font-size:12.5px;color:var(--mut);font-weight:700}
+.day .score{font-family:var(--mono);font-size:29px;font-weight:700;line-height:1;margin:6px 0 2px}
+.day .mm{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.day .bar2{height:4px;border-radius:0;margin-top:9px;background:#ecebe7;overflow:hidden}
+.day .bar2 i{display:block;height:100%}
+.ing{display:flex;flex-direction:column;gap:8px}
+.row{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:12px 14px;display:grid;grid-template-columns:128px 1fr;gap:6px 16px;align-items:center}
+@media(max-width:600px){.row{grid-template-columns:1fr;gap:8px}}
+.row .name{font-family:var(--disp);text-transform:uppercase;letter-spacing:.05em;font-size:14.5px;font-weight:700}
+.row .lvl{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.04em;margin-top:1px}
+.row .read{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.row .val{font-family:var(--mono);font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.row .unit{font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+.tag{font-family:var(--disp);text-transform:uppercase;letter-spacing:.08em;font-size:10.5px;padding:2px 8px;border-radius:2px;font-weight:700}
+.row .note2{grid-column:1/-1;color:var(--mut);font-size:12.5px;border-top:1px dashed var(--line);padding-top:8px}
+.row.context{opacity:.85}
+.trk{grid-column:1/-1;height:7px;border-radius:4px;position:relative;margin-top:2px;background:linear-gradient(90deg,var(--z0),var(--z1),var(--z2))}
+.trk .mk{position:absolute;top:-3px;width:3px;height:13px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 2px #fff}
+.compass{width:44px;height:44px;flex:0 0 auto}
+.ai-card{background:linear-gradient(180deg,rgba(124,77,190,.05),transparent),var(--wash);border:1px solid #ddd2ee;border-radius:4px;padding:14px 15px;margin-top:10px}
+.ai-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.ai-head .badge{font-family:var(--disp);text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;font-weight:900;color:#fff;background:var(--ai);padding:2px 9px;border-radius:5px}
+.ai-head .t{font-family:var(--disp);text-transform:uppercase;letter-spacing:.07em;font-size:14px;font-weight:700}
+.ai-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px}@media(max-width:600px){.ai-grid{grid-template-columns:1fr 1fr}}
+.ai-grid .c .k{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);display:block;font-family:var(--disp);font-weight:700}
+.ai-grid .c .v{font-family:var(--mono);font-size:17px;font-weight:700;margin-top:2px}
+.ai-vote{font-size:12.5px;color:var(--ink2);border-top:1px dashed #ddd2ee;padding-top:10px}
+.trace-card{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:14px 12px 8px;margin-top:12px}
+.trace-legend{display:flex;gap:16px;font-family:var(--mono);font-size:10.5px;color:var(--mut);margin-bottom:6px;flex-wrap:wrap;padding:0 4px}
+.trace-legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+/* pop auto-log */
+.poplog{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.term{display:grid;grid-template-columns:138px 1fr;gap:4px 14px;background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:10px 13px;align-items:baseline}
+@media(max-width:600px){.term{grid-template-columns:1fr}}
+.term .tn{font-family:var(--disp);text-transform:uppercase;letter-spacing:.06em;font-size:12.5px;font-weight:700}
+.term .tv{font-family:var(--mono);font-size:13px;font-weight:700}
+.term .tv .pts{color:var(--ocean);margin-left:6px;font-size:11px}
+.term .tw{grid-column:1/-1;font-size:11.5px;color:var(--mut)}
+.term.obs .tn::after{content:"OBS";font-family:var(--mono);font-size:8px;color:#fff;background:var(--ocean);border-radius:4px;padding:1px 5px;margin-left:7px;letter-spacing:.08em;vertical-align:2px}
+.term.inf .tn::after{content:"INF";font-family:var(--mono);font-size:8px;color:#7a5a00;background:#f5e3b0;border-radius:4px;padding:1px 5px;margin-left:7px;letter-spacing:.08em;vertical-align:2px}
+.scorebar{display:flex;align-items:stretch;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin-top:12px}
+.scorebar .num{font-family:var(--mono);font-weight:700;font-size:33px;line-height:1;min-width:60px;display:flex;flex-direction:column;justify-content:center}
+.scorebar .num small{font-family:var(--disp);font-size:9.5px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase;font-weight:700;margin-top:3px}
+.scorebar .mid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
+.bandchip{display:inline-flex;align-items:center;gap:7px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:900}
+.bandchip .bdot{width:9px;height:9px;border-radius:50%;flex:none}
+.scorebar .vtxt{font-size:12px;color:var(--mut)}
+.handoff{display:flex;flex-direction:column;justify-content:center;text-align:right;border-left:1px solid var(--line);padding-left:12px;min-width:84px}
+.handoff b{font-family:var(--mono);font-size:20px}
+.handoff span{font-family:var(--disp);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.rulebox{background:var(--wash);border:1px dashed #d8d2c8;border-radius:4px;padding:12px 14px;font-size:13px;color:var(--ink2);margin-top:12px}
+.rulebox b{color:var(--ink)}
+.rulebox .mono{color:var(--ocean);font-size:11.5px}
+
+/* warning map */
+.mapwrap{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:10px;overflow:hidden;margin-top:6px}
+.mapwrap svg{display:block;width:100%;height:auto}
+.maplegend{display:flex;flex-wrap:wrap;gap:12px;padding:10px 4px 2px;font-size:11px;color:var(--mut)}
+.maplegend .lg{display:flex;align-items:center;gap:6px}
+.maplegend .lg i{width:12px;height:12px;border-radius:3px;display:inline-block;flex:none}
+.corridor-note{font-family:var(--mono);font-size:11.5px;color:var(--ocean);padding:8px 4px 0}
+.corridor-note.dim{color:var(--faint)}
+.wz{transition:opacity .3s}
+.wz.t0{fill:#dcd6cb;opacity:.45}
+.wz.t1{fill:#f0ab00;opacity:.16;stroke:#f0ab00;stroke-opacity:.45;stroke-width:1}
+.wz.t2{fill:#f0ab00;opacity:.42;stroke:#cc7a00;stroke-opacity:.85;stroke-width:1.4}
+.wz.t3{fill:#ee0000;opacity:.4;stroke:#ee0000;stroke-opacity:.95;stroke-width:1.6;animation:popwarn 1.9s ease-in-out infinite}
+@keyframes popwarn{0%,100%{opacity:.26}50%{opacity:.52}}
+.arr{opacity:.15;transition:opacity .3s}
+.arr.on{opacity:1}
+.arr.on .flow{stroke-dasharray:7 6;animation:popflow 1.1s linear infinite}
+@keyframes popflow{to{stroke-dashoffset:-13}}
+.zlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.zchip{font-family:var(--mono);font-size:11px;border-radius:3px;padding:4px 11px;border:1px solid var(--line);background:var(--wash);color:var(--ink2)}
+.zchip.z1{background:#fdf6e3;border-color:#eeddad;color:#7a5a00}
+.zchip.z2{background:#fcefcf;border-color:#e8c97a;color:#6e4e00;font-weight:700}
+.zchip.z3{background:#fdecec;border-color:#f2b6b6;color:var(--rh-red2);font-weight:700}
+
+/* storms / klist */
+.klist{display:flex;flex-direction:column;gap:8px}
+.kitem{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:11px 13px}
+.kitem .lb{font-family:var(--disp);text-transform:uppercase;letter-spacing:.05em;font-size:14px;font-weight:900}
+.kitem .lb small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--mut);letter-spacing:0;text-transform:none;font-weight:400;margin-top:2px}
+.kitem .dt{font-family:var(--mono);font-size:13px;font-weight:700;text-align:right}
+.kitem .dt small{display:block;font-size:9.5px;color:var(--faint);font-weight:400}
+
+/* triggers */
+.lead{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.lead:last-child{border-bottom:0}
+.lead .nm{font-family:var(--disp);text-transform:uppercase;letter-spacing:.05em;font-size:14.5px;font-weight:700}
+.lead .lc{font-family:var(--mono);font-size:10.5px;color:var(--faint);display:block;margin-top:1px}
+.lead .rt{font-family:var(--mono);font-size:17px;text-align:right;font-weight:700}
+.lead .ds{grid-column:1/-1;font-size:12px;color:var(--mut)}
+table.trig{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+table.trig th{font-family:var(--disp);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:10.5px;color:var(--mut);text-align:left;padding:8px 8px;border-bottom:2px solid var(--line)}
+table.trig td{padding:9px 8px;border-bottom:1px solid #ececec;vertical-align:top;color:var(--ink2);font-variant-numeric:tabular-nums}
+table.trig td:first-child{font-family:var(--mono);color:var(--ink);font-size:11.5px;white-space:nowrap}
+table.trig td b{color:var(--ink)}
+.tdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px}
+.twrap{overflow-x:auto}
+.cal{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.cal .row2{display:grid;grid-template-columns:42px repeat(4,1fr);gap:5px;align-items:center}
+.cal .mh{font-family:var(--mono);font-size:11px;color:var(--mut);text-align:right;padding-right:4px}
+.cal .row2.now .mh{color:var(--ocean);font-weight:700}
+.cal .cell{height:24px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+.cal .head .cell{height:auto;background:transparent!important;color:var(--faint);font-size:9.5px;letter-spacing:.1em}
+.cal .row2.now{outline:1.5px solid var(--ocean);outline-offset:1px;border-radius:7px;padding:1px 0}
+.callegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--mut);margin-top:10px}
+.callegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.calnote{font-size:11.5px;color:var(--mut);margin-top:9px;line-height:1.55}.calnote b{color:var(--ink)}
+
+/* NOAA card */
+.obsraw{font-family:var(--mono);font-size:11px;color:var(--ink2);background:var(--wash);border:1px solid var(--line);border-radius:3px;padding:10px 12px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;line-height:1.7}
+.tafrow{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line)}
+.tafrow:last-child{border-bottom:0}
+.tafrow .tt{font-family:var(--mono);font-size:11px;color:var(--mut);text-align:right;white-space:nowrap}
+.tafrow .tx{font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.tafrow .sev{width:9px;height:9px;border-radius:50%;flex:none}
+.quote{border-left:3px solid var(--line);padding:2px 0 2px 14px;color:var(--ink2);font-size:13px;margin-top:8px}
+.quote .q-src{font-family:var(--mono);font-size:10.5px;color:var(--faint);display:block;margin-top:5px}
+.goeswrap{margin-top:10px;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--wash)}
+.goeswrap img{display:block;width:100%;height:auto}
+.goeswrap .cap{font-family:var(--mono);font-size:10.5px;color:var(--mut);padding:8px 12px}
+.linkrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.linkrow a{font-family:var(--mono);font-size:11px;border:1px solid var(--line);background:var(--wash);border-radius:3px;padding:5px 12px;color:var(--ink2)}
+.linkrow a:hover{border-color:var(--rh-red);color:var(--rh-red);text-decoration:none}
+
+.srcbox{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:15px 18px;margin-top:20px}
+.srcbox h4{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.srcbox p{font-size:12px;color:var(--ink2);line-height:1.75}
+footer{text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--mut);padding:26px 16px 6px;border-top:1px solid var(--line);line-height:1.8;margin-top:26px}
+footer .rh{color:var(--ink);font-weight:700}
+.hidden{display:none!important}
+</style>
+<div class="bar">
+  <svg class="logo" viewBox="0 0 256 56" id="navlogo" role="img" aria-label="NOMMSWEY Vallarta Weather"></svg>
+  <span id="dataMode" class="mode" title="Checking live feeds…">checking feeds…</span>
+  <div id="langPill" role="group" aria-label="Language / Idioma">
+    <button data-lang="en" class="on">EN</button><button data-lang="es">ES</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kick">NOMMSWEY · ¿WHY-arta? · water hazards, merged</div>
+  <div class="titlerow">
+    <div class="titleleft">
+      <h1 class="title">Vallarta <span class="r">Weather</span></h1>
+      <div class="minimap-wrap">
+        <svg id="bayMini" role="img" aria-label="Today's areas to watch — Bahía de Banderas mini map"></svg>
+        <div class="ministamp" id="miniStamp">painting today's areas…</div>
+      </div>
+    </div>
+    <aside class="risk" id="riskBox" aria-label="Risk level for the day">
+      <span class="rk">Risk · rains &amp; storms</span>
+      <div class="rl" id="riskName">—</div>
+      <div class="rrows">
+        <span class="rr"><span>Onset</span><b id="riskOnset">—</b></span>
+        <span class="rr"><span>Max rain</span><b id="riskMax">—</b></span>
+        <span class="rr"><span>Waning</span><b id="riskWane">—</b></span>
+      </div>
+      <div class="rcontrib" id="riskContrib"></div>
+      <div class="rtide">
+        <span class="rr2"><span>High tide</span><b id="rtHi">—</b></span>
+        <span class="rr2"><span>Low tide</span><b id="rtLo">—</b></span>
+        <span class="rr2"><span>vs avg high</span><b id="rtAvg">—</b></span>
+      </div>
+      <div class="rwhy" id="riskWhy"></div>
+    </aside>
+  </div>
+  <div class="deck">
+    <div class="dcard" id="deckFlood"><span class="dk">Flooding</span><div class="state skel">rating…</div></div>
+    <div class="dcard" id="deckTiming"><span class="dk">Timing</span><div class="state skel">reading the solar day…</div></div>
+    <div class="dcard" id="deckAmount"><span class="dk">Amount</span><div class="state skel">summing the metro…</div></div>
+  </div>
+  <div class="stampline"><span class="pulse"></span><span id="pageStamp">booting…</span></div>
+
+  <nav class="jump" aria-label="Sections">
+    <a href="#c-pop">The Pop</a><a href="#c-inun">Inundation</a><a href="#c-areas">Areas to Watch</a><a href="#c-trig">Triggers</a><a href="#c-noaa">NOAA Live</a>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div class="dial-wrap">
+      <svg id="dial" viewBox="0 0 240 188" width="240" height="188" role="img" aria-label="Soak dial"></svg>
+      <div class="verdict" id="verdict">—</div>
+      <div class="verdict-note" id="verdictNote"></div>
+      <div class="breakdown" id="breakdown"></div>
+    </div>
+    <div class="hero-meta">
+      <div class="odds">
+        <div class="chipbox"><span class="k">Soaking · &gt;1 in</span><span class="p" id="p1">—</span><span class="src">GEFS</span></div>
+        <div class="chipbox"><span class="k">Deluge · &gt;3 in</span><span class="p" id="p3">—</span><span class="src">GEFS</span></div>
+        <div class="chipbox"><span class="k">Where</span><span class="p" id="whereChip" style="font-size:15px;line-height:1.5">—</span><span class="src" id="whereSub">corridor</span></div>
+      </div>
+      <div class="window-precip"><span style="font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);display:block;margin-bottom:3px;font-family:var(--disp);font-weight:700">When · window 12:00→06:00</span>
+        <b id="winMM">—</b> in <span id="winIn"></span><div class="ensline" id="ensLine"></div></div>
+      <div class="now-row" id="nowRow"></div>
+      <div class="nowcast" id="nowcastBox"><div class="state skel">nowcast…</div></div>
+      <div class="tafflag hidden" id="tafFlag"></div>
+    </div>
+  </div>
+
+  <!-- ============ CARD · THE POP ============ -->
+  <section class="card" id="c-pop">
+    <div class="eyebrow">01 · Convective</div>
+    <h2>The Pop</h2>
+    <p class="lede">The nightly monsoon question. Four physics models + the GEFS ensemble score the 12:00→06:00 window; the FG07 auto-log below feeds the same terms the atlas check-in uses — model reads fetched, eyeball reads carried from the latest observation.</p>
+    <div id="soakLoad" class="state skel">Pulling model feeds over the bay…</div>
+    <div id="soakApp" class="hidden">
+      <div class="sec">Model spread — today <span class="src">red line = 3 in</span></div>
+      <div class="spread" id="spread"></div>
+      <div class="days" id="soakDays"></div>
+      <div class="sec">Ingredients <span class="src">GFS · peak 14–23h</span></div>
+      <div class="ing" id="ing"></div>
+      <div id="aiCard" class="ai-card"></div>
+      <div class="sec">48-hour trace</div>
+      <div class="trace-card">
+        <div class="trace-legend"><span><i class="dot" style="background:var(--rain)"></i>Precip in/h</span><span><i class="dot" style="background:var(--mamber)"></i>CAPE (relative)</span><span><i class="dot" style="background:#e8e0d2"></i>Soak window</span></div>
+        <svg id="trace" viewBox="0 0 700 220" width="100%" role="img" aria-label="48 hour precipitation and CAPE trace"></svg>
+      </div>
+      <div class="sec">FG07 auto-log <span class="src" id="logSrc">model terms fetched · eyeball terms from last obs</span></div>
+      <div class="poplog" id="popLog"></div>
+      <div class="scorebar" role="status" aria-live="polite">
+        <div class="num"><span id="scoreNum">0</span><small>pop score</small></div>
+        <div class="mid">
+          <span class="bandchip"><span class="bdot" id="bandDot" style="background:#9a9a9a"></span><span id="bandTxt">NO LOG YET</span></span>
+          <span class="vtxt" id="verdictTxt">Waiting on the log…</span>
+        </div>
+        <div class="handoff"><b id="handoffNum">0</b><span>deluge term</span></div>
+      </div>
+      <div class="rulebox"><b>Handoff rule.</b> Pop score → the index's rainfall term:
+        <span class="mono">≤2 → 0 · 3–5 → 1 · 6–9 → 2 · ≥10 → 3</span>.
+        A score of <b>6+</b> arms the 72-hour preload (rivers charge, soils saturate); <b>10+</b> means run the full compound check below. Two consecutive 6+ nights count as one 10.</div>
+      <div class="stamp"><span class="pulse"></span><span id="soakStamp">—</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CARD · INUNDATION ============ -->
+  <section class="card" id="c-inun">
+    <div class="eyebrow">02 · Water on land</div>
+    <h2>Inundation</h2>
+    <p class="lede">For PV the dominant threat isn't surge — it's rainfall on the Sierra → flash flooding &amp; river surge, compounded when the sea is high and the mouths can't drain. Three rivers into the bay: Cuale, Pitillal, Ameca; 24 flood-vulnerable points flagged in the 2026 Bahía de Banderas atlas.</p>
+    <div id="inunLoad" class="state skel">Computing the compound picture…</div>
+    <div id="inunApp" class="hidden">
+      <div class="sec">Compound inundation index <span class="src">river × sea level × rain</span></div>
+      <div class="big"><span class="n" id="compN">—</span><span class="u" id="compU">/ 10</span></div>
+      <div class="track"><div class="mk" id="compMk" style="left:0"></div></div>
+      <div class="note" id="compWhy"></div>
+      <div class="sec">Tropical inundation potential <span class="src">72 h · rain-weighted</span></div>
+      <div class="big"><span class="n" id="tropN">—</span><span class="u" id="tropU">/ 10</span></div>
+      <div class="track"><div class="mk" id="tropMk" style="left:0"></div></div>
+      <div class="grid3" style="margin-top:12px" id="inunMetrics"></div>
+      <div class="sec">Tide, waves &amp; the river <span class="src">harmonic tide · GFS-Wave · GloFAS</span></div>
+      <div class="grid3" id="seaMetrics"></div>
+      <div class="note" id="kingNote"></div>
+      <div class="note"><b>Mechanism.</b> When the Cuale runs high and the sea is high (king tide + long-period swell damming the mouth), the river can't discharge and backs up into the Cuale corridor / Zona Romántica / lower Olas Altas. Add a 6+ pop night and that's the flood. Never cross moving water — 12 in (30 cm) floats a car.</div>
+      <div class="stamp"><span class="pulse"></span><span id="inunStamp">—</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CARD · AREAS TO WATCH ============ -->
+  <section class="card" id="c-areas">
+    <div class="eyebrow">03 · Who gets it</div>
+    <h2>Areas to Watch</h2>
+    <p class="lede">Two scopes. Around the bay: susceptibility × tonight's armed corridor × score — water hurts where it collects, not where it falls. In the basin: what NHC is tracking upstream of the moisture tap.</p>
+
+    <div class="sec">Tonight around the bay <span class="src">repaints from the auto-log</span></div>
+    <div class="mtoggle hidden" id="mapToggle"><button id="mtGeo" type="button">Live map</button><button id="mtSch" type="button" class="on">Schematic</button></div>
+    <div class="mapwrap hidden" id="geoWrap">
+      <div id="geoMap" class="geomap" role="application" aria-label="Georegistered warning map of Bahía de Banderas"></div>
+      <div class="maplegend">
+        <span class="lg"><i style="background:rgba(238,0,0,.5)"></i>Alert — armed corridor × high susceptibility</span>
+        <span class="lg"><i style="background:rgba(240,171,0,.55)"></i>Watch</span>
+        <span class="lg"><i style="background:rgba(240,171,0,.22)"></i>Advisory</span>
+        <span class="lg"><i style="background:#dcd6cb"></i>Quiet tonight</span>
+      </div>
+      <div class="corridor-note" id="warnStampGeo">—</div>
+    </div>
+    <div class="mapwrap" id="schWrap">
+      <svg id="bayMain" role="img" aria-label="Tonight's warning map — Bahía de Banderas"></svg>
+      <div class="maplegend">
+        <span class="lg"><i style="background:rgba(238,0,0,.5)"></i>Alert — armed corridor × high susceptibility</span>
+        <span class="lg"><i style="background:rgba(240,171,0,.55)"></i>Watch</span>
+        <span class="lg"><i style="background:rgba(240,171,0,.22)"></i>Advisory</span>
+        <span class="lg"><i style="background:#dcd6cb"></i>Quiet tonight</span>
+      </div>
+      <div class="corridor-note" id="warnStamp">No log — warning map idle.</div>
+      <div class="corridor-note dim" id="warnBasis"></div>
+    </div>
+    <div class="zlist" id="zoneChips"></div>
+    <div class="rulebox"><b>Why the zones sit where they sit.</b> The sierra sheds; the flats receive. The Ameca floodplain (Ixtapa–Las Juntas–Pitillal strip) collects the whole valley corridor. The Cuale and Pitillal drop ~1,000 m in under 15 km, so an "over the bay" night is an arroyo night for Centro and Romántica — the pin sits between their two outlets. Bucerías and Sayulita flood at their crossings; the south-shore coves take short, violent debris-fan pulses; the headlands just drain.</div>
+
+    <div class="sec">Upstream in the basin <span class="src">NHC East Pacific</span></div>
+    <div class="mapwrap"><svg id="epacMap" viewBox="0 0 720 344" role="img" aria-label="Schematic East Pacific map with active systems"></svg>
+      <div class="maplegend"><span class="lg"><i style="background:#c2410c;border-radius:50%"></i>Active system</span><span class="lg"><i style="background:#f0ab00;border-radius:50%"></i>NHC outlook area</span><span class="lg"><i style="background:#0a6a6a;border-radius:50%"></i>Puerto Vallarta</span></div>
+      <div class="corridor-note dim">Schematic positions — official track graphics at NHC.</div>
+    </div>
+    <div class="klist" id="stormList"><div class="state skel">Reading the basin…</div></div>
+  </section>
+
+  <!-- ============ CARD · TRIGGERS ============ -->
+  <section class="card" id="c-trig">
+    <div class="eyebrow">04 · What fires first</div>
+    <h2>Triggers</h2>
+    <p class="lede">Upstream signals that fire before the bay cell, and the checklist of thresholds this page watches. Sierra storms build, collapse, and push outflow downslope into the bay 2–4 h later.</p>
+    <div class="sec">Live lead indicators</div>
+    <div id="leadBox"><div class="state skel">Listening upstream…</div></div>
+    <div class="sec">Trigger board <span class="src">atlas thresholds · live values</span></div>
+    <div class="twrap"><table class="trig" id="trigTable"></table></div>
+    <div class="sec">Seasonal trigger calendar</div>
+    <div id="calBox"></div>
+    <div class="stamp"><span class="pulse"></span><span id="trigStamp">—</span></div>
+  </section>
+
+  <!-- ============ CARD · NOAA LIVE ============ -->
+  <section class="card" id="c-noaa">
+    <div class="eyebrow">05 · NOAA over Jalisco</div>
+    <h2>NOAA Live</h2>
+    <p class="lede">The official picture, straight from the federal feeds: the airport observation and forecast, the NHC outlook, the offshore marine warning, and the GOES view of the coast.</p>
+    <div class="sec">MMPR · Puerto Vallarta Intl <span class="src">METAR/TAF via NOAA AWC</span></div>
+    <div id="metarBox"></div>
+    <div class="sec">Tropical weather outlook <span class="src">NHC · Eastern Pacific</span></div>
+    <div id="twoBox"></div>
+    <div class="sec">Offshore waters <span class="src">NHC High Seas Forecast</span></div>
+    <div id="hsfBox"></div>
+    <div class="sec">Satellite <span class="src">GOES GeoColor · Mexico sector</span></div>
+    <div class="goeswrap" id="goesWrap">
+      <img id="goesImg" alt="GOES GeoColor satellite view over Mexico" loading="lazy">
+      <div class="cap" id="goesCap">Loading the latest frame…</div>
+    </div>
+    <div class="linkrow">
+      <a href="https://www.nhc.noaa.gov/?epac" target="_blank" rel="noopener">NHC EPAC</a>
+      <a href="https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&sector=mex" target="_blank" rel="noopener">GOES Mexico loop</a>
+      <a href="https://aviationweather.gov/data/metar/?id=MMPR" target="_blank" rel="noopener">MMPR obs</a>
+      <a href="https://nomads.ncep.noaa.gov/" target="_blank" rel="noopener">NOMADS models</a>
+      <a href="https://smn.conagua.gob.mx/" target="_blank" rel="noopener">SMN · CONAGUA</a>
+      <a href="http://www.atlasnacionalderiesgos.gob.mx/" target="_blank" rel="noopener">Atlas Nacional de Riesgos</a>
+    </div>
+  </section>
+
+  <div class="srcbox"><h4>Sources &amp; honesty</h4>
+    <p><b>Live lanes:</b> Open-Meteo (ECMWF/GFS/ICON/GEM consensus, GEFS ensemble, ECMWF-AIFS pattern, GFS-Wave marine, GloFAS river discharge) · NOAA NHC (active systems) · NOAA AWC (MMPR METAR/TAF). Tides are a harmonic model calibrated to Puerto Vallarta tide-table datums (heights above MLLW; clock-times ±~1 h — cross-check CICESE/official tables). River discharge is GloFAS at 5 km and may reflect the larger Ameca basin. <b>Snapshot mode:</b> when a feed can't be reached (the claude.ai preview blocks outbound fetches; or you're offline), that panel shows the NOAA snapshot baked at publish — stamped with its own issuance times — or a representative seasonal baseline, and the pill up top says which mode you're in. Times PV local (CST, UTC−6). Display units are imperial (in · ft · °F · mph · mi · cfs); the source feeds are metric.</p>
+  </div>
+
+  <footer>
+    <span class="rh">NOMMSWEY · ¿WHY-arta?</span> — Vallarta Weather · merged from the Banderas Bay Hazard Atlas (Soak · Triggers · Tropical · Coastal) + WHY-ARTA Flooding &amp; FG07 Afternoon Pop<br>
+    Styled per the Red Hat brand (Red Hat Display / Text, Red Hat Red #EE0000). Not affiliated with or endorsed by Red Hat, Inc.<br>
+    Hazard guidance is general &amp; educational — defer to official Protección Civil / CONAGUA-SMN instructions in an emergency.
+  </footer>
+</div>
+<style>.anchorpulse{opacity:0}.anchorpulse.on{opacity:1;animation:popanchor 2.2s ease-in-out infinite}@keyframes popanchor{0%,100%{opacity:.25}50%{opacity:.85}}</style>
+<script>
+/* ===================================================================
+   VALLARTA WEATHER — NOMMSWEY · merged instrument
+   Engine: Banderas Bay Hazard Atlas (soak/triggers/tropical/coastal)
+   + WHY-ARTA FG07 Afternoon Pop (auto-log, corridors, warning map)
+   + NOAA lane (NHC · AWC MMPR · High Seas · GOES)
+   =================================================================== */
+window.addEventListener('error',function(e){var b=document.createElement('div');b.style.cssText='background:#ee0000;color:#fff;padding:10px 14px;border-radius:8px;margin:12px;font:13px sans-serif';b.textContent='Render error: '+(e.message||'unknown')+' — shell is fine; live data may be blocked.';document.body.insertBefore(b,document.body.firstChild);});
+
+/* ---------- brand ---------- */
+document.getElementById('navlogo').innerHTML=
+ '<path d="M4 15 H40 l4 -8 l5 16 l4 -11 l3 6 H120 l5 -10 l4 15 l4 -11 l3 6 H214" fill="none" stroke="#ee0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+ '<text x="4" y="41" font-family="Red Hat Display" font-weight="900" font-size="24" letter-spacing="-1" fill="#fff">NOMMS<tspan fill="#ee0000">WEY</tspan></text>'+
+ '<text x="4" y="53" font-family="Red Hat Mono" font-size="8.5" letter-spacing="1" fill="#9a9a9a">Vallarta Weather · nommswey.com.mx</text>';
+
+/* ---------- REAL NOAA SNAPSHOT (baked at publish) ---------- */
+const SNAP_EPOCH=Date.UTC(2026,8,1,4,13); // 2026-09-01 04:13Z = Mon Aug 31 22:13 CST
+const NOAA_SNAP={
+ fetchedLocal:"lun 31 ago · 22:13 CST",
+ metar:{raw:"METAR MMPR 010400Z 09013KT 5SM -TSRA SCT010 OVC025CB 23/22 A2998 RMK 8/9// TS/OHD FRQ/LGTIC RAB0358",
+   t:"22:00 CST",
+   decode:"Thunderstorm overhead the airport — rain since 21:58, frequent in-cloud lightning; wind E 15 mph, vis 5 mi, ceiling 2,500 ft CB, 73°/72 °F."},
+ taf:{raw:"TAF AMD MMPR 010355Z 0104/0200 16020KT 1SM +TSRA OVC010CB TX33/0119Z TN24/0112Z BECMG 0105/0106 16010KT 4SM TSRA FM010800 34005KT 5SM RA BKN020 OVC080 FM010900 00000KT P6SM SCT020 BKN080 FM011200 00000KT P6SM BKN100 BKN200 FM011800 28010KT P6SM SCT030 BKN200 BECMG 0121/0122 BKN020CB",
+   phases:[["22:00–00:00","+TSRA — heavy storm, vis 1 mi, SE 20 kt","a"],
+           ["00:00–02:00","TSRA easing, vis 4 mi","w"],
+           ["02:00–03:00","rain, N breeze — outflow flips the wind","w"],
+           ["03:00–06:00","calm, showers end","s"],
+           ["06:00–12:00 mar","clearing, hot (max 33°)","s"],
+           ["15:00–16:00 mar","CBs redevelop — next pop window","w"]]},
+ storms:[{name:"Karina",cls:"HU",kt:115,lat:17.5,lon:-125.8,mv:"W 285° · 9 kt",pres:950,
+          note:"Major hurricane ~1,050 mi WSW of Baja's tip — no coastal watches; moving away."},
+         {name:"Lowell",cls:"TS",kt:55,lat:12.9,lon:-146.5,mv:"W 265° · 13 kt",pres:995,
+          note:"Central Pacific — no factor for Mexico."}],
+ outlook:{issued:"500 AM PDT Mon Aug 31 2026",fcstr:"NHC · Forecaster Hagen",
+   areas:[{id:"EP95",p48:90,p7:90,lat:13.6,lon:-107.5,
+     txt:"Showers and thunderstorms are showing signs of organization around a broad low several hundred miles south-southwest of southwestern Mexico; a tropical depression is expected to form within a couple of days. For the bay: a running moisture tap and building S swell."}]},
+ highseas:{issued:"1030 UTC Mon Aug 31 2026",wind:"SE–S 20–30 kt",seas:"2.5–4.5 m",
+   txt:"48-h forecast zone including waters near Cabo Corrientes — long southerly fetch; elevated run-up on south-facing beaches and at the river mouths."}
+};
+const snapAgeH=()=> (Date.now()-SNAP_EPOCH)/36e5;
+
+/* ---------- procedural seasonal baseline (zero-network fallback) ---------- */
+function buildBaseline(){
+  const cN=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const D0=new Date(Date.now()-6*36e5).toISOString().slice(0,10); /* PV-local date */
+  const addD=(k,n)=>{const d=new Date(k+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+  const HS=days=>{const o=[];for(let n=0;n<days;n++){const k=addD(D0,n);for(let h=0;h<24;h++)o.push(k+'T'+String(h).padStart(2,'0')+':00');}return o;};
+  const DS=days=>{const o=[];for(let n=0;n<days;n++)o.push(addD(D0,n));return o;};
+  let s=0;for(const c of D0)s=(s*31+c.charCodeAt(0))>>>0;
+  const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};
+  const R=(a,b)=>a+(b-a)*rnd();
+  const G=(i,amp,pk,wd)=>amp*Math.exp(-(((((i%24)+24)%24)-pk)**2)/(wd||18));
+  const rd=(x,n)=>{const p=Math.pow(10,n||0);return Math.round(x*p)/p;};
+  const T4=HS(4),T2=HS(2),N4=T4.length;
+  const evening=(i,m)=>Math.max(0,G(i,7*m,19)*R(.45,1.15));
+  const ids=['ecmwf_ifs025','gfs_seamless','icon_seamless','gem_seamless'];
+  const consH={time:T4};ids.forEach((id,k)=>{const m=[1.05,0.9,1.2,0.8][k];consH['precipitation_'+id]=T4.map((_,i)=>rd(evening(i,m),2));});
+  const gfs={hourly:{time:T4,
+    precipitation:T4.map((_,i)=>rd(evening(i,1),2)),
+    cape:T4.map((_,i)=>Math.round(G(i,2050,16,24)+140+R(0,180))),
+    convective_inhibition:T4.map((_,i)=>-Math.round(G(i,105,11,20))),
+    freezing_level_height:T4.map(()=>Math.round(R(4820,5180))),
+    temperature_2m:T4.map((_,i)=>rd(28+3.1*Math.sin(((i%24)-9)/3.8)+R(-.4,.4),1)),
+    dew_point_2m:T4.map(()=>rd(R(22.6,24.4),1)),
+    relative_humidity_700hPa:T4.map((_,i)=>Math.round(cN(52+G(i,27,17,28)+R(-6,6),6,98))),
+    wind_speed_10m:T4.map((_,i)=>rd(cN(7+G(i,6,16,34)+R(-2,2),1,40),1)),
+    wind_direction_10m:T4.map((_,i)=>{const h=(i%24);return Math.round(h>=11&&h<=21?R(228,292):R(15,115));}),
+    wind_speed_500hPa:T4.map(()=>rd(R(12,30),1)),
+    wind_direction_500hPa:T4.map(()=>Math.round(R(238,292))),
+    cloud_cover:T4.map((_,i)=>Math.round(cN(28+G(i,55,18,30)+R(-12,12),0,100))),
+    wind_gusts_10m:T4.map((_,i)=>Math.round(cN(18+G(i,16,18,30)+R(-4,8),5,70))),
+    pressure_msl:T4.map(()=>Math.round(R(1008,1013)))},
+    current:{time:T4[Math.min(N4-1,new Date().getUTCHours())],temperature_2m:rd(R(28.4,30.4),1),precipitation:rd(Math.max(0,R(-1.2,1.4)),1),cape:Math.round(R(700,2100)),wind_speed_10m:Math.round(R(8,16)),wind_direction_10m:Math.round(R(228,292))}};
+  const aifs={hourly:{time:T4,precipitation:T4.map((_,i)=>rd(evening(i,0.92),2)),geopotential_height_500hPa:T4.map((_,i)=>Math.round(5872+18*Math.sin(i/13)+R(-6,6))),relative_humidity_700hPa:T4.map((_,i)=>Math.round(cN(52+G(i,24,17,28)+R(-6,6),8,96)))}};
+  const ensH={time:T4};for(let mi=0;mi<20;mi++){const mm=R(.2,1.7);ensH['precipitation_member'+mi]=T4.map((_,i)=>rd(Math.max(0,G(i,7*mm,19,16)*R(.3,1.3)),2));}
+  const marine={hourly:{time:T4,
+    wave_height:T4.map((_,i)=>rd(cN(.75+.25*Math.sin(i/9)+R(-.1,.2),.3,3),2)),
+    wave_period:T4.map(()=>Math.round(R(11,16))),
+    wave_direction:T4.map(()=>Math.round(R(190,250))),
+    swell_wave_height:T4.map((_,i)=>rd(cN(.6+.2*Math.sin(i/11)+R(-.1,.15),.2,2.5),2)),
+    swell_wave_period:T4.map(()=>Math.round(R(13,18))),
+    swell_wave_direction:T4.map(()=>Math.round(R(185,215))),
+    sea_surface_temperature:T4.map(()=>rd(R(29.2,30.0),1))}};
+  const sierra={hourly:{time:T2,precipitation:T2.map((_,i)=>rd(Math.max(0,G(i,5,17,20)*R(.3,1.2)),2)),cape:T2.map((_,i)=>Math.round(G(i,1900,15,24)+120+R(0,160))),wind_speed_10m:T2.map(()=>rd(R(4,12),1))}};
+  const gulf={hourly:{time:T2,dew_point_2m:T2.map(()=>rd(R(17,21),1)),wind_direction_850hPa:T2.map(()=>Math.round(R(150,330)))}};
+  const fbase=R(24,38);
+  const fl=DS(30).map((_,i)=>rd(fbase*(1+.5*Math.sin(i/4)+R(-.1,.25))+i*0.3,1));
+  const flood={daily:{time:DS(30),river_discharge:fl,river_discharge_mean:fl.map(v=>rd(v*0.92,1)),river_discharge_max:fl.map(v=>rd(v*1.45,1))}};
+  const nhc={activeStorms:NOAA_SNAP.storms.map(s=>({name:s.name,classification:s.cls,intensity:String(s.kt),binNumber:s.cls==='TS'&&s.lon<-140?'CP4':'EP1',latitudeNumeric:s.lat,longitudeNumeric:s.lon,__snap:true}))};
+  const MPTS=[1.0,1.0,1.1,0.9,0.85,1.05,1.4];
+  const metro=MPTS.map(mlt=>({hourly:{time:T4,precipitation:T4.map((_,i)=>rd(Math.max(0,evening(i,mlt)*R(.7,1.25)),2))}}));
+  return{cons:{hourly:consH},gfs,aifs,ens:{hourly:ensH},marine,sierra,gulf,flood,nhc,metro};
+}
+const BASE=buildBaseline();
+
+/* ---------- shared plumbing ---------- */
+const DATAMODE={live:0,snap:0};
+function mode(){var el=document.getElementById('dataMode');if(!el)return;
+  if(DATAMODE.live&&!DATAMODE.snap){el.textContent='● LIVE';el.className='mode live';el.title='Live data fetched from Open-Meteo / NHC / NOAA AWC.';}
+  else if(DATAMODE.live&&DATAMODE.snap){el.textContent='◐ LIVE + snapshot';el.className='mode mix';el.title='Some feeds are live; the rest show the publish-time NOAA snapshot or the seasonal baseline.';}
+  else if(DATAMODE.snap){el.textContent='◌ SNAPSHOT';el.className='mode snap';el.title='No live feed reachable here (the claude.ai preview blocks outbound fetches). Showing the NOAA snapshot baked '+NOAA_SNAP.fetchedLocal+' plus a seasonal baseline. Open the file in a normal browser for live data.';}}
+const PV={lat:20.6125,lon:-105.2306}, WAVE={lat:20.62,lon:-105.34}, SIERRA={lat:20.55,lon:-105.00}, GULF={lat:21.60,lon:-105.70}, CUALE={lat:20.57,lon:-105.13};
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const INmm=mm=>mm/25.4,FT=m=>m*3.28084,DEGF=c=>c*9/5+32,MPH=k=>k*0.621371,MI=k=>k*0.621371,CFS=q=>q*35.3147;
+const fIn=(mm,d)=>INmm(mm).toFixed(d==null?2:d);
+const fFt=(m,d)=>FT(m).toFixed(d==null?1:d);
+const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const sumA=a=>a.reduce((s,x)=>s+(x||0),0);
+const getC=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const hexA=h=>{h=h.replace('#','');return[0,2,4].map(i=>parseInt(h.slice(i,i+2),16));};
+const mix=(a,b,t)=>{const A=hexA(getC(a)),B=hexA(getC(b));return`rgb(${A.map((c,i)=>Math.round(c+(B[i]-c)*clamp(t,0,1))).join(',')})`;};
+async function getJSON(u,snapKey){try{const c=new AbortController(),to=setTimeout(()=>c.abort(),7000);const r=await fetch(u,{signal:c.signal});clearTimeout(to);const j=await r.json();if(j&&!j.error){DATAMODE.live++;mode();return j;}}catch(e){}if(snapKey&&BASE[snapKey]){DATAMODE.snap++;mode();return JSON.parse(JSON.stringify(BASE[snapKey]));}return null;}
+async function getTEXT(u){try{const c=new AbortController(),to=setTimeout(()=>c.abort(),7000);const r=await fetch(u,{signal:c.signal});clearTimeout(to);if(r.ok){const t=await r.text();if(t&&t.length>10){DATAMODE.live++;mode();return t;}}}catch(e){}return null;}
+function parseT(s){const[d,t]=s.split('T');return{key:d,hour:+t.slice(0,2)};}
+function nextDay(k){const d=new Date(k+'T00:00:00');d.setDate(d.getDate()+1);return d.toISOString().slice(0,10);}
+const fmtDate=k=>new Date(k+'T00:00:00').toLocaleDateString(LANG==='es'?'es-MX':'en-US',{weekday:'short',month:'short',day:'numeric'});
+function compass(d){return['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];}
+function dirArrow(d){if(d==null)return'';return['↓','↙','←','↖','↑','↗','→','↘'][Math.round(d/45)%8];}
+function nextHours(times,h){const k=new Date().toISOString().slice(0,10);let i0=times.findIndex(t=>t.key>=k);if(i0<0)i0=0;const idx=[];for(let i=i0;i<Math.min(i0+h,times.length);i++)idx.push(i);return idx;}
+function windowIdx(times,k){const idx=[];for(let i=0;i<times.length;i++){const p=times[i];if((p.key===k&&p.hour>=12)||(p.hour<6&&nextDay(k)===p.key))idx.push(i);}return idx;}
+function localNow(){return new Date(Date.now()-6*36e5);} // PV = UTC-6, no DST
+function devDateTxt(){const d=new Date();return d.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short'}).replace(/[.,]/g,'');}
+
+/* ---------- feed URLs ---------- */
+const FXMODELS=[{id:'ecmwf_ifs025',label:'ECMWF'},{id:'gfs_seamless',label:'GFS'},{id:'icon_seamless',label:'ICON'},{id:'gem_seamless',label:'GEM'}];
+const TZ='&timezone=America%2FMexico_City';
+function fxPoint(p,vars,extra=''){return`https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&hourly=${vars}&wind_speed_unit=kmh${TZ}${extra}`;}
+const consUrl=()=>`https://api.open-meteo.com/v1/forecast?latitude=${PV.lat}&longitude=${PV.lon}&hourly=precipitation&models=${FXMODELS.map(m=>m.id).join(',')}${TZ}&forecast_days=4`;
+const gfsUrl=()=>fxPoint(PV,['precipitation','cape','convective_inhibition','freezing_level_height','temperature_2m','dew_point_2m','relative_humidity_700hPa','wind_speed_10m','wind_direction_10m','wind_speed_500hPa','wind_direction_500hPa','cloud_cover','wind_gusts_10m','pressure_msl'].join(','),'&current=temperature_2m,precipitation,cape,wind_speed_10m,wind_direction_10m&models=gfs_seamless&forecast_days=4');
+const aifsUrl=()=>`https://api.open-meteo.com/v1/forecast?latitude=${PV.lat}&longitude=${PV.lon}&hourly=precipitation,geopotential_height_500hPa,relative_humidity_700hPa&models=ecmwf_aifs025${TZ}&forecast_days=4`;
+const ensUrl=()=>`https://ensemble-api.open-meteo.com/v1/ensemble?latitude=${PV.lat}&longitude=${PV.lon}&hourly=precipitation&models=gfs_seamless${TZ}&forecast_days=4`;
+const marineUrl=()=>`https://marine-api.open-meteo.com/v1/marine?latitude=${WAVE.lat}&longitude=${WAVE.lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,sea_surface_temperature${TZ}&forecast_days=4`;
+const floodUrl=()=>`https://flood-api.open-meteo.com/v1/flood?latitude=${CUALE.lat}&longitude=${CUALE.lon}&daily=river_discharge,river_discharge_mean,river_discharge_max&forecast_days=30`;
+const popUrl=()=>fxPoint(PV,'wind_speed_700hPa,wind_direction_700hPa,wind_speed_500hPa,wind_direction_500hPa,cape,convective_inhibition,total_column_integrated_water_vapour','&forecast_days=2');
+const popUrl2=()=>fxPoint(PV,'wind_speed_700hPa,wind_direction_700hPa,wind_speed_500hPa,wind_direction_500hPa,cape,convective_inhibition','&forecast_days=2');
+const METRO_PTS=[
+ {n:'Centro–Romántica',lat:20.607,lon:-105.234},
+ {n:'Aeropuerto–Pitillal',lat:20.658,lon:-105.248},
+ {n:'Ixtapa–Las Juntas',lat:20.703,lon:-105.203},
+ {n:'Nuevo Vallarta',lat:20.697,lon:-105.297},
+ {n:'Bucerías',lat:20.752,lon:-105.332},
+ {n:'Mismaloya',lat:20.535,lon:-105.278},
+ {n:'Sierra foothills (upper Cuale)',lat:20.532,lon:-105.128}];
+const metroUrl=()=>`https://api.open-meteo.com/v1/forecast?latitude=${METRO_PTS.map(p=>p.lat).join(',')}&longitude=${METRO_PTS.map(p=>p.lon).join(',')}&hourly=precipitation&models=gfs_seamless${TZ}&forecast_days=3`;
+const NHC_URL='https://www.nhc.noaa.gov/CurrentStorms.json';
+const METAR_URL='https://aviationweather.gov/api/data/metar?ids=MMPR&format=raw&taf=true';
+
+/* ---------- soak engine (from the Banderas Bay artifact) ---------- */
+const PRECIP_TBL=[[0,0],[0.5,.8],[2,2],[5,3],[10,4],[18,5],[28,6],[42,7],[58,8],[76,9.4],[100,10]];
+function precipScore(mm){if(mm<=0)return 0;for(let i=1;i<PRECIP_TBL.length;i++){const[x0,y0]=PRECIP_TBL[i-1],[x1,y1]=PRECIP_TBL[i];if(mm<=x1)return y0+(y1-y0)*(mm-x0)/(x1-x0);}return 10;}
+function vecMean(spd,dir){let u=0,v=0,n=0;for(let i=0;i<dir.length;i++){if(dir[i]==null)continue;const s=spd[i]??1,r=dir[i]*Math.PI/180;u+=s*Math.sin(r);v+=s*Math.cos(r);n++;}if(!n)return{dir:null,spd:null};return{dir:(Math.atan2(u/n,v/n)*180/Math.PI+360)%360,spd:Math.hypot(u/n,v/n)};}
+const onshore=d=>d!=null&&d>=200&&d<=315;
+function shearMS(s1,d1,s2,d2){if([s1,d1,s2,d2].some(x=>x==null))return null;const r1=d1*Math.PI/180,r2=d2*Math.PI/180;return Math.hypot(s1*Math.sin(r1)-s2*Math.sin(r2),s1*Math.cos(r1)-s2*Math.cos(r2))/3.6;}
+function ingredients(G,times,idx,sstArr){const H=G.hourly;let cw=idx.filter(i=>times[i].hour>=14&&times[i].hour<=23);if(!cw.length)cw=idx;
+  const g=k=>cw.map(i=>H[k]?.[i]).filter(v=>v!=null);
+  const capeMax=g('cape').length?Math.max(...g('cape')):null;
+  const cin=g('convective_inhibition');const cinMag=cin.length?Math.max(...cin.map(Math.abs)):null;
+  const rh700=mean(g('relative_humidity_700hPa')),dew=mean(g('dew_point_2m')),fz=mean(g('freezing_level_height'));
+  const wind=vecMean(cw.map(i=>H.wind_speed_10m?.[i]),cw.map(i=>H.wind_direction_10m?.[i]));
+  const w500=vecMean(cw.map(i=>H.wind_speed_500hPa?.[i]),cw.map(i=>H.wind_direction_500hPa?.[i]));
+  let sst=null;if(sstArr){const j=idx.find(i=>times[i].hour===15)??idx[Math.floor(idx.length/2)];sst=sstArr[j]??mean(idx.map(i=>sstArr[i]).filter(v=>v!=null));}
+  return{capeMax,cinMag,rh700,dew,fz,wind,shear:shearMS(wind.spd,wind.dir,w500.spd,w500.dir),steer:w500.spd,sst};}
+function envCorrection(ing){const{capeMax,cinMag,rh700,dew,fz,wind,steer}=ing;
+  let I=0.5;if(capeMax!=null)I+=capeMax>2000?.25:capeMax>1000?.15:capeMax<500?-.25:0;
+  if(cinMag!=null&&capeMax!=null){if(cinMag<25)I+=.15;else if(cinMag>150&&capeMax<1200)I-=.25;else if(cinMag>75)I-=.05;}
+  if(onshore(wind.dir)&&(wind.spd||0)>5)I+=.10;I=clamp(I,0,1);
+  let E=0.5;if(dew!=null)E+=dew>24?.20:dew>21?.10:dew<18?-.15:0;if(rh700!=null)E+=rh700>65?.15:rh700<40?-.20:0;
+  if(steer!=null)E+=steer<15?.20:steer<30?.05:steer>50?-.15:0;if(fz!=null)E+=fz>4900?.10:fz<4400?-.10:0;E=clamp(E,0,1);
+  return{C:clamp(1.5*(I-.5)+1.5*(E-.5),-1.5,1.5),I,E};}
+function ensembleStats(ens,idx){if(!ens?.hourly)return null;const keys=Object.keys(ens.hourly).filter(k=>/^precipitation_member\d+$/.test(k));if(!keys.length)return null;
+  const sums=keys.map(k=>{const a=ens.hourly[k];return idx.reduce((s,i)=>s+(a[i]||0),0);});let n1=0,n3=0;sums.forEach(v=>{if(v>25.4)n1++;if(v>76.2)n3++;});
+  const sr=[...sums].sort((a,b)=>a-b),q=p=>sr[clamp(Math.floor(p*(sr.length-1)),0,sr.length-1)];
+  return{p1:Math.round(100*n1/sums.length),p3:Math.round(100*n3/sums.length),members:sums.length,sums,p50:q(.5),p90:q(.9)};}
+function ensembleBase(sums){if(!sums||!sums.length)return null;const ms=mean(sums.map(precipScore));const sr=[...sums].sort((a,b)=>a-b);const p90=sr[clamp(Math.floor(.9*(sr.length-1)),0,sr.length-1)];return .7*ms+.3*precipScore(p90);}
+function scoreColor(s){if(s<2)return getC('--safe');if(s<4)return mix('--safe','--watch',(s-2)/2);if(s<6)return getC('--watch');if(s<8)return mix('--watch','--alert',(s-6)/2);return getC('--alert');}
+function aifsWindow(aifs,times,idx){if(!aifs?.hourly?.time||!aifs.hourly.precipitation)return null;const at=aifs.hourly.time.map(parseT);let s=0,h=false;
+  for(let i=0;i<at.length;i++){const p=at[i];if(((p.hour>=12)||(p.hour<6))&&idx.some(j=>times[j].key===p.key)){s+=aifs.hourly.precipitation[i]||0;h=true;}}return h?s:null;}
+function pol(cx,cy,r,deg){const a=(deg-90)*Math.PI/180;return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function arc(cx,cy,r,a0,a1){const[x0,y0]=pol(cx,cy,r,a0),[x1,y1]=pol(cx,cy,r,a1);const b=(a1-a0)%360>180?1:0;return`M${x0} ${y0} A${r} ${r} 0 ${b} 1 ${x1} ${y1}`;}
+function drawDial(score,rng){const cx=120,cy=132,r=92,A0=-120,A1=120,sw=A1-A0,val=A0+sw*(score/10);
+  let s=`<path d="${arc(cx,cy,r,A0,A1)}" fill="none" stroke="#e8e2d6" stroke-width="15" stroke-linecap="round"/>`;
+  if(rng){const lo=precipScore(rng[0]),hi=precipScore(rng[1]);if(hi>lo+.05)s+=`<path d="${arc(cx,cy,r,A0+sw*lo/10,A0+sw*hi/10)}" fill="none" stroke="#d6cec0" stroke-width="15"/>`;}
+  for(let i=0;i<40;i++){const t0=i/40,t1=(i+1)/40,scc=t1*10,aa=A0+sw*t0,ab=A0+sw*t1;if(A0+sw*(score/10)<aa)break;s+=`<path d="${arc(cx,cy,r,aa,Math.min(ab,val))}" fill="none" stroke="${scoreColor(scc)}" stroke-width="15"/>`;}
+  for(let n=0;n<=10;n++){const a=A0+sw*(n/10),[x0,y0]=pol(cx,cy,r-12,a),[x1,y1]=pol(cx,cy,r-2,a);s+=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${n%5===0?'#b3ab9d':'#ddd6c9'}" stroke-width="${n%5===0?2:1}"/>`;}
+  s+=`<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="${scoreColor(score)}" style="font-family:var(--mono);font-weight:700;font-size:54px">${score.toFixed(1)}</text><text x="${cx}" y="${cy+18}" text-anchor="middle" fill="#9a9a9a" style="font-family:var(--disp);letter-spacing:.18em;font-size:13px;font-weight:700">/ 10 SOAK</text>`;
+  $('dial').innerHTML=s;}
+function windCompass(d){const[x,y]=pol(23,23,15,d+180);return`<svg class="compass" viewBox="0 0 46 46"><circle cx="23" cy="23" r="20" fill="none" stroke="#d8d2c6"/><line x1="23" y1="23" x2="${x}" y2="${y}" stroke="var(--rain)" stroke-width="2.5"/><circle cx="23" cy="23" r="2.5" fill="var(--rain)"/></svg>`;}
+/* ---------- language (dynamic strings) ---------- */
+let LANG='en';try{LANG=localStorage.getItem('vw-lang')||'en';}catch(e){}
+const DICT={
+ 'Dry':'Seco','Spotty':'Aislado','Watch the sky':'Ojo al cielo','Likely soak':'Empapada probable','Heavy':'Fuerte','Deluge':'Diluvio',
+ 'Bay quiet — terrace is yours.':'Bahía tranquila — la terraza es tuya.',
+ 'Isolated cell at most.':'A lo más una celda aislada.',
+ 'Scattered evening storms likely.':'Tormentas vespertinas dispersas probables.',
+ 'Plan around evening rain; calles may flood.':'Planea alrededor de la lluvia; las calles pueden inundarse.',
+ 'Strong downpours — arroyo & street flooding.':'Aguaceros fuertes — arroyos y calles inundadas.',
+ '3-inch potential. Do not get caught out.':'Potencial de 3 pulgadas. Que no te agarre fuera.',
+ 'DELUGE — RUN THE INDEX':'DILUVIO — CORRE EL ÍNDICE','SOAK LIKELY':'EMPAPADA PROBABLE','BRUSH — CORRIDOR NIGHT':'ROCE — NOCHE DE CORREDOR','STROBE — ALL FLASH, NO RAIN':'ESTROBO — PURO RAYO, SIN LLUVIA','NO LOG YET':'SIN BITÁCORA',
+ 'Nayarit shore':'Costa de Nayarit','Ameca plain & city arroyos':'Planicie del Ameca y arroyos','South coves':'Caletas del sur','Bay-wide':'Toda la bahía','Inland crest':'Cresta interior','—':'—',
+ 'corridor':'corredor','tonight':'esta noche',
+ 'Dry / no rain':'Seco / sin lluvia','No flooding expected':'Sin inundación prevista','River & immediate coast':'Río y costa inmediata','Low-lying drainage':'Drenajes y partes bajas','Citywide':'Toda la ciudad','Extreme':'Extremo',
+ 'No rain expected in the next 24 h.':'Sin lluvia prevista en las próximas 24 h.',
+ 'Showers possible; drainage keeps up.':'Chubascos posibles; el drenaje se da abasto.',
+ 'Watch river margins, arroyo mouths & the malecón splash zone.':'Ojo a márgenes de ríos, bocas de arroyos y la salpicadura del malecón.',
+ 'Water ponds in low crossings & esteros; some streets flood.':'Se encharca en cruces bajos y esteros; algunas calles se inundan.',
+ 'Flooding beyond the usual spots — move vehicles, avoid crossings.':'Inundación más allá de los puntos usuales — mueve vehículos, evita los cruces.',
+ 'Compound flood in progress or imminent — follow Protección Civil.':'Inundación compuesta en curso o inminente — sigue a Protección Civil.',
+ 'Pre-dawn':'Madrugada','Early morning':'Mañana temprana','Mid morning':'Media mañana','Noon':'Mediodía','Afternoon':'Tarde','Early evening':'Atardecer','Overnight':'Noche',
+ 'likely onset':'inicio probable','break':'pausa','redevelops':'se reactiva','no rain expected in the day window':'sin lluvia prevista en la ventana del día',
+ '36-hr total · metro avg':'total 36 h · prom. metro','today, metro average per hour':'hoy, promedio metro por hora','MAX':'MÁX','MIN':'MÍN',
+ 'Sierra foothills (upper Cuale)':'Faldas de la sierra (alto Cuale)',
+ 'LOW':'BAJO','MED':'MEDIO','HIGH':'ALTO','EXTREME':'EXTREMO','after':'después de',
+ 'Seasonal':'Estacional','Tidal':'Mareal','low':'bajo','high':'alto',
+ 'is dry season':'es temporada seca',"is at the season's edge":'está al borde de la temporada','is mid rainy season':'está en plena temporada de lluvias','is the peak of the rain & cyclone season':'es el pico de la temporada de lluvias y ciclones',
+ 'direct influence — system nearby':'influencia directa — sistema cercano',
+ 'offshore low feeds moisture & S swell, no landfall signal — mod, not high':'la baja frente a la costa aporta humedad y marejada del sur, sin señal de impacto directo — mod, no alto',
+ 'no organized system — background only':'sin sistema organizado — solo de fondo',
+ 'king-tide window — highs well above average':'ventana de marea viva — altas muy sobre el promedio',
+ 'spring tides building — highs above average':'mareas vivas creciendo — altas sobre el promedio',
+ 'neap/mid cycle — ordinary highs':'ciclo medio — altas normales',
+ 'Now → next 4 h':'Ahora → próximas 4 h','rate now':'tasa ahora','next 4 h':'próx. 4 h','eases':'amaina','no break in sight':'sin pausa a la vista','since 16:00 (model est.)':'desde las 16:00 (est. modelo)','Intensifying':'Intensificándose','Steady rain':'Lluvia constante','Easing':'Amainando','Quiet':'Tranquilo'};
+const T=s=>LANG==='es'&&DICT[s]?DICT[s]:s;
+
+/* ---------- verdict bands ---------- */
+function verdictFor(s){if(s<2)return[T('Dry'),T('Bay quiet — terrace is yours.')];if(s<4)return[T('Spotty'),T('Isolated cell at most.')];if(s<6)return[T('Watch the sky'),T('Scattered evening storms likely.')];if(s<8)return[T('Likely soak'),T('Plan around evening rain; calles may flood.')];if(s<9)return[T('Heavy'),T('Strong downpours — arroyo & street flooding.')];return[T('Deluge'),T('3-inch potential. Do not get caught out.')];}
+const POPBANDS=[
+ {min:10,txt:'DELUGE — RUN THE INDEX',col:'#ee0000',v:'Arm the compound check: rainfall term maxed. Rivers and esteros are in play.'},
+ {min:6, txt:'SOAK LIKELY',col:'#ee0000',v:'Bay in play tonight. Arroyos load 21:00–02:00 — mind the crossings.'},
+ {min:3, txt:'BRUSH — CORRIDOR NIGHT',col:'#f0ab00',v:'Somebody gets it; the warning map shows who.'},
+ {min:-9,txt:'STROBE — ALL FLASH, NO RAIN',col:'#3e8635',v:'Distant anvil crawlers at most. Terrace weather.'}];
+
+/* ---------- SOAK render ---------- */
+const soak={cache:null,results:null};
+function renderSoak(){
+  const{G,cons,aifs,ens,marine}=soak.cache;const H=G.hourly;const times=H.time.map(parseT);
+  const sstArr=marine?.hourly?.sea_surface_temperature||null;
+  const nowKey=(G.current?.time||H.time[0]).split('T')[0];const keys=[...new Set(times.map(t=>t.key))];
+  let start=keys.indexOf(nowKey);if(start<0)start=0;const dayKeys=keys.slice(start,start+4);
+  const mP=m=>cons?.hourly?.['precipitation_'+m.id]||null;
+  const winM=(m,idx)=>{const a=mP(m);return a?idx.reduce((s,i)=>s+(a[i]||0),0):null;};
+  const results=dayKeys.map(k=>{const idx=windowIdx(times,k);const ing=ingredients(G,times,idx,sstArr);const env=envCorrection(ing);
+    const perModel=FXMODELS.map(m=>({label:m.label,id:m.id,mm:winM(m,idx)})).filter(x=>x.mm!=null);
+    const gfsWin=idx.reduce((s,i)=>s+(H.precipitation?.[i]||0),0);const vals=perModel.map(x=>x.mm);
+    const consensusMM=vals.length?mean(vals):gfsWin;
+    const anchorMM=consensusMM;
+    const spread=vals.length>1?(Math.max(...vals)-Math.min(...vals)):0;const eStat=ensembleStats(ens,idx);const eBase=eStat?ensembleBase(eStat.sums):null;
+    const detVal=precipScore(anchorMM);const base=eBase!=null?(.6*eBase+.4*detVal):clamp(detVal+.8,0,10);
+    let score=clamp(base+env.C,0,10);
+    if(ing.capeMax>1800&&ing.rh700>60&&onshore(ing.wind.dir)&&(ing.sst==null||ing.sst>=29))score=Math.max(score,4.5);
+    return{key:k,dow:fmtDate(k).slice(0,3),idx,ing,env,perModel,consensusMM,anchorMM,spread,rng:vals.length?[Math.min(...vals),Math.max(...vals)]:null,eStat,eBase,detVal,base,score};});
+  soak.results=results;
+  const D=results[0];
+  drawDial(D.score,D.rng);const[vw,vn]=verdictFor(D.score);
+  $('verdict').textContent=vw;$('verdict').style.color=scoreColor(D.score);$('verdictNote').textContent=vn;
+  $('breakdown').innerHTML=`<span title="Initiation ${(D.env.I*100).toFixed(0)}% · Efficiency ${(D.env.E*100).toFixed(0)}%${D.eBase!=null?` · ens ${D.eBase.toFixed(1)} · det ${D.detVal.toFixed(1)}`:''}">base ${D.base.toFixed(1)} · env ${D.env.C>=0?'+':''}${D.env.C.toFixed(1)} → <b style="color:${scoreColor(D.score)}">${D.score.toFixed(1)}</b></span>`;
+  $('winMM').textContent=fIn(D.anchorMM);$('winIn').innerHTML=`<span style="color:var(--faint)">(${D.anchorMM.toFixed(0)} mm)</span>`;
+  $('ensLine').textContent=D.eStat?`ens median ${fIn(D.eStat.p50)} in · p90 ${fIn(D.eStat.p90)} in · ${D.eStat.members} members`:'ensemble unavailable';
+  const o=D.eStat;$('p1').textContent=o?o.p1+'%':'—';$('p3').textContent=o?o.p3+'%':'—';
+  $('p1').style.color=o?scoreColor(o.p1/10):'var(--faint)';$('p3').style.color=o?scoreColor(clamp(o.p3/4,0,10)):'var(--faint)';
+  const c=G.current;$('nowRow').innerHTML=c?[['Now',c.temperature_2m!=null?Math.round(DEGF(c.temperature_2m))+'°F':'—'],['Rain/h',c.precipitation!=null?fIn(c.precipitation)+' in':'—'],['CAPE',c.cape!=null?Math.round(c.cape):'—'],['Wind',c.wind_speed_10m!=null?Math.round(MPH(c.wind_speed_10m))+' mph '+dirArrow(c.wind_direction_10m):'—']].map(([k,v])=>`<div><span class="k">${k}</span><span class="v">${v}</span></div>`).join(''):'';
+  drawSpread(D,aifs,times);drawDays(results.slice(1));drawIngredients(D.ing);drawAI(aifs,times,D);drawTrace(H,times,start);
+  $('soakStamp').textContent=(DATAMODE.live?'Live':'Baseline')+' · window 12→06 · pulled '+((G.current?.time||'').replace('T',' ')||'—')+' PV · auto-refresh 30 min';
+  $('soakLoad').classList.add('hidden');$('soakApp').classList.remove('hidden');
+}
+function drawSpread(D,aifs,times){const vals=D.perModel.map(x=>x.mm);const sc=Math.max(76.2,...vals,5)*1.05;
+  const rows=D.perModel.map(x=>{const s=clamp(precipScore(x.mm)+D.env.C,0,10),col=scoreColor(s);
+    return`<div class="mrow"><div class="ml">${x.label}</div><div class="mbar"><i style="width:${clamp(x.mm/sc,0,1)*100}%;background:${col}"></i><div class="mref" style="left:${clamp(76.2/sc,0,1)*100}%"></div></div><div class="mv">${fIn(x.mm)} in</div></div>`;});
+  const ai=aifsWindow(aifs,times,D.idx);
+  if(ai!=null)rows.push(`<div class="mrow"><div class="ml" style="color:var(--ai)">AIFS<span class="pat">AI · pattern</span></div><div class="mbar"><i style="width:${clamp(ai/sc,0,1)*100}%;background:var(--ai);opacity:.5"></i><div class="mref" style="left:${clamp(76.2/sc,0,1)*100}%"></div></div><div class="mv" style="color:var(--ai)">${fIn(ai)} in</div></div>`);
+  let dc=getC('--safe'),tx='Tight agreement — confident.';const rel=D.spread/((mean(vals)||0)+1);
+  if(rel>.9){dc=getC('--alert');tx='Wide disagreement — low confidence.';}else if(rel>.4){dc=getC('--watch');tx='Some spread — models differ.';}
+  rows.push(`<div class="agree"><span class="agdot" style="background:${dc}"></span>${tx} <span style="color:var(--faint)">· spread ${fIn(D.spread)} in</span></div>`);
+  $('spread').innerHTML=rows.join('');}
+function drawDays(rest){$('soakDays').innerHTML=rest.map(d=>{const col=scoreColor(d.score);
+  return`<div class="day"><div class="dow">${d.dow}</div><div class="score" style="color:${col}">${d.score.toFixed(1)}</div><div class="mm">${fIn(d.anchorMM)} in</div><div class="bar2"><i style="width:${d.score*10}%;background:${col}"></i></div></div>`;}).join('');}
+function strip(name,lvl,vh,tag,tc,frac,z,note,ctx){return`<div class="row${ctx?' context':''}" style="--z0:${z[0]};--z1:${z[1]};--z2:${z[2]}"><div><div class="name">${name}</div><span class="lvl">${lvl}</span></div><div class="read">${vh}${tag?`<span class="tag" style="background:${tc}22;color:${tc}">${tag}</span>`:''}</div><div class="trk"><div class="mk" style="left:calc(${clamp(frac,0,1)*100}% - 1.5px)"></div></div><div class="note2">${note}</div></div>`;}
+function drawIngredients(d){const S=getC('--safe'),W=getC('--watchtx'),A=getC('--alert'),WB=getC('--watch'),r=[];
+  if(d.capeMax!=null){const c=d.capeMax;r.push(strip('Instability','CAPE',`<span class="val">${Math.round(c)}</span><span class="unit">J/kg</span>`,c>2500?'EXTREME':c>1500?'HIGH':c>500?'MODERATE':'LOW',c>1500?A:c>500?W:S,c/3000,[S,WB,A],c>1500?'Plenty of fuel once a trigger fires.':c>500?'Ordinary afternoon cells.':'Stable — hard to storm.'));}
+  if(d.cinMag!=null){const k=d.cinMag,cap=d.capeMax||0;r.push(strip('Cap','CIN',`<span class="val">${Math.round(k)}</span><span class="unit">J/kg</span>`,k>150?'STRONG':k>75?'CAPPED':k>25?'WEAK':'UNCAPPED',k>150?(cap>1500?W:S):k>25?W:A,1-clamp(k/200,0,1),[A,WB,S],k>150&&cap>1500?'Loaded gun: holds off, then breaks late & hard.':k>75?'Lid in place — needs strong heating.':k>25?'Thin cap — fires readily.':'No lid — fires freely.'));}
+  if(d.rh700!=null){const v=d.rh700;r.push(strip('Mid moisture','700 hPa RH',`<span class="val">${Math.round(v)}</span><span class="unit">%</span>`,v>60?'MOIST':v>40?'MARGINAL':'DRY',v>60?A:v>40?W:S,v/100,[S,WB,A],v>60?'Moist aloft — storms hold & rain hard.':v>40?'Marginal — may not last.':'Dry aloft — break.'));}
+  if(d.dew!=null){const v=d.dew;r.push(strip('Low fuel','2 m dew pt',`<span class="val">${DEGF(v).toFixed(0)}</span><span class="unit">°F · ${v.toFixed(1)}°C</span>`,v>23?'JUICY':v>19?'MOIST':'DRYISH',v>23?A:v>19?W:S,(v-12)/16,[S,WB,A],v>23?'Very humid — high rainfall potential.':v>19?'Moist surface feeding the bay.':'Slightly drier.'));}
+  if(d.steer!=null){const v=d.steer;r.push(strip('Steering','~500 hPa',`<span class="val">${Math.round(MPH(v))}</span><span class="unit">mph</span>`,v<15?'SLOW':v<30?'MODERATE':'FAST',v<15?A:v<30?W:S,clamp(v/60,0,1),[A,WB,S],v<15?'Weak — slow/training cells pile up totals.':v<30?'Storms move along.':'Fast — cells clear quickly.'));}
+  if(d.fz!=null){const v=d.fz;r.push(strip('Warm-rain','Freezing lvl',`<span class="val">${(Math.round(FT(v)/100)/10).toFixed(1)}k</span><span class="unit">ft</span>`,v>5000?'HIGH':v>4500?'MOD':'LOWER',v>5000?A:v>4500?W:S,(v-3500)/2000,[S,WB,A],v>5000?'Deep warm cloud — efficient downpours.':v>4500?'Decent warm-rain depth.':'Shallower — less efficient.'));}
+  if(d.sst!=null){const t=d.sst,hot=t>=29.5;r.push(strip('Sea-surface','Bay water',`<span class="val" style="color:var(--rain)">${(t*9/5+32).toFixed(0)}</span><span class="unit">°F · ${t.toFixed(1)}°C</span>`,hot?'HIGH FUEL':t>=28?'WARM':'MILD',hot?A:getC('--ocean'),(t-24)/7,[getC('--rain'),getC('--rain'),A],hot?'Bath-warm — max latent-heat fuel.':t>=28?'Warm water fueling convection.':'Cooler — less fuel.'));}
+  if(d.wind.dir!=null){const on=onshore(d.wind.dir),wc=on?W:S;r.push(`<div class="row"><div><div class="name">Low flow</div><span class="lvl">10 m wind</span></div><div class="read">${windCompass(d.wind.dir)}<span class="val">${Math.round(MPH(d.wind.spd))}</span><span class="unit">mph ${compass(d.wind.dir)}</span><span class="tag" style="background:${wc}22;color:${wc}">${on?'ONSHORE':'OFFSHORE'}</span></div><div class="note2">${on?'Onshore SW–W flow importing Pacific moisture.':'Offshore/land-breeze — nighttime convergence line.'}</div></div>`);}
+  $('ing').innerHTML=r.join('');}
+function drawAI(aifs,times,D){const el=$('aiCard');
+  if(!aifs?.hourly?.time){el.innerHTML=`<div class="ai-head"><span class="badge">AI</span><span class="t">ECMWF AIFS · pattern lane</span></div><div class="ai-vote">AIFS unavailable this pull; consensus & ensemble stand alone.</div>`;return;}
+  const aiMM=aifsWindow(aifs,times,D.idx);const z=aifs.hourly.geopotential_height_500hPa||[];const z0=z.find(v=>v!=null),zL=[...z].reverse().find(v=>v!=null);const zT=(z0!=null&&zL!=null)?zL-z0:null;
+  const rh=aifs.hourly.relative_humidity_700hPa||[];const rhM=mean(rh.filter(v=>v!=null));
+  let vote,vc;if(aiMM!=null){const cw=D.consensusMM>=10,aw=aiMM>=10;if(cw===aw){vote=`<b>AIFS agrees</b> with the physics consensus (${aw?'wet':'drier'}) — higher confidence.`;vc=getC('--safe');}else{vote=`<b>AIFS disagrees</b> — leans ${aw?'wetter':'drier'}. Genuinely uncertain.`;vc=getC('--watchtx');}}else{vote='AIFS precip n/a; pattern only.';vc=getC('--mut');}
+  const tt=zT==null?'—':zT>15?'Ridge building ↑':zT<-15?'Wave approaching ↓':'Steady →';
+  el.innerHTML=`<div class="ai-head"><span class="badge">AI</span><span class="t">ECMWF AIFS · pattern lane</span></div><div class="ai-grid"><div class="c"><span class="k">AIFS precip</span><span class="v" style="color:var(--ai)">${aiMM!=null?aiMM.toFixed(0)+' mm':'—'}</span></div><div class="c"><span class="k">500 hPa</span><span class="v" style="font-size:13px">${tt}</span></div><div class="c"><span class="k">Mid RH (AI)</span><span class="v" style="color:var(--ai)">${rhM!=null?Math.round(rhM)+'%':'—'}</span></div></div><div class="ai-vote" style="color:${vc}">${vote}</div>`;}
+function drawTrace(H,times,start){const W=700,Hh=220,pl=34,pr=10,pt=10,pb=26;
+  const sIdx=times.findIndex(t=>t.key===[...new Set(times.map(t=>t.key))][start]);const N=Math.min(48,H.time.length-sIdx);
+  const idx=[...Array(N)].map((_,k)=>sIdx+k);const precip=idx.map(i=>H.precipitation?.[i]||0),cape=idx.map(i=>H.cape?.[i]??0);
+  const pMax=Math.max(2,...precip),cMax=Math.max(500,...cape);const xw=(W-pl-pr)/N,bx=k=>pl+k*xw,ph=Hh-pt-pb;let s='';
+  for(let k=0;k<N;k++){const t=times[idx[k]];if(t.hour>=12||t.hour<6)s+=`<rect x="${bx(k)}" y="${pt}" width="${xw+0.6}" height="${ph}" fill="#efe9dd" opacity="${t.hour>=18||t.hour<3?.85:.5}"/>`;}
+  [0,.5,1].forEach(f=>{const y=pt+ph*(1-f);s+=`<line x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}" stroke="#e6e1d7"/><text x="${pl-5}" y="${y+3}" text-anchor="end" fill="#9a9a9a" style="font-family:var(--mono);font-size:9px">${fIn(pMax*f)}</text>`;});
+  for(let k=0;k<N;k++){const h=ph*(precip[k]/pMax);const col=precip[k]>6?getC('--alert'):precip[k]>2?getC('--mamber'):getC('--rain');const t=times[idx[k]];
+    if(h>.4)s+=`<rect x="${bx(k)+1}" y="${pt+ph-h}" width="${xw-2}" height="${h}" fill="${col}" stroke="rgba(0,0,0,.3)" stroke-width=".5" opacity=".95"><title>${t.key} ${String(t.hour).padStart(2,'0')}:00 — ${fIn(precip[k])} in (${precip[k].toFixed(1)} mm) · CAPE ${Math.round(cape[k])}</title></rect>`;}
+  let dp='';for(let k=0;k<N;k++){const x=bx(k)+xw/2,y=pt+ph*(1-cape[k]/cMax);dp+=(k?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}
+  s+=`<path d="${dp}" fill="none" stroke="${getC('--mamber')}" stroke-width="1.6" opacity=".85"/>`;
+  for(let k=0;k<N;k+=6){const t=times[idx[k]];s+=`<text x="${bx(k)+xw/2}" y="${Hh-8}" text-anchor="middle" fill="#9a9a9a" style="font-family:var(--mono);font-size:9px">${String(t.hour).padStart(2,'0')}</text>`;if(t.hour===0||k===0)s+=`<text x="${bx(k)+xw/2}" y="${Hh-.5}" text-anchor="middle" fill="#b0a897" style="font-family:var(--disp);font-size:9px;letter-spacing:.1em;font-weight:700">${fmtDate(t.key).slice(0,3).toUpperCase()}</text>`;}
+  $('trace').innerHTML=s;}
+
+/* ---------- FG07 auto-log · corridors · warning map ---------- */
+const ZONES=[
+ {id:'wSayulita',n:'Sayulita',cor:'north',base:2},
+ {id:'wBucerias',n:'Bucerías',cor:'north',base:2},
+ {id:'wLaCruz',n:'La Cruz',cor:'north',base:1},
+ {id:'wPuntaMita',n:'Punta Mita',cor:'north',base:0},
+ {id:'wNuevo',n:'Nuevo–Flamingos',cor:'north',base:1},
+ {id:'wAmeca',n:'Ameca plain · Ixtapa–Las Juntas',cor:'bay',base:2},
+ {id:'wMarina',n:'Marina · Pitillal',cor:'bay',base:1},
+ {id:'wCuale',n:'Cuale · Centro–Romántica',cor:'bay',base:2},
+ {id:'wConchas',n:'Conchas Chinas',cor:'bay',base:0},
+ {id:'wCoves',n:'South coves · Mismaloya–Boca–Yelapa',cor:'south',base:1}];
+const CORNAMES={north:'Nayarit shore',bay:'Ameca plain & city arroyos',south:'South coves',wide:'Bay-wide',inland:'Inland crest',none:'—'};
+const CORNOTE={
+ north:'N BREAK armed — complexes drain toward Bucerías–La Cruz–Sayulita. Pin gets the light show.',
+ bay:'VALLEY → BAY armed — direct-hit window ~21:00–02:00. Cuale & Pitillal arroyos load.',
+ south:'S BRUSH armed — action favors the south shore toward Costalegre.',
+ wide:'MARINE PUSH armed — onshore intrusion, bay-wide. Watch the esteros.',
+ inland:'INLAND ANCHOR — storms pinned on the crest. All flash, no rain at the coast.',
+ none:'No corridor armed — model terms pending.'};
+const popState={terms:[],score:0,logged:0,best:'none',bv:0,w:null,dateTxt:NOAA_SNAP.fetchedLocal.split('·')[0].trim(),live:false};
+function haversine(a,b,c,d){const R=6371,rr=Math.PI/180,dl=(c-a)*rr,dn=(d-b)*rr;const q=Math.sin(dl/2)**2+Math.cos(a*rr)*Math.cos(c*rr)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(q));}
+function computePopTerms(popJ,metarRaw,metarFresh,nhcJ,gulfSurge){
+  const L=[];let score=0,logged=0;
+  const add=(id,label,val,pts,cor,why,klass)=>{L.push({id,label,val,pts,cor,why,klass});if(pts!=null){score+=pts;logged++;}};
+  /* steer / pwat / cap — model terms at today's 14:00 (their FG07 fetch, verbatim thresholds) */
+  let steered=false;
+  if(popJ&&popJ.hourly&&popJ.hourly.time){
+    const Hh=popJ.hourly,tt=Hh.time,devIso=localNow().toISOString().slice(0,10);
+    let i14=-1,i08=-1,i13=-1;
+    for(let i=0;i<tt.length;i++){if(tt[i].slice(0,10)===devIso){const hh=tt[i].slice(11,13);if(hh==='14')i14=i;if(hh==='08')i08=i;if(hh==='13')i13=i;}}
+    const pk=(idx,arr)=>(idx>=0&&arr&&typeof arr[idx]==='number')?arr[idx]:null;
+    const d7=pk(i14,Hh.wind_direction_700hPa),s7=pk(i14,Hh.wind_speed_700hPa),d5=pk(i14,Hh.wind_direction_500hPa),s5=pk(i14,Hh.wind_speed_500hPa);
+    if(d7!==null&&d5!==null&&s7!==null&&s5!==null){
+      const rr=Math.PI/180,x=Math.cos(d7*rr)+Math.cos(d5*rr),y=Math.sin(d7*rr)+Math.sin(d5*rr);
+      const dm=(Math.atan2(y,x)/rr+360)%360,sm=(s7+s5)/2;
+      let lbl,pts,cor;
+      if(sm<11){lbl='Ridge / light';pts=0;cor='inland';}
+      else if(dm>=55&&dm<100){lbl='E–ENE';pts=1;cor='north';}
+      else if(dm>=100&&dm<165){lbl='ESE–SE';pts=3;cor='bay';}
+      else if(dm>=165&&dm<285){lbl='SW / onshore';pts=3;cor='wide';}
+      else{lbl='Ridge / light (northerly)';pts=0;cor='inland';}
+      add('steer','Steering',lbl,pts,cor,`Fetched 14:00 — 700 hPa ${Math.round(d7)}°/${Math.round(s7)} km/h · 500 hPa ${Math.round(d5)}°/${Math.round(s5)} km/h (mean ${Math.round(dm)}°).`,'obs');steered=true;
+    }
+    const pw=pk(i14,Hh.total_column_integrated_water_vapour);
+    if(pw!==null){const pl2=pw<45?['< 1.8 in',0]:pw<55?['1.8–2.2 in',1]:pw<65?['2.2–2.6 in',2]:['≥ 2.6 in',3];
+      add('pwat','PWAT',pl2[0]+` (${fIn(pw)} in · ${Math.round(pw)} mm)`,pl2[1],null,'Fetched: total-column water at 14:00. FG06 thresholds 1.8 / 2.2 / 2.6 in (45/55/65 mm).','obs');}
+    else if(steered)add('pwat','PWAT','no feed',null,null,'PWAT not in this feed — eyeball the Windy layer.','');
+    const c08=pk(i08,Hh.convective_inhibition),c13=pk(i13,Hh.convective_inhibition),cape14=pk(i14,Hh.cape);
+    if(c08!==null&&c13!==null){const a08=Math.abs(c08),a13=Math.abs(c13);
+      const cc=(a13>75)?['Cap never breaks',-1]:(a08>50&&a13<25)?['Capped, breaks ~noon',1]:['No cap — storms early',0];
+      add('cap','Morning cap',cc[0],cc[1],cc[1]<0?'inland':null,`Fetched: |CIN| ${Math.round(a08)}→${Math.round(a13)} J/kg (08→13h), CAPE ${cape14===null?'—':Math.round(cape14)} at 14:00.`,'obs');}
+  }
+  if(!steered){ /* snapshot-mode: baked terms for the snapshot night, clearly labeled */
+    if(snapAgeH()<36){
+      add('steer','Steering','ESE–SE',3,'bay','Inferred — MMPR TAF holds a SE 20 kt low-level jet overnight; storms redevelop from the SE.','inf');
+      add('pwat','PWAT','2.2–2.6 in (55–65 mm)',2,null,'Inferred, no sounding: Td 22 °C with a storm at the pin and SMN heavy-rain banding — loaded column.','inf');
+      add('cap','Morning cap','no read',null,null,'Snapshot night — cap term unlogged (+0).','');
+    }else{
+      add('steer','Steering','no read',null,null,'No live feed and the snapshot is stale — open with a connection to fetch model terms.','');
+      add('pwat','PWAT','no read',null,null,'—','');
+    }
+  }
+  /* wave / disturbance — NHC lane */
+  let waveDone=false;
+  if(nhcJ&&Array.isArray(nhcJ.activeStorms)){
+    const ep=nhcJ.activeStorms.filter(s=>((s.binNumber||'').startsWith('EP')||/east.?pac/i.test(s.basin||''))&&s.latitudeNumeric!=null);
+    const withD=ep.map(s=>({s,d:haversine(PV.lat,PV.lon,s.latitudeNumeric,s.longitudeNumeric)})).sort((a,b)=>a.d-b.d);
+    const snapTag=nhcJ.activeStorms.some(s=>s.__snap)?' (snapshot)':'';
+    if(withD.length&&withD[0].d<800){const t=withD[0];add('wave','Disturbance','Axis overhead / offshore low',3,'wide',`${t.s.name} ${Math.round(MI(t.d))} mi from the bay${snapTag}.`,'obs');waveDone=true;}
+    else if(withD.length&&withD[0].d<1600&&withD[0].s.latitudeNumeric<PV.lat){const t=withD[0];add('wave','Disturbance','Wave axis inbound from SE',2,'south',`${t.s.name} ${Math.round(MI(t.d))} mi down-coast${snapTag}.`,'obs');waveDone=true;}
+  }
+  if(!waveDone){
+    const a=NOAA_SNAP.outlook.areas[0];
+    if(snapAgeH()<36&&a&&a.p7>=60){add('wave','Disturbance','Axis overhead / offshore low',3,'wide',`Observed (NHC TWO ${NOAA_SNAP.outlook.issued}): ${a.id} broad low SSW of SW Mexico at ${a.p48}/${a.p7}% — organized forcing offshore.`,'obs');waveDone=true;}
+    else if(gulfSurge){add('wave','Disturbance','GoC surge running',1,'north','Up-coast 850 hPa moisture surge active (Triggers card).','obs');waveDone=true;}
+    else add('wave','Disturbance','Nothing nearby',0,null,'No organized system in NHC lane.','');
+  }
+  /* init — always an eyeball read */
+  add('init','First towers','no read',null,null,'17:30 IR eyeball read — log it in the atlas check-in; not auto-derivable.','');
+  /* night — from METAR */
+  const lh=localNow().getUTCHours();
+  const night=(lh>=18||lh<7);
+  if(metarRaw&&/(^|\s)(\+|-)?TSRA|(^|\s)TS(\s|\/)/.test(metarRaw)&&night){
+    add('night','Night nowcast','Rising + tracking at the pin',2,'bay',(metarFresh?'Observed (METAR now)':'Observed (METAR '+NOAA_SNAP.metar.t+')')+': thunderstorm at the airport.', 'obs');
+  }else if(metarRaw&&night){
+    add('night','Night nowcast','Steady / distant',0,null,'METAR shows no storm at the pin right now.','obs');
+  }else{
+    add('night','Night nowcast','no read',null,null,'Daytime — the lightning-layer read starts after dark.','');
+  }
+  /* corridor weights (FG07) */
+  const w={north:0,bay:0,south:0,inland:0,wide:0};
+  L.forEach(t=>{if(t.pts==null||!t.cor)return;
+    if(t.id==='steer'){if(t.cor==='north')w.north+=2;if(t.cor==='bay')w.bay+=3;if(t.cor==='wide'){w.wide+=3;w.bay+=1;}if(t.cor==='inland')w.inland+=3;}
+    if(t.id==='wave'){if(t.cor==='north')w.north+=2;if(t.cor==='south')w.south+=2;if(t.cor==='wide')w.wide+=2;}
+    if(t.id==='night'){if(t.cor==='bay')w.bay+=2;if(t.cor==='inland')w.inland+=1;}
+    if(t.id==='cap'&&t.cor==='inland')w.inland+=1;});
+  let best='none',bv=0;['north','bay','south','wide','inland'].forEach(k=>{if(w[k]>bv){bv=w[k];best=k;}});
+  return{list:L,score,logged,w,best,bv};
+}
+function renderPopLog(res,liveModel){
+  popState.terms=res.list;popState.score=res.score;popState.logged=res.logged;
+  popState.w=res.w;popState.best=res.best;popState.bv=res.bv;popState.live=liveModel;
+  popState.dateTxt=liveModel?devDateTxt():NOAA_SNAP.fetchedLocal.split('·')[0].trim();
+  $('popLog').innerHTML=res.list.map(t=>`<div class="term ${t.klass||''}"><span class="tn">${t.label}</span><span class="tv">${t.val}${t.pts!=null?`<span class="pts">${t.pts>=0?'+':''}${t.pts}</span>`:''}</span><span class="tw">${t.why}</span></div>`).join('');
+  $('logSrc').textContent=(liveModel?'model terms fetched · ':'snapshot terms · ')+popState.dateTxt+(liveModel?'':' · re-opens live when a connection is allowed');
+  $('scoreNum').textContent=res.score;
+  const band=res.logged?(POPBANDS.find(b=>res.score>=b.min)||POPBANDS[POPBANDS.length-1]):null;
+  $('bandTxt').textContent=band?T(band.txt):T('NO LOG YET');
+  $('bandDot').style.background=band?band.col:'#9a9a9a';
+  $('verdictTxt').textContent=band?band.v:'Waiting on the log…';
+  $('handoffNum').textContent=res.score>=10?3:res.score>=6?2:res.score>=3?1:0;
+  /* hero WHERE */
+  $('whereChip').textContent=T(CORNAMES[res.bv>0?res.best:'none']);
+  $('whereSub').textContent=T('corridor')+' · '+popState.dateTxt;
+  paintCorridors(res);paintWarning(res);
+}
+function paintCorridors(res){
+  const w=res.w,thresh=Math.max(2,res.bv-1);
+  const tog=(id,on,base)=>{const cls=(base||'arr')+(on?' on':'');const el=$(id);if(el)el.setAttribute('class',cls);
+    document.querySelectorAll('[data-cor="'+id+'"]').forEach(e=>e.setAttribute('class',cls));};
+  tog('corNorth',w.north>=thresh&&w.north>0);
+  tog('corBay',w.bay>=thresh&&w.bay>0);
+  tog('corSouth',w.south>=thresh&&w.south>0);
+  tog('corWide',w.wide>=thresh&&w.wide>0);
+  tog('corInland',res.best==='inland'&&res.bv>0,'anchorpulse');
+}
+function paintWarning(res){
+  const w=res.w,score=res.score,hasLog=res.logged>0,best=res.best,bv=res.bv;
+  const thresh=Math.max(2,bv-1);
+  const armed={north:w.north>=thresh&&w.north>0,bay:w.bay>=thresh&&w.bay>0,south:w.south>=thresh&&w.south>0};
+  if(w.wide>=thresh&&w.wide>0){armed.north=true;armed.bay=true;armed.south=true;}
+  const lv={};
+  ZONES.forEach(z=>{let t=0;
+    if(hasLog){const a=armed[z.cor]?1:0;t=z.base+a+(score>=6?1:0);
+      let cap=score>=6?3:(score>=3?(a?3:1):1);if(best==='inland')cap=0;t=Math.min(t,cap);}
+    lv[z.id]=t;
+    const el=$(z.id);if(el)el.setAttribute('class','wz t'+t);
+    document.querySelectorAll('[data-z="'+z.id+'"]').forEach(e=>e.setAttribute('class','wz t'+t));});
+  $('zoneChips').innerHTML=ZONES.map(z=>`<span class="zchip z${lv[z.id]||0}">${z.n}</span>`).join('');
+  if(!hasLog){$('warnStamp').textContent='No log — warning map idle.';$('miniStamp').textContent='No log yet.';const g0=$('warnStampGeo');if(g0)g0.textContent='No log — warning map idle.';geoPaint(res);return;}
+  const lead=best==='north'?'Alert: Sayulita & north-shore crossings':
+             best==='bay'?'Alert: Ameca floodplain & city arroyos':
+             best==='south'?'Watch: south-shore coves':
+             best==='wide'?'Alert: bay-wide — esteros & every crossing':
+             'Coast quiet — storms pinned inland';
+  $('warnStamp').textContent=(LANG==='es'?'ESTA NOCHE':'TONIGHT')+' · '+popState.dateTxt+' · score '+score+' · '+lead;
+  $('miniStamp').textContent=(LANG==='es'?'ÁREAS DE HOY':"TODAY'S AREAS")+' · '+lead+' · score '+score;
+  $('warnBasis').textContent='Basis: '+res.list.filter(t=>t.pts!=null).map(t=>t.label+' → '+t.val).join(' · ');
+  const g=$('warnStampGeo');if(g)g.textContent=$('warnStamp').textContent;
+  geoPaint(res);
+}
+/* ---------- harmonic tide engine — calibrated to PV tide-table datums (MLLW) ---------- */
+const TIDE_J2000=Date.UTC(2000,0,1,12,0,0),d2r=Math.PI/180,tnorm=x=>((x%360)+360)%360;
+const TIDE_SHIFT=4.5*3600000, TIDE_Z0=0.45, PVOFF=6*3600000;
+function tAstro(d){const D=(d.getTime()-TIDE_J2000)/864e5,T=D/36525;return{s:tnorm(218.3165+481267.8813*T),h:tnorm(280.4661+36000.7698*T),p:tnorm(83.3532+4069.0137*T),N:tnorm(125.0445-1934.1363*T)};}
+function tV0(name,d){const U=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600,Tt=15*U-180,{s,h,p}=tAstro(d);
+  switch(name){case'M2':return 2*Tt-2*s+2*h;case'S2':return 2*Tt;case'N2':return 2*Tt-3*s+2*h+p;case'K2':return 2*Tt+2*h;case'K1':return Tt+h+90;case'O1':return Tt-2*s+h-90;case'P1':return Tt-h+90;case'Q1':return Tt-3*s+h+p-90;}}
+const TCONS=[['M2',.4232],['S2',.2187],['N2',.1174],['K2',.059],['K1',.1664],['O1',.0977],['P1',.0549],['Q1',.0186]];
+function tNodal(nm,N){const c=Math.cos(N*d2r);if(nm==='M2')return 1-.037*c;if(nm==='K1')return 1.006+.115*c;if(nm==='O1')return 1.009+.187*c;if(nm==='K2')return 1.024+.286*c;return 1;}
+function tHeight(d){const ds=new Date(d.getTime()-TIDE_SHIFT);const{N}=tAstro(ds);let v=0;for(const[nm,A]of TCONS)v+=tNodal(nm,N)*A*Math.cos(tV0(nm,ds)*d2r);return v+TIDE_Z0;}
+function tPhase(d){const{s,h}=tAstro(d),e=tnorm(s-h),illum=(1-Math.cos(e*d2r))/2;let nm='Wax cres';if(e<11||e>349)nm='New';else if(Math.abs(e-180)<11)nm='Full';else if(Math.abs(e-90)<11)nm='First qtr';else if(Math.abs(e-270)<11)nm='Last qtr';else if(e<90)nm='Wax cres';else if(e<180)nm='Wax gibb';else if(e<270)nm='Wan gibb';else nm='Wan cres';return{e,illum,nm};}
+function localMidnightUTC(d){return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),0,0,0)+(d.getUTCHours()<6?-86400000:0)+PVOFF;}
+function tideModel(){
+  const now=new Date();const base=localMidnightUTC(now);
+  let hi=-9,lo=9,hiT=base,loT=base;
+  for(let m=0;m<1440;m+=10){const t=base+m*60000,v=tHeight(new Date(t));if(v>hi){hi=v;hiT=t;}if(v<lo){lo=v;loT=t;}}
+  const ph=tPhase(now);
+  const days=[];for(let k=0;k<130;k++){const b=base+k*86400000;let mx=-9,mt=b;for(let m=0;m<1440;m+=15){const t=b+m*60000,v=tHeight(new Date(t));if(v>mx){mx=v;mt=t;}}days.push({k,mx,mt,date:new Date(b).toISOString().slice(0,10)});}
+  const maxH=Math.max(...days.map(x=>x.mx)),minH=Math.min(...days.map(x=>x.mx));
+  const avgHi=days.reduce((s,x)=>s+x.mx,0)/days.length;
+  const wins=[];for(let i=3;i<days.length-3;i++){const w=days.slice(i-3,i+4);if(days[i].mx===Math.max(...w.map(x=>x.mx))&&days[i].mx>minH+0.6*(maxH-minH)){const p=tPhase(new Date(days[i].mt));const rel=(days[i].mx-minH)/(maxH-minH);const strength=rel>.93?'Extreme':rel>.8?'Strong':'Moderate';wins.push({date:days[i].date,type:p.e<90||p.e>270?'new':'full',strength,peak:days[i].mx,daysOut:days[i].k});}}
+  const level=clamp((hi-minH)/((maxH-minH)||1),0,1);
+  const regime=level>.7?'spring':level<.35?'neap':'mid';
+  const fmtT=ms=>{const d=new Date(ms-PVOFF);return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');};
+  return{phaseName:ph.nm,illum:ph.illum,todayHi:hi,todayLo:lo,todayRange:hi-lo,hiStr:fmtT(hiT),loStr:fmtT(loT),regime,level,avgHi,coeff:Math.round(30+95*level),inWindow:level>.82,windows:wins.slice(0,3)};
+}
+function erosionIndex(H,Tp,swD,level){if(H==null||Tp==null)return{score:0,col:getC('--faint'),label:'no data',why:'Marine feed unavailable.'};
+  const power=H*H*Tp,pN=clamp((power-6)/60,0,1);let onF=.4;if(swD!=null){const diff=Math.abs(((swD-250+540)%360)-180);onF=clamp(Math.cos(diff*d2r)*.5+.5,.2,1);}
+  const wl=.7+.6*level,score=clamp(10*pN*onF*wl,0,10),col=score<3?getC('--safe'):score<6?getC('--watchtx'):getC('--alert'),label=score<2?'Minimal':score<4?'Low':score<6?'Moderate':score<8?'High':'Severe';
+  const why=`${fFt(H)} ft at ${Math.round(Tp)} s${swD!=null?` from the ${compass(swD)}`:''}; water level ${level>.75?'elevated (king-tide window)':'near normal'}. ${score>6?'Big long-period swell on high water — active scarping & seawall splash-over likely.':score>3?'Some run-up; watch low south-facing beaches.':'Low energy; little erosion.'}`;
+  return{score,col,label,why};}
+function compoundIndex(rNow,rHi,level,wH,rain24){if(rNow==null)return{score:0,col:getC('--faint'),label:'no data',why:'River feed unavailable —'};
+  const riverN=clamp((rHi>0?rNow/rHi:0)*.6+clamp((rHi-rNow)/(rNow+1),0,1)*.4,0,1);const seaN=clamp(.6*level+.4*(wH!=null?clamp((wH-1)/3,0,1):0),0,1);const rainN=rain24!=null?clamp(rain24/60,0,1):0;
+  const score=clamp(10*(.45*riverN+.30*seaN+.25*rainN),0,10),col=score<3?getC('--safe'):score<6?getC('--watchtx'):getC('--alert'),label=score<2?'Negligible':score<4?'Low':score<6?'Elevated':score<8?'High':'Severe';
+  return{score,col,label,why:`River ${riverN>.5?'high':'moderate'}, sea level ${seaN>.6?'elevated':'normal'}${rainN>.4?', heavy rain incoming':''} —`,riverN,seaN,rainN};}
+
+/* ---------- INUNDATION card ---------- */
+let LASTCOMP=null;
+function renderInundation(gfs,marine,flood){
+  const tide=tideModel();
+  const t=gfs.hourly.time.map(parseT);
+  const i72=nextHours(t,72),i24=nextHours(t,24);
+  const rain72=sumA(i72.map(i=>gfs.hourly.precipitation?.[i]));
+  const rain24=sumA(i24.map(i=>gfs.hourly.precipitation?.[i]));
+  const gust=Math.max(...i72.map(i=>gfs.hourly.wind_gusts_10m?.[i]||0));
+  const pmin=Math.min(...i72.map(i=>gfs.hourly.pressure_msl?.[i]||1015));
+  let wMax=null,wNow=null,wpNow=null,swH=null,swP=null,swD=null,sst=null;
+  if(marine&&marine.hourly){const mt=marine.hourly.time.map(parseT);const mi=nextHours(mt,72);
+    wMax=Math.max(...mi.map(i=>marine.hourly.wave_height?.[i]||0));
+    const i0=mi[0]??0;wNow=marine.hourly.wave_height?.[i0];wpNow=marine.hourly.wave_period?.[i0];
+    swH=marine.hourly.swell_wave_height?.[i0];swP=marine.hourly.swell_wave_period?.[i0];swD=marine.hourly.swell_wave_direction?.[i0];sst=marine.hourly.sea_surface_temperature?.[i0];}
+  const rN=clamp(rain72/300,0,1),wN=clamp((gust-40)/120,0,1),pN=clamp((1008-pmin)/40,0,1),hN=wMax!=null?clamp((wMax-1)/4,0,1):0;
+  const trop=clamp(10*(.5*rN+.2*hN+.15*wN+.15*pN),0,10);
+  const tlbl=trop<2?'Negligible':trop<4?'Low':trop<6?'Elevated':trop<8?'High':'Severe';
+  const tcol=trop<3?getC('--safe'):trop<6?getC('--watchtx'):getC('--alert');
+  $('tropN').textContent=trop.toFixed(1);$('tropN').style.color=tcol;$('tropU').textContent='/ 10 · '+tlbl;
+  $('tropMk').style.left=`calc(${trop*10}% - 1.5px)`;
+  let rNow=null,r7=null,rHi=null,rT=null;
+  if(flood&&flood.daily){const dis=flood.daily.river_discharge||flood.daily.river_discharge_mean,dmax=flood.daily.river_discharge_max||dis;
+    if(dis){rNow=dis[0];r7=Math.max(...dis.slice(0,7));rHi=Math.max(...dmax.slice(0,14));rT=dis[3]-dis[0];}}
+  const comp=compoundIndex(rNow,rHi,tide.level,wNow,rain24);LASTCOMP=comp;comp.tide=tide;
+  $('compN').textContent=comp.score.toFixed(1);$('compN').style.color=comp.col;$('compU').textContent='/ 10 · '+comp.label;
+  $('compMk').style.left=`calc(${comp.score*10}% - 1.5px)`;
+  $('compWhy').innerHTML=`<b>Now:</b> ${comp.why} river ${rNow!=null?Math.round(CFS(rNow)).toLocaleString('en-US')+' cfs (7-day peak '+Math.round(CFS(r7)).toLocaleString('en-US')+')':'—'}, tide ${tide.regime} (coef ~${tide.coeff}), waves ${wNow!=null?fFt(wNow)+' ft':'—'}, next-24h rain ${rain24!=null?fIn(rain24)+' in':'—'}.`;
+  const M=(k,v,s,c)=>`<div class="metric"><span class="k">${k}</span><span class="v"${c?` style="color:${c}"`:''}>${v}</span><span class="s">${s}</span></div>`;
+  $('inunMetrics').innerHTML=
+    M('Rain · 72 h',fIn(rain72),'in · flash/river',rN>.5?getC('--alert'):rN>.2?getC('--watchtx'):null)+
+    M('Rain · 24 h',fIn(rain24),'in',null)+
+    M('Peak gust',Math.round(MPH(gust)),'mph',null)+
+    M('Min pressure',Math.round(pmin),'mb',null)+
+    M('Max wave · 72 h',wMax!=null?fFt(wMax):'—','ft · run-up',getC('--ocean'))+
+    M('River today',rNow!=null?Math.round(CFS(rNow)).toLocaleString('en-US'):'—','cfs · GloFAS',rT>5?getC('--alert'):rT>0?getC('--watchtx'):null);
+  const er=erosionIndex(wNow,wpNow,swD,tide.level);
+  $('seaMetrics').innerHTML=
+    M('Waves now',wNow!=null?fFt(wNow):'—','ft · '+(wpNow!=null?Math.round(wpNow)+' s':'—')+' · in-bay',getC('--ocean'))+
+    M('Swell',(swH!=null?fFt(swH)+' ft':'—'),(swP!=null?Math.round(swP)+' s':'—')+(swD!=null?' · from '+compass(swD):''),getC('--ocean'))+
+    M('Sea surface',sst!=null?(sst*9/5+32).toFixed(0)+'°F':'—','bay water'+(sst!=null?' · '+sst.toFixed(1)+'°C':''),getC('--ocean'))+
+    M('Tide today','H '+tide.hiStr+' · L '+tide.loStr,fFt(tide.todayHi)+' / '+fFt(tide.todayLo)+' ft MLLW · ±1 h',null)+
+    M('Moon',tide.phaseName,Math.round(tide.illum*100)+'% lit · '+tide.regime+' tides',null)+
+    M('Erosion',er.score.toFixed(1)+' / 10',er.label,er.col);
+  $('kingNote').innerHTML=`<b>King tides.</b> ${tide.inWindow?'<span style="color:var(--alert);font-weight:700">In a king-tide window now — elevated highs.</span> ':''}`+
+    (tide.windows.length?'Upcoming windows: '+tide.windows.map(w=>`<b>${fmtDate(w.date)}</b> (${w.type==='new'?'new':'full'} moon · ~${fFt(w.peak)} ft · ${w.strength.toLowerCase()})`).join(' · ')+'. ':'No strong windows in the next ~4 months. ')+
+    `Erosion drive right now: ${er.why}`;
+  $('inunStamp').textContent=(DATAMODE.live?'Live marine + GloFAS':'Baseline marine + GloFAS')+' · tides harmonic (MLLW) · PV local';
+  $('inunLoad').classList.add('hidden');$('inunApp').classList.remove('hidden');
+  return{trop,comp,tide,rain24,rain72,wNow,wMax,swP,er};
+}
+
+/* ---------- TRIGGERS card ---------- */
+function gulfSurgeState(gulf){
+  if(!gulf||!gulf.hourly)return{active:false,gd:null,nw:false};
+  const gt=gulf.hourly.time.map(parseT);const gn=nextHours(gt,12);
+  const gd=mean(gn.map(i=>gulf.hourly.dew_point_2m?.[i]).filter(v=>v!=null));
+  const gdir=mean(gn.map(i=>gulf.hourly.wind_direction_850hPa?.[i]).filter(v=>v!=null));
+  const nw=gdir!=null&&(gdir>=290||gdir<=20);
+  return{active:gd!=null&&gd>20&&nw,gd,nw};
+}
+function renderTriggers(sierra,gulf,gfs,inun,soakD,popRes,nhcJ){
+  let h='',sp=null,sc=null,coll=false,bw=null;
+  if(sierra&&sierra.hourly){const st=sierra.hourly.time.map(parseT);const nx=nextHours(st,6);
+    sp=sumA(nx.map(i=>sierra.hourly.precipitation?.[i]));sc=Math.max(...nx.map(i=>sierra.hourly.cape?.[i]||0));
+    const col=sp>4?getC('--alert'):sp>1?getC('--watchtx'):getC('--safe');
+    h+=`<div class="lead"><div><div class="nm">Sierra crest</div><span class="lc">~30 km inland · next 6 h</span></div><div class="rt" style="color:${col}">${fIn(sp)} in</div><div class="ds">Peak CAPE ${Math.round(sc)} J/kg upstream. ${sp>4?'Storms firing on the ridge — expect an outflow surge toward the bay this evening.':sp>1?'Some upslope convection; watch for a late outflow push.':'Ridge quiet so far.'}</div></div>`;
+    if(gfs&&gfs.hourly){const bt=gfs.hourly.time.map(parseT);bw=mean(nextHours(bt,6).map(i=>gfs.hourly.wind_speed_10m?.[i]).filter(v=>v!=null));coll=sp>3&&(bw==null||bw<12);
+      h+=`<div class="lead"><div><div class="nm">Outflow collision</div><span class="lc">ridge outflow × calm bay</span></div><div class="rt" style="color:${coll?getC('--alert'):getC('--safe')}">${coll?'WATCH':'low'}</div><div class="ds">${coll?'Ridge outflow racing toward a calm bay — the gust front can detonate a cell over the water tonight.':'No collision setup now (needs ridge storms + light bay flow).'}</div></div>`;}
+  }else h+='<div class="err">Sierra feed unavailable this pull.</div>';
+  const gs=gulfSurgeState(gulf);
+  h+=`<div class="lead"><div><div class="nm">Gulf surge</div><span class="lc">Gulf of California, up-coast</span></div><div class="rt" style="color:${gs.active?getC('--alert'):getC('--safe')}">${gs.active?'ACTIVE':'quiet'}</div><div class="ds">Up-coast 850 hPa dew point ${gs.gd!=null?DEGF(gs.gd).toFixed(0)+'°F':'—'}${gs.nw?' with down-gulf flow':''}. ${gs.active?'Moisture surge sliding down-coast — wetter, more widespread storms for 1–3 days.':'No organized gulf surge.'}</div></div>`;
+  $('leadBox').innerHTML=h;
+  /* trigger board */
+  const D=soakD,o=D&&D.eStat;
+  const pwatT=popRes.list.find(x=>x.id==='pwat'),capeMax=D?D.ing.capeMax:null;
+  let nhcTxt='quiet',nhcOn=false,nhcNear=false;
+  if(nhcJ&&Array.isArray(nhcJ.activeStorms)){
+    const ep=nhcJ.activeStorms.filter(s=>(s.binNumber||'').startsWith('EP')&&s.latitudeNumeric!=null);
+    const dmin=ep.length?Math.min(...ep.map(s=>haversine(PV.lat,PV.lon,s.latitudeNumeric,s.longitudeNumeric))):null;
+    if(dmin!=null&&dmin<=800){nhcOn=true;nhcTxt='system '+Math.round(MI(dmin))+' mi';}
+    else if(snapAgeH()<36&&NOAA_SNAP.outlook.areas[0].p7>=60){nhcOn=true;nhcTxt=NOAA_SNAP.outlook.areas[0].id+' · '+NOAA_SNAP.outlook.areas[0].p7+'% / 7 d';}
+    else if(dmin!=null){nhcNear=dmin<2000;nhcTxt='nearest '+Math.round(MI(dmin))+' mi';}
+  }
+  const seasOn=(inun.wNow!=null&&inun.wNow>=2)||(inun.swP!=null&&inun.swP>=16);
+  const seasNear=(inun.wNow!=null&&inun.wNow>=1.2)||(inun.swP!=null&&inun.swP>=14);
+  const rows=[
+    ['T1','GEFS soaking','P(&gt;1 in), 12→06 window',o?o.p1+'%':'—','≥ 30%',o&&o.p1>=30,o&&o.p1>=20],
+    ['T2','GEFS deluge','P(&gt;3 in), 12→06 window',o?o.p3+'%':'—','≥ 10%',o&&o.p3>=10,o&&o.p3>=6],
+    ['T3','PWAT','total-column water',pwatT?pwatT.val:'—','≥ 2.2 in (FG06 loaded)',pwatT&&pwatT.pts!=null&&pwatT.pts>=2,pwatT&&pwatT.pts===1],
+    ['T4','CAPE','peak, 14–23h',capeMax!=null?Math.round(capeMax)+' J/kg':'—','≥ 1500 J/kg',capeMax>=1500,capeMax>=1000],
+    ['T5','Sierra crest','precip next 6 h',sp!=null?fIn(sp)+' in':'—','≥ 0.16 in → outflow watch',sp>=4,sp>=1],
+    ['T6','Outflow collision','ridge storms × calm bay',coll?'setup':'no setup','ridge ≥0.12 in + bay wind &lt;7 mph',coll,false],
+    ['T7','Gulf surge','850 hPa up-coast',gs.active?'ACTIVE':'quiet','surge pattern',gs.active,gs.gd!=null&&gs.gd>18],
+    ['T8','NHC basin','storm / outlook area',nhcTxt,'≤ 500 mi or area ≥ 60%',nhcOn,nhcNear],
+    ['T9','Seas','sig wave · swell period',(inun.wNow!=null?fFt(inun.wNow)+' ft':'—')+(inun.swP!=null?' · '+Math.round(inun.swP)+' s':''),'≥ 6.5 ft or ≥ 16 s',seasOn,seasNear],
+    ['T10','King tide','130-day harmonic scan','coef ~'+inun.tide.coeff,'window (level &gt; 0.82)',inun.tide.inWindow,inun.tide.level>.7],
+    ['T11','Compound','river × sea × rain',inun.comp.score.toFixed(1)+' / 10','≥ 6 → run the full check',inun.comp.score>=6,inun.comp.score>=4],
+    ['T12','Pop score','FG07 auto-log',popRes.score+' ('+(popRes.score>=10?3:popRes.score>=6?2:popRes.score>=3?1:0)+' handoff)','≥ 6 arms 72-h preload',popRes.score>=6,popRes.score>=3]];
+  $('trigTable').innerHTML='<thead><tr><th>ID</th><th>Trigger</th><th>Watching</th><th>Now</th><th>Threshold</th></tr></thead><tbody>'+
+    rows.map(r=>{const dot=r[5]?getC('--alert'):r[6]?getC('--watch'):getC('--safe');
+      return`<tr><td>${r[0]}</td><td><span class="tdot" style="background:${dot}"></span><b>${r[1]}</b><br><span style="color:var(--faint);font-size:11px">${r[2]}</span></td><td class="mono" style="white-space:nowrap"><b>${r[3]}</b></td><td colspan="2" style="color:var(--mut)">${r[4]}${r[5]?' — <b style="color:var(--alert)">TRIPPED</b>':r[6]?' — <span style="color:var(--watchtx);font-weight:700">close</span>':''}</td></tr>`;}).join('')+'</tbody>';
+  /* seasonal calendar */
+  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const CD=[[0,0,2,0,'Dry season. <b>Nortes</b> bring NW wind & choppy seas; rain rare.'],[0,0,2,0,'Driest, coolest seas. Whale season.'],[0,0,1,0,'Dry, warming. Calmest stretch.'],[1,0,1,0,'Pre-monsoon heat builds. First instability late.'],[1,1,2,1,'<b>EPAC season opens (May 15).</b> First thunder late; early S swells.'],[2,1,2,2,'<b>Rainy season begins.</b> Daily afternoon Sierra→bay storms.'],[3,2,2,2,'Peak diurnal storms; <b>Gulf surges</b> widen coverage.'],[3,3,3,3,'<b>Canícula</b> (~mid-Aug), then storms surge back. Big EPAC swells.'],[3,3,3,3,'<b>Wettest month & peak cyclone threat.</b> Highest flood risk.'],[2,3,3,3,'<b>Cordonazo de San Francisco</b> (~Oct 4). Late TCs can be worst.'],[1,1,2,1,'Rains end; dry returns. Occasional late system.'],[0,0,2,0,'Dry, mild. Winter NW swells; whales arriving.']];
+  const nowM=new Date().getMonth(),cols=['Convect','Tropical','Swell','Rain/Fld'];
+  const lc=l=>['#efeae2',getC('--safe'),getC('--watch'),getC('--alert')][l],tc=l=>['#9a9a9a','#fff','#3a2c00','#fff'][l],lt=l=>['—','low','mod','high'][l];
+  let ch=`<div class="cal"><div class="row2 head"><div class="mh"></div>${cols.map(c=>`<div class="cell">${c}</div>`).join('')}</div>`;
+  for(let m=0;m<12;m++)ch+=`<div class="row2${m===nowM?' now':''}"><div class="mh">${MN[m]}</div>`+CD[m].slice(0,4).map(l=>`<div class="cell" style="background:${lc(l)};color:${tc(l)}">${lt(l)}</div>`).join('')+`</div>`;
+  ch+=`</div><div class="callegend"><span><i style="background:${getC('--safe')}"></i>low</span><span><i style="background:${getC('--watch')}"></i>moderate</span><span><i style="background:${getC('--alert')}"></i>high</span></div><div class="calnote"><b>${MN[nowM]}:</b> ${CD[nowM][4]}</div><div class="calnote"><b>Reading it:</b> Aug–Oct is the compound window where the daily storm engine, tropical threat, swell, and river flooding all light up at once.</div>`;
+  $('calBox').innerHTML=ch;
+  $('trigStamp').textContent=(DATAMODE.live?'Live upstream':'Baseline upstream')+' · thresholds are atlas defaults · PV local';
+  return gs;
+}
+
+/* ---------- NOAA card ---------- */
+function sevCol(k){return k==='a'?getC('--alert'):k==='w'?getC('--watch'):getC('--safe');}
+function renderNOAA(metarTxt){
+  const live=!!metarTxt;
+  let mraw,traw=null,stamp;
+  if(live){
+    const ti=metarTxt.search(/^TAF/m);
+    mraw=(ti>0?metarTxt.slice(0,ti):metarTxt).trim().split('\n').filter(Boolean)[0]||metarTxt.trim();
+    if(ti>=0)traw=metarTxt.slice(ti).trim().replace(/\s+/g,' ');
+    stamp='live · NOAA AWC · pulled '+localNow().toISOString().slice(11,16)+' PV';
+  }else{
+    mraw=NOAA_SNAP.metar.raw;traw=NOAA_SNAP.taf.raw;
+    stamp='snapshot · '+NOAA_SNAP.fetchedLocal+(snapAgeH()>30?' · STALE — open with a connection for the current ob':'');
+  }
+  let decode='';
+  if(live){
+    const w=mraw.match(/ (\d{3})(\d{2,3})(G\d{2,3})?KT/),tp=mraw.match(/ (M?\d{2})\/(M?\d{2}) /),ts=/(\s)(\+|-)?(TS|VCTS)/.test(mraw),ra=/(\s)(\+|-)?RA/.test(mraw);
+    decode=(ts?'Thunderstorm in the observation. ':ra?'Rain in the observation. ':'No precip in the observation. ')+(w?`Wind ${compass(+w[1])} ${Math.round(+w[2]*1.15078)} mph. `:'')+(tp?(()=>{const a=+tp[1].replace('M','-'),b=+tp[2].replace('M','-');return `${Math.round(DEGF(a))}°/${Math.round(DEGF(b))} °F (${a}/${b} °C).`;})():'');
+  }else decode=NOAA_SNAP.metar.decode;
+  let h=`<div class="obsraw">${mraw}</div><div class="note" style="border-top:0;padding-top:8px;margin-top:6px">${decode}</div>`;
+  if(traw)h+=`<div class="obsraw" style="margin-top:8px">${traw}</div>`;
+  if(!live&&snapAgeH()<30){
+    h+=`<div style="margin-top:10px">`+NOAA_SNAP.taf.phases.map(p=>`<div class="tafrow"><span class="tt">${p[0]}</span><span class="tx"><span class="sev" style="background:${sevCol(p[2])}"></span>${p[1]}</span></div>`).join('')+`</div>`;
+  }
+  h+=`<div class="stamp"><span class="pulse"></span>${stamp}</div>`;
+  $('metarBox').innerHTML=h;
+  /* TWO */
+  const a=NOAA_SNAP.outlook.areas[0];
+  $('twoBox').innerHTML=`<div class="odds" style="margin-bottom:6px">
+    <div class="chipbox"><span class="k">${a.id} · 48 h</span><span class="p" style="color:${a.p48>=60?getC('--alert'):getC('--watchtx')}">${a.p48}%</span><span class="src">formation</span></div>
+    <div class="chipbox"><span class="k">${a.id} · 7 day</span><span class="p" style="color:${a.p7>=60?getC('--alert'):getC('--watchtx')}">${a.p7}%</span><span class="src">formation</span></div></div>
+    <div class="quote">${a.txt}<span class="q-src">${NOAA_SNAP.outlook.issued} · ${NOAA_SNAP.outlook.fcstr}${snapAgeH()>30?' · <b>stale — check NHC for the current outlook</b>':''}</span></div>`;
+  /* High seas */
+  $('hsfBox').innerHTML=`<div class="grid3">
+    <div class="metric"><span class="k">Winds</span><span class="v" style="font-size:16px">${NOAA_SNAP.highseas.wind}</span><span class="s">≈ 23–35 mph · near Cabo Corrientes</span></div>
+    <div class="metric"><span class="k">Seas</span><span class="v" style="color:${getC('--ocean')}">8–15 ft</span><span class="s">combined · ${NOAA_SNAP.highseas.seas}</span></div>
+    <div class="metric"><span class="k">Issued</span><span class="v" style="font-size:13px">${NOAA_SNAP.highseas.issued}</span><span class="s">NHC HSF · EPAC</span></div></div>
+    <div class="note">${NOAA_SNAP.highseas.txt}${snapAgeH()>30?' <b>Snapshot is stale — verify against the current HSF.</b>':''}</div>`;
+  /* GOES */
+  const img=$('goesImg');
+  img.onerror=()=>{img.style.display='none';$('goesCap').innerHTML='Satellite frame blocked in this preview — open the GOES Mexico loop link below for the live view.';};
+  img.onload=()=>{$('goesCap').textContent='GOES GeoColor · Mexico sector · loaded '+localNow().toISOString().slice(11,16)+' PV · ~10 min cadence';};
+  img.src='https://cdn.star.nesdis.noaa.gov/GOES19/ABI/SECTOR/mex/GEOCOLOR/GOES19-ABI-mex-GEOCOLOR-1000x1000.jpg';
+  /* TAF flag in hero */
+  const tafSrc=live?traw:(snapAgeH()<18?NOAA_SNAP.taf.raw:null);
+  if(tafSrc&&/(\+|-| )TS/.test(tafSrc)){$('tafFlag').classList.remove('hidden');
+    $('tafFlag').innerHTML='<b>MMPR TAF:</b> thunderstorms in the forecast period'+(live?'':' — heavy overnight, CBs again mañana ~15–16h')+' <span style="color:var(--faint)">('+(live?'live':NOAA_SNAP.fetchedLocal)+')</span>';}
+}
+
+/* ---------- EPAC schematic map ---------- */
+function drawEpac(nhcJ){
+  const EP=makeProj(8,27,-136,-94,720);
+  const X=EP.x,Y=EP.y,EH=Math.round(EP.H);
+  let s=`<rect x="0" y="0" width="720" height="${EH}" fill="#a9cddd"/>`;
+  for(let lon=-135;lon<-94;lon+=5){const x=X(lon);
+    s+=`<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${EH}" stroke="#ffffff" stroke-opacity=".3" stroke-width=".8"/>`;
+    s+=`<text x="${(x+3).toFixed(1)}" y="${EH-5}" font-family="'Red Hat Mono',monospace" font-size="8.5" fill="#3c5866">${Math.abs(lon)}°W</text>`;}
+  for(let lat=10;lat<27;lat+=5){const y=Y(lat);
+    s+=`<line x1="0" y1="${y.toFixed(1)}" x2="720" y2="${y.toFixed(1)}" stroke="#ffffff" stroke-opacity=".3" stroke-width=".8"/>`;
+    s+=`<text x="4" y="${(y-3).toFixed(1)}" font-family="'Red Hat Mono',monospace" font-size="8.5" fill="#3c5866">${lat}°N</text>`;}
+  COAST.EPAC.forEach(poly=>{s+=`<path d="${smoothPath(poly,EP,true)}" fill="#ece5d6" stroke="#a89a83" stroke-width="1"/>`;});
+  s+=`<text x="${X(-103.4).toFixed(0)}" y="${Y(24.6).toFixed(0)}" font-family="'Red Hat Mono',monospace" font-size="11" letter-spacing="2" fill="#a2947c">MÉXICO</text>`;
+  s+=`<text x="${X(-113.4).toFixed(0)}" y="${Y(26.4).toFixed(0)}" font-family="'Red Hat Mono',monospace" font-size="9" letter-spacing="1.5" fill="#a2947c" transform="rotate(48 ${X(-113.4).toFixed(0)} ${Y(26.4).toFixed(0)})">BAJA CALIFORNIA</text>`;
+  /* 500 km ring + PV */
+  s+=`<ellipse cx="${X(PV.lon)}" cy="${Y(PV.lat)}" rx="${((X(PV.lon+2.318)-X(PV.lon-2.318))/2).toFixed(0)}" ry="${((Y(PV.lat-2.175)-Y(PV.lat+2.175))/2).toFixed(0)}" fill="none" stroke="#0a6a6a" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>`;
+  s+=`<text x="${X(PV.lon)+62}" y="${Y(PV.lat)+62}" font-family="'Red Hat Mono',monospace" font-size="9" fill="#0a6a6a" opacity=".8">300 mi</text>`;
+  s+=`<circle cx="${X(PV.lon)}" cy="${Y(PV.lat)}" r="5" fill="#0a6a6a" stroke="#fff" stroke-width="1.5"/><text x="${X(PV.lon)+9}" y="${Y(PV.lat)+4}" font-family="'Red Hat Mono',monospace" font-size="10.5" fill="#0a6a6a" font-weight="700">PV</text>`;
+  /* outlook area */
+  const a=NOAA_SNAP.outlook.areas[0];
+  if(a&&snapAgeH()<48){
+    s+=`<circle cx="${X(a.lon)}" cy="${Y(a.lat)}" r="30" fill="#f0ab00" opacity=".2" stroke="#cc7a00" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+    s+=`<text x="${X(a.lon)}" y="${Y(a.lat)-36}" text-anchor="middle" font-family="'Red Hat Mono',monospace" font-size="10.5" fill="#8a5a00" font-weight="700">${a.id} · ${a.p7}%</text>`;
+    s+=`<text x="${X(a.lon)}" y="${Y(a.lat)+4}" text-anchor="middle" font-family="'Red Hat Display',sans-serif" font-size="11" fill="#8a5a00" font-weight="700">LOW</text>`;}
+  /* storms */
+  const storms=(nhcJ&&Array.isArray(nhcJ.activeStorms)?nhcJ.activeStorms:[]).filter(st=>st.latitudeNumeric!=null);
+  storms.forEach(st=>{
+    const lon=st.longitudeNumeric,lat=st.latitudeNumeric;
+    const hu=(st.classification||'').indexOf('HU')>=0;
+    if(lon<-135){s+=`<text x="8" y="${clamp(Y(lat),12,EH-12)}" font-family="'Red Hat Mono',monospace" font-size="10" fill="#c2410c">← ${st.name} (${st.classification})</text>`;return;}
+    const x=X(lon),y=Y(lat);
+    s+=`<circle cx="${x}" cy="${y}" r="${hu?11:8}" fill="#c2410c" opacity=".18"/><circle cx="${x}" cy="${y}" r="${hu?5.5:4}" fill="#c2410c"/>`;
+    if(hu)s+=`<path d="M${x-9} ${y-4} q6 -7 11 -2 M${x+9} ${y+4} q-6 7 -11 2" fill="none" stroke="#c2410c" stroke-width="1.6"/>`;
+    s+=`<text x="${x}" y="${y-(hu?16:12)}" text-anchor="middle" font-family="'Red Hat Mono',monospace" font-size="10.5" fill="#c2410c" font-weight="700">${(st.name||'').toUpperCase()} · ${st.classification||''}${st.intensity?' '+Math.round(st.intensity*1.15078)+' mph':''}</text>`;});
+  $('epacMap').innerHTML=s;
+  /* storm list */
+  const sn=(nhcJ&&nhcJ.activeStorms&&nhcJ.activeStorms.some(x=>x.__snap));
+  const rows=NOAA_SNAP.storms.map(st=>`<div class="kitem"><div class="lb" style="grid-column:1/3">${st.name}<small>${st.cls} · ${Math.round(st.kt*1.15078)} mph (${st.kt} kt) · ${st.lat.toFixed(1)}°, ${st.lon.toFixed(1)}° · ${st.mv} · ${st.pres} mb</small><small>${st.note}</small></div><div class="tag" style="background:#c2410c22;color:#c2410c">${st.cls}</div></div>`);
+  const liveRows=(!sn&&nhcJ&&Array.isArray(nhcJ.activeStorms))?nhcJ.activeStorms.filter(st=>/^(EP|CP)/.test(st.binNumber||'')).map(st=>`<div class="kitem"><div class="lb" style="grid-column:1/3">${st.name}<small>${st.classification} · ${st.intensity?Math.round(st.intensity*1.15078)+' mph':''} · ${st.latitudeNumeric!=null?st.latitudeNumeric.toFixed(1)+'°, '+st.longitudeNumeric.toFixed(1)+'°':''}</small></div><div class="tag" style="background:#c2410c22;color:#c2410c">${st.classification}</div></div>`):null;
+  $('stormList').innerHTML=(liveRows&&liveRows.length?liveRows.join('')+'<div class="stamp"><span class="pulse"></span>NHC live</div>':rows.join('')+`<div class="stamp"><span class="pulse"></span>NHC snapshot · ${NOAA_SNAP.fetchedLocal}${snapAgeH()>30?' · STALE':''}</div>`);
+}
+/* ---------- summary deck · Flooding / Timing / Amount ---------- */
+const FLOOD_LEVELS=[
+ {n:'Dry / no rain',c:'#1769d6',note:'No rain expected in the next 24 h.'},
+ {n:'No flooding expected',c:'#3e8635',note:'Showers possible; drainage keeps up.'},
+ {n:'River & immediate coast',c:'#f0ab00',note:'Watch river margins, arroyo mouths & the malecón splash zone.'},
+ {n:'Low-lying drainage',c:'#e07000',note:'Water ponds in low crossings & esteros; some streets flood.'},
+ {n:'Citywide',c:'#ee0000',note:'Flooding beyond the usual spots — move vehicles, avoid crossings.'},
+ {n:'Extreme',c:'#151515',note:'Compound flood in progress or imminent — follow Protección Civil.'}];
+const RISKDEF=[['LOW','#3e8635','#3e8635'],['MED','#f0ab00','#9a6a00'],['HIGH','#ee0000','#ee0000'],['EXTREME','#151515','#151515']];
+const SEASONAL_LVL=[0,0,0,1,1,2,3,3,3,3,1,0]; /* per month: max(convective, rain/flood) from the trigger calendar */
+function riskLevel(x){
+  if(x.fl>=5||(x.p3||0)>=40||(x.soak>=9&&x.pop>=10))return 3;
+  if(x.fl>=4||x.soak>=7||x.pop>=8||(x.p1||0)>=60||(x.p3||0)>=15)return 2;
+  if(x.fl>=2||x.soak>=4||x.pop>=3||(x.p1||0)>=30)return 1;
+  return 0;
+}
+function floodLevel(x){
+  if(x.day<1&&x.winMM<1&&(x.p1||0)<10)return 0;
+  if((x.p1||0)<30&&x.winMM<12&&x.comp<4&&x.pop<6)return 1;
+  let lv=2;
+  if((x.p1||0)>=60||x.winMM>=28||x.comp>=5||x.pop>=6)lv=3;
+  if((x.p3||0)>=15||x.winMM>=58||x.comp>=6.5||(x.pop>=10&&x.winMM>=25))lv=4;
+  if((x.p3||0)>=40||x.comp>=8||(x.winMM>=76&&x.pop>=10))lv=5;
+  return lv;
+}
+const SKY=[['Pre-dawn',3,6,'#232c4e'],['Early morning',6,9,'#e8a95c'],['Mid morning',9,12,'#a9cfe8'],['Noon',12,14,'#58a6e0'],['Afternoon',14,17,'#7fb0d6'],['Early evening',17,20,'#e0784a'],['Overnight',20,27,'#14192e']];
+let DECKCTX=null;
+function renderDeck(ctx){
+  DECKCTX=ctx;
+  const{gfs,metro,inun}=ctx;
+  let pts=Array.isArray(metro)?metro.filter(p=>p&&p.hourly&&p.hourly.time):null;
+  if(pts&&pts.length<2)pts=null;
+  const t0=(pts?pts[0]:gfs).hourly.time;
+  const times=t0.map(parseT);
+  const avgAt=i=>pts?(mean(pts.map(p=>p.hourly.precipitation?.[i]).filter(v=>v!=null))||0):(gfs.hourly.precipitation?.[i]||0);
+  const todayKey=localNow().toISOString().slice(0,10);
+  const dayIdx=[],n12=[];
+  times.forEach((p,i)=>{if(p.key===todayKey)dayIdx.push(i);else if(p.key===nextDay(todayKey)&&p.hour<12)n12.push(i);});
+  const idx36=dayIdx.concat(n12);
+  const sum36=arr=>idx36.reduce((s,i)=>s+(arr?.[i]||0),0);
+  const totals=pts?pts.map(p=>sum36(p.hourly.precipitation)):[sum36(gfs.hourly.precipitation)];
+  const avg36=mean(totals)||0;
+  let mx={v:-1,n:''},mn={v:1e9,n:''};
+  totals.forEach((v,k)=>{const nme=pts?METRO_PTS[k].n:'Puerto Vallarta';if(v>mx.v)mx={v,n:nme};if(v<mn.v)mn={v,n:nme};});
+  const dayTotal=dayIdx.reduce((s,i)=>s+avgAt(i),0);
+  /* FLOODING */
+  const D=soak.results?soak.results[0]:null;
+  const lv=floodLevel({day:dayTotal,winMM:D?D.anchorMM:0,p1:D&&D.eStat?D.eStat.p1:null,p3:D&&D.eStat?D.eStat.p3:null,comp:inun?inun.comp.score:0,pop:popState.score||0});
+  const L=FLOOD_LEVELS[lv];
+  $('deckFlood').innerHTML=`<span class="dk">Flooding</span>
+    <div class="fl-badge"><span class="sw" style="background:${L.c}"></span><span class="fl-name" style="color:${lv===2?'#8a5f00':L.c}">${T(L.n)}</span></div>
+    <div class="fl-scale">${FLOOD_LEVELS.map((f,k)=>`<span class="fl-cell${k===lv?' on':''}" style="background:${f.c}" title="${T(f.n)}"></span>`).join('')}</div>
+    <div class="fl-note">${T(L.note)}</div>
+    <div class="dmeta">win ${D?fIn(D.anchorMM):'—'} in · P&gt;1in ${D&&D.eStat?D.eStat.p1+'%':'—'} · P&gt;3in ${D&&D.eStat?D.eStat.p3+'%':'—'} · comp ${inun?inun.comp.score.toFixed(1):'—'} · pop ${popState.score}</div>`;
+  /* TIMING */
+  const solar=[];for(let h=3;h<27;h++){const hh=h%24,key=h<24?todayKey:nextDay(todayKey);
+    const i=times.findIndex(p=>p.key===key&&p.hour===hh);solar.push({h,mm:i>=0?avgAt(i):0});}
+  const wet=solar.map(s=>s.mm>=0.25);
+  const runs=[];let r=null;
+  wet.forEach((w,k)=>{if(w){if(!r)r={a:k,b:k,sum:0};r.b=k;r.sum+=solar[k].mm;}else if(r){runs.push(r);r=null;}});
+  if(r)runs.push(r);
+  const merged=[];runs.forEach(x=>{const p=merged[merged.length-1];if(p&&x.a-p.b<=2){p.b=x.b;p.sum+=x.sum;}else merged.push({a:x.a,b:x.b,sum:x.sum});});
+  const main=merged.filter(x=>x.sum>=1.5).sort((a,b)=>a.a-b.a)[0]||merged.sort((a,b)=>b.sum-a.sum)[0]||null;
+  const fh=k=>String(solar[clamp(k,0,solar.length-1)].h%24).padStart(2,'0')+':00';
+  let onsetA=null,onsetB=null,brk=null,redev=null;
+  if(main){onsetA=main.a;onsetB=Math.min(main.a+clamp(main.b-main.a+1,3,5)-1,solar.length-1);
+    const after=merged.filter(x=>x.a>main.b&&x.sum>=1);
+    if(after.length){brk=[main.b+1,after[0].a-1];redev=after[0].a;}}
+  const W2=360,SH=34,ticksY=SH+13;
+  let strip=`<svg viewBox="0 0 ${W2} 52" width="100%" role="img" aria-label="Solar-day timing strip, 03:00 to 03:00">`;
+  SKY.forEach(sg=>{const x0=(sg[1]-3)/24*W2,x1=(sg[2]-3)/24*W2;
+    strip+=`<rect x="${x0.toFixed(1)}" y="0" width="${(x1-x0).toFixed(1)}" height="${SH}" fill="${sg[3]}"><title>${T(sg[0])}</title></rect>`;});
+  solar.forEach((s,k)=>{if(s.mm>0.05){const x=k/24*W2,h2=clamp(s.mm/5,0.12,1)*16;
+    strip+=`<rect x="${(x+0.8).toFixed(1)}" y="${(SH-h2).toFixed(1)}" width="${(W2/24-1.6).toFixed(1)}" height="${h2.toFixed(1)}" fill="#5ec1e8" stroke="#0a4a6a" stroke-width=".7" opacity=".95"><title>${fh(k)} · ${fIn(s.mm)} in</title></rect>`;}});
+  if(onsetA!=null){const x0=onsetA/24*W2,x1=(onsetB+1)/24*W2;
+    strip+=`<rect x="${x0.toFixed(1)}" y="1.5" width="${(x1-x0).toFixed(1)}" height="${SH-3}" fill="none" stroke="#ffffff" stroke-width="3.5" rx="4"/><rect x="${x0.toFixed(1)}" y="1.5" width="${(x1-x0).toFixed(1)}" height="${SH-3}" fill="none" stroke="#ee0000" stroke-width="1.8" stroke-dasharray="5 3" rx="4"/>`;}
+  [3,6,9,12,15,18,21,24].forEach(h=>{const x=(h-3)/24*W2;
+    strip+=`<line x1="${x.toFixed(1)}" y1="${SH}" x2="${x.toFixed(1)}" y2="${SH+3.5}" stroke="#b9b2a6"/><text x="${x.toFixed(1)}" y="${ticksY}" text-anchor="${h===3?'start':h===24?'end':'middle'}" font-family="'Red Hat Mono',monospace" font-size="8.5" fill="#9a9a9a">${String(h%24).padStart(2,'0')}</text>`;});
+  strip+=`</svg>`;
+  let tml=onsetA!=null?`${T('likely onset')} <b>${fh(onsetA)}–${fh(onsetB+1)}</b>`:`${T('no rain expected in the day window')}`;
+  if(brk&&brk[1]>=brk[0])tml+=` · ${T('break')} <b>${fh(brk[0])}–${fh(brk[1]+1)}</b>`;
+  if(redev!=null)tml+=` · ${T('redevelops')} <b>~${fh(redev)}</b>`;
+  $('deckTiming').innerHTML=`<span class="dk">Timing</span>${strip}<div class="tm-line">${tml}</div>
+    <div class="sky-legend">${SKY.map(sg=>`<span><i style="background:${sg[3]}"></i>${T(sg[0])} ${String(sg[1]%24).padStart(2,'0')}–${String(sg[2]%24).padStart(2,'0')}</span>`).join('')}</div>`;
+  /* RISK badge (title row) */
+  const rk=riskLevel({soak:D?D.score:0,pop:popState.score||0,p1:D&&D.eStat?D.eStat.p1:null,p3:D&&D.eStat?D.eStat.p3:null,fl:lv});
+  let peakK=-1,pv=0;solar.forEach((s,k)=>{if(s.mm>pv){pv=s.mm;peakK=k;}});
+  const sig=merged.filter(x=>x.sum>=1),lastR=sig.length?sig[sig.length-1]:null;
+  const wanK=lastR?(lastR.b+1<solar.length?lastR.b+1:null):null;
+  $('riskName').textContent=T(RISKDEF[rk][0]);
+  $('riskName').style.color=RISKDEF[rk][2];
+  $('riskBox').style.borderTopColor=RISKDEF[rk][1];
+  $('riskOnset').textContent=onsetA!=null?fh(onsetA):'—';
+  $('riskMax').textContent=(pv>=0.25&&peakK>=0)?'~'+fh(peakK):'—';
+  $('riskWane').textContent=wanK!=null?fh(wanK)+'→':(lastR?T('after')+' 03:00':'—');
+  /* contributors — calendar language: — / low / mod / high */
+  const CALC=['#efeae2',getC('--safe'),getC('--watch'),getC('--alert')];
+  const CALT=['#9a9a9a','#fff','#3a2c00','#fff'];
+  const CALL=['—','low','mod','high'];
+  const sl=SEASONAL_LVL[new Date().getMonth()];
+  const tropSc=inun?inun.trop:0;
+  let tl=tropSc>=5?3:tropSc>=2?2:1;
+  const waveT=popState.terms.find(t2=>t2.id==='wave');
+  if(waveT&&waveT.pts===3)tl=Math.max(tl,2);
+  const tide2=inun?inun.tide:null;
+  const dl2=tide2?(tide2.inWindow?3:tide2.level>0.6?2:1):1;
+  const CALW=['#9a9a9a','#3e8635','#9a6a00','#ee0000'];
+  const pie=(frac,col)=>{const f=clamp(frac,0,1);let w='';
+    if(f>=0.999)w=`<circle cx="22" cy="22" r="18" fill="${col}"/>`;
+    else if(f>0.005){const a=f*Math.PI*2,x=22+18*Math.sin(a),y=22-18*Math.cos(a);
+      w=`<path d="M22 22 L22 4 A18 18 0 ${f>0.5?1:0} 1 ${x.toFixed(2)} ${y.toFixed(2)} Z" fill="${col}"/>`;}
+    return`<svg viewBox="0 0 44 44" width="44" height="44" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="#efeae2"/>${w}<circle cx="22" cy="22" r="18" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="1"/><line x1="22" y1="22" x2="22" y2="4.6" stroke="rgba(0,0,0,.10)" stroke-width="1"/></svg>`;};
+  const cpie=(lbl,frac,l,tip)=>`<div class="rc" title="${tip}">${pie(frac,CALC[Math.max(l,1)])}<span class="rck">${T(lbl)}</span><span class="rcw" style="color:${CALW[l]}">${T(CALL[l])}</span></div>`;
+  const tropFrac=clamp((inun?inun.trop:0)/6,tl>=2?0.4:0.06,1);
+  $('riskContrib').innerHTML=
+    cpie('Seasonal',sl/3,sl,'Climatological rain engine this month (trigger calendar)')+
+    cpie('Tropical',tropFrac,tl,'TC / outlook influence — tropical potential '+(inun?inun.trop.toFixed(1):'—')+' / 10')+
+    cpie('Tidal',tide2?tide2.level:0,dl2,'Tide state — coef ~'+(tide2?tide2.coeff:'—')+(tide2&&tide2.inWindow?' · king-tide window':''));
+  /* tide rows + component-why lines */
+  if(tide2){
+    $('rtHi').textContent=tide2.hiStr+' · '+fFt(tide2.todayHi)+' ft';
+    $('rtLo').textContent=tide2.loStr+' · '+fFt(tide2.todayLo)+' ft';
+    const dHi=tide2.avgHi!=null?(tide2.todayHi-tide2.avgHi)*39.3701:null;
+    $('rtAvg').textContent=dHi!=null?((dHi>=0?'+':'')+dHi.toFixed(1)+' in'):'—';
+    $('rtAvg').style.color=dHi!=null&&dHi>0?(tide2.inWindow?getC('--alert'):getC('--watchtx')):getC('--ocean');
+  }
+  const mName=localNow().toLocaleDateString(LANG==='es'?'es-MX':'en-US',{month:'long'});
+  const sWhy=[T('is dry season'),T("is at the season's edge"),T('is mid rainy season'),T('is the peak of the rain & cyclone season')][sl];
+  let tWhy;
+  if(waveT&&waveT.pts===3&&/km from the bay/.test(waveT.why||''))tWhy=T('direct influence — system nearby');
+  else if(waveT&&waveT.pts===3)tWhy='EP95 90% — '+T('offshore low feeds moisture & S swell, no landfall signal — mod, not high');
+  else if(tl>=2)tWhy=T('offshore low feeds moisture & S swell, no landfall signal — mod, not high');
+  else tWhy=T('no organized system — background only');
+  const tdWhy=tide2?(tide2.inWindow?T('king-tide window — highs well above average'):tide2.level>0.6?T('spring tides building — highs above average'):T('neap/mid cycle — ordinary highs')):'—';
+  $('riskWhy').innerHTML=[[sl,'Seasonal',mName+' '+sWhy],[tl,'Tropical',tWhy],[dl2,'Tidal',tdWhy]]
+    .map(([l,lb,tx])=>`<span class="wl"><i style="background:${CALW[l]}"></i><span><b>${T(lb)}</b> — ${tx}</span></span>`).join('');
+  /* AMOUNT */
+  const bars=dayIdx.map(i=>avgAt(i));
+  const bMax=Math.max(1,...bars);
+  const W3=360,BH=96,bpl=24,bph=BH-20;
+  let bsvg=`<svg viewBox="0 0 ${W3} ${BH}" width="100%" role="img" aria-label="Hourly rainfall today, metro average">`;
+  [0,.5,1].forEach(f=>{const y=4+bph*(1-f);bsvg+=`<line x1="${bpl}" y1="${y.toFixed(1)}" x2="${W3}" y2="${y.toFixed(1)}" stroke="#eee9df"/><text x="${bpl-3}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="'Red Hat Mono',monospace" font-size="8" fill="#9a9a9a">${fIn(bMax*f)}</text>`;});
+  const bw2=(W3-bpl)/24;
+  bars.forEach((v,k)=>{const h2=bph*(v/bMax);const col=v>6?getC('--alert'):v>2?getC('--mamber'):getC('--rain');
+    if(h2>0.3)bsvg+=`<rect x="${(bpl+k*bw2+1).toFixed(1)}" y="${(4+bph-h2).toFixed(1)}" width="${(bw2-2).toFixed(1)}" height="${h2.toFixed(1)}" fill="${col}" stroke="rgba(0,0,0,.3)" stroke-width=".5"><title>${String(k).padStart(2,'0')}:00 · ${(v/25.4).toFixed(2)} in (${v.toFixed(1)} mm)</title></rect>`;});
+  [0,6,12,18,23].forEach(h=>{bsvg+=`<text x="${(bpl+h*bw2+bw2/2).toFixed(1)}" y="${BH-3}" text-anchor="middle" font-family="'Red Hat Mono',monospace" font-size="8.5" fill="#9a9a9a">${String(h).padStart(2,'0')}</text>`;});
+  bsvg+=`</svg>`;
+  const inch=mm=>(mm/25.4).toFixed(2);
+  $('deckAmount').innerHTML=`<span class="dk">Amount</span>
+    <div class="am-total">${inch(avg36)} in <small>(${avg36.toFixed(0)} mm) · ${T('36-hr total · metro avg')}</small></div>
+    ${bsvg}
+    <div class="am-sub"><b>${T('MAX')}</b> <span class="mxv">${inch(mx.v)} in</span> (${mx.v.toFixed(0)} mm) — ${T(mx.n)}<br><b>${T('MIN')}</b> <span class="mnv">${inch(mn.v)} in</span> (${mn.v.toFixed(0)} mm) — ${T(mn.n)}<br>${T('today, metro average per hour')} · in</div>`;
+}
+
+
+
+/* ---------- NOWCAST · now → next 4 h ---------- */
+let LASTNC=null;
+function renderNowcast(gfs,metroJ,mraw,live){
+  const el=$('nowcastBox');if(!el||!gfs||!gfs.hourly)return;
+  LASTNC={gfs,metroJ,mraw,live};
+  let pts=Array.isArray(metroJ)?metroJ.filter(p=>p&&p.hourly&&p.hourly.time):null;
+  if(pts&&pts.length<2)pts=null;
+  const t0=(pts?pts[0]:gfs).hourly.time;
+  const times=t0.map(parseT);
+  const avgAt=i=>{if(i<0||i>=times.length)return 0;return pts?(mean(pts.map(p=>p.hourly.precipitation?.[i]).filter(v=>v!=null))||0):(gfs.hourly.precipitation?.[i]||0);};
+  const ln=localNow(),key=ln.toISOString().slice(0,10),hh=ln.getUTCHours();
+  let iNow=times.findIndex(p=>p.key===key&&p.hour===hh);
+  if(iNow<0)iNow=0;
+  const cur=(live&&gfs.current&&gfs.current.precipitation!=null)?gfs.current.precipitation:avgAt(iNow);
+  const nxt=[1,2,3,4].map(k=>({h:(hh+k)%24,mm:avgAt(iNow+k)}));
+  const sum4=nxt.reduce((s,x)=>s+x.mm,0);
+  const near=mean(nxt.slice(0,2).map(x=>x.mm))||0;
+  const trend=near>cur*1.3+0.2?'Intensifying':near<cur*0.7-0.05?'Easing':'Steady rain';
+  let ease=null;for(let k=1;k<=6;k++){if(avgAt(iNow+k)<0.5){ease=(hh+k)%24;break;}}
+  let since=null;if(hh>=16){let s2=0;for(let k=0;k<times.length;k++){if(times[k].key===key&&times[k].hour>=16&&times[k].hour<=hh)s2+=avgAt(k);}since=s2;}
+  const ts=!!(mraw&&(live||snapAgeH()<3)&&/(^|\s)(\+|-)?TSRA|(^|\s)TS(\s|\/)/.test(mraw));
+  const dry=cur<0.2&&sum4<0.5;
+  const w=dry?['Quiet',getC('--safe')]:trend==='Intensifying'?['Intensifying',getC('--alert')]:trend==='Easing'?['Easing',getC('--safe')]:['Steady rain',getC('--watchtx')];
+  const mx=Math.max(1,cur,...nxt.map(x=>x.mm));
+  el.innerHTML=`<div class="nc-head"><span class="k">${T('Now → next 4 h')}</span><span class="nc-word" style="color:${w[1]}">${T(w[0])}${ts?' · ⛈ at the pin':''}</span></div>
+   <div class="nc-line">${T('rate now')} <b>${fIn(cur)} in/h</b> · ${T('next 4 h')} <b>${fIn(sum4)} in</b>${dry?'':(ease!=null?` · ${T('eases')} <b>~${String(ease).padStart(2,'0')}:00</b>`:` · <span style="color:var(--alert);font-weight:700">${T('no break in sight')}</span>`)}${since!=null&&since>1?`<br>${T('since 16:00 (model est.)')} <b>${fIn(since)} in</b>`:''}</div>
+   <div class="nc-bars">${nxt.map(x=>`<div class="nc-bar" title="${String(x.h).padStart(2,'0')}:00 · ${fIn(x.mm)} in"><i style="height:${Math.max(2,26*x.mm/mx).toFixed(0)}px"></i><span>${String(x.h).padStart(2,'0')}</span></div>`).join('')}</div>`;
+}
+
+/* ---------- real-coastline basemaps (OSM-derived, Mercator) ---------- */
+const COAST={"BAY":[[[20.704,-105.584],[20.701,-105.58],[20.694,-105.585],[20.699,-105.589],[20.704,-105.584]],[[20.699,-105.572],[20.702,-105.571],[20.704,-105.564],[20.699,-105.567],[20.699,-105.572]],[[20.318,-105.656],[20.367,-105.686],[20.409,-105.695],[20.412,-105.68],[20.407,-105.672],[20.426,-105.671],[20.427,-105.655],[20.442,-105.651],[20.448,-105.633],[20.472,-105.614],[20.476,-105.604],[20.474,-105.592],[20.484,-105.574],[20.482,-105.566],[20.488,-105.554],[20.486,-105.545],[20.492,-105.529],[20.489,-105.495],[20.497,-105.468],[20.488,-105.446],[20.501,-105.442],[20.5,-105.425],[20.509,-105.4],[20.504,-105.37],[20.507,-105.345],[20.514,-105.325],[20.512,-105.317],[20.519,-105.32],[20.534,-105.297],[20.533,-105.292],[20.545,-105.287],[20.557,-105.258],[20.582,-105.245],[20.618,-105.232],[20.637,-105.234],[20.659,-105.252],[20.672,-105.279],[20.673,-105.287],[20.725,-105.311],[20.757,-105.343],[20.762,-105.363],[20.751,-105.371],[20.75,-105.38],[20.747,-105.381],[20.749,-105.376],[20.746,-105.379],[20.735,-105.399],[20.735,-105.412],[20.747,-105.433],[20.756,-105.467],[20.752,-105.476],[20.772,-105.511],[20.771,-105.52],[20.757,-105.534],[20.771,-105.54],[20.791,-105.524],[20.792,-105.519],[20.783,-105.508],[20.795,-105.489],[20.836,-105.466],[20.875,-105.452],[20.87,-105.443],[20.875,-105.435],[20.931,-105.402],[20.937,-105.388],[20.956,-105.367],[20.955,-105.359],[20.979,-105.345],[20.984,-105.333],[21.002,-105.32],[21.02,-105.3167],[21.02,-104.93],[20.28,-104.93],[20.28,-105.6105],[20.318,-105.656]]],"EPAC":[[[25.258,-112.14],[24.871,-112.179],[24.85,-112.255],[24.736,-112.135],[24.689,-112.117],[24.662,-112.137],[24.664,-112.151],[24.54,-112.057],[24.652,-112.174],[24.747,-112.155],[24.796,-112.304],[25.258,-112.14]],[[27.0,-97.3753],[26.064,-97.15],[25.688,-97.179],[25.237,-97.424],[25.358,-97.375],[25.356,-97.451],[25.403,-97.393],[25.449,-97.444],[25.353,-97.486],[25.364,-97.554],[25.283,-97.541],[25.379,-97.694],[25.255,-97.722],[25.285,-97.775],[25.266,-97.842],[25.24,-97.705],[25.169,-97.671],[24.963,-97.762],[24.921,-97.631],[24.857,-97.71],[24.903,-97.716],[24.897,-97.718],[24.906,-97.731],[24.901,-97.747],[24.486,-97.743],[24.577,-97.773],[24.522,-97.868],[24.515,-97.814],[24.465,-97.857],[24.409,-97.792],[24.414,-97.836],[24.3,-97.799],[24.415,-97.791],[24.443,-97.745],[23.788,-97.772],[24.273,-97.711],[22.891,-97.767],[22.798,-97.786],[22.673,-97.838],[22.828,-97.78],[22.895,-97.767],[22.956,-97.767],[22.602,-97.899],[22.538,-97.862],[22.678,-97.845],[22.493,-97.839],[22.492,-97.892],[22.267,-97.773],[21.665,-97.681],[21.466,-97.572],[21.452,-97.491],[20.642,-97.165],[19.848,-96.449],[19.464,-96.309],[19.3188,-96.3221],[19.216,-96.126],[19.07,-96.072],[19.056,-95.973],[18.857,-95.899],[18.73,-95.627],[18.71,-95.189],[18.575,-95.04],[18.537,-94.814],[18.184,-94.589],[18.166,-94.415],[18.096,-94.433],[18.11,-94.436],[18.112,-94.439],[18.103,-94.447],[18.108,-94.455],[18.105,-94.465],[18.112,-94.469],[18.115,-94.505],[18.108,-94.519],[18.1,-94.448],[18.11,-94.438],[18.091,-94.439],[18.062,-94.418],[18.052,-94.425],[18.058,-94.447],[18.046,-94.463],[18.027,-94.465],[18.015,-94.449],[18.063,-94.414],[18.136,-94.41],[18.128,-94.389],[18.166,-94.413],[18.2522,-94.0],[16.1038,-94.0],[16.14,-94.101],[16.22,-94.118],[16.188,-94.218],[16.303,-94.381],[16.22,-94.444],[16.004,-94.0],[16.174,-94.443],[16.219,-94.926],[16.171,-95.203],[15.977,-95.436],[15.827,-95.961],[15.683,-96.237],[15.657,-96.557],[15.923,-97.21],[15.981,-97.783],[16.23,-98.206],[16.314,-98.55],[16.555,-98.773],[16.534,-98.906],[16.695,-99.655],[16.909,-99.99],[17.266,-101.061],[17.427,-101.204],[17.665,-101.649],[17.866,-101.785],[17.965,-101.96],[17.983,-102.097],[17.916,-102.192],[18.265,-103.362],[18.346,-103.512],[18.644,-103.694],[18.873,-103.983],[19.017,-104.332],[19.115,-104.355],[19.083,-104.438],[19.233,-104.809],[19.299,-104.798],[19.309,-104.937],[19.56,-105.089],[19.679,-105.264],[19.989,-105.491],[20.224,-105.554],[20.409,-105.695],[20.582,-105.245],[20.757,-105.343],[20.771,-105.54],[21.035,-105.314],[21.039,-105.246],[21.348,-105.248],[21.458,-105.187],[21.632,-105.449],[21.756,-105.497],[21.858,-105.473],[21.81,-105.523],[21.968,-105.623],[22.183,-105.634],[22.008,-105.611],[21.967,-105.539],[22.141,-105.327],[22.215,-105.394],[22.202,-105.521],[22.296,-105.607],[22.729,-105.641],[22.78,-105.774],[22.732,-105.72],[22.73,-105.789],[22.601,-105.689],[22.475,-105.7],[23.108,-106.277],[23.178,-106.419],[23.211,-106.38],[23.171,-106.354],[23.173,-106.347],[23.154,-106.33],[23.15,-106.313],[23.222,-106.387],[23.186,-106.424],[23.407,-106.544],[23.653,-106.811],[23.839,-106.891],[24.092,-107.191],[24.099,-107.173],[24.039,-107.117],[23.954,-107.011],[23.944,-106.988],[24.099,-107.165],[24.029,-107.046],[24.153,-107.136],[24.189,-107.208],[24.12,-107.178],[24.134,-107.22],[24.228,-107.333],[24.163,-107.229],[24.242,-107.282],[24.246,-107.416],[24.29,-107.469],[24.49,-107.803],[24.504,-107.813],[24.314,-107.494],[24.387,-107.558],[24.395,-107.474],[24.535,-107.519],[24.465,-107.639],[24.589,-107.764],[24.565,-107.791],[24.624,-107.918],[24.703,-107.993],[24.581,-107.878],[24.653,-108.0],[24.782,-108.071],[24.707,-107.934],[24.772,-107.966],[24.806,-107.911],[24.826,-107.979],[24.889,-107.932],[24.896,-107.976],[24.962,-107.992],[24.93,-107.972],[24.943,-107.938],[24.998,-108.038],[25.077,-108.012],[25.11,-108.167],[25.331,-108.357],[25.28,-108.43],[25.186,-108.389],[25.356,-108.548],[25.422,-108.704],[25.539,-108.681],[25.474,-108.738],[25.581,-108.865],[25.452,-108.939],[25.51,-108.979],[25.492,-109.08],[25.547,-109.117],[25.512,-109.059],[25.592,-109.044],[25.536,-108.986],[25.674,-108.909],[25.658,-109.017],[25.579,-109.065],[25.749,-109.248],[25.647,-109.238],[25.656,-109.287],[25.751,-109.281],[25.828,-109.414],[26.0,-109.434],[26.057,-109.376],[26.069,-109.4],[26.1,-109.377],[26.085,-109.382],[26.116,-109.359],[26.119,-109.345],[26.116,-109.361],[26.101,-109.374],[26.278,-109.288],[26.315,-109.249],[26.133,-109.302],[26.338,-109.214],[26.172,-109.123],[26.27,-109.083],[26.476,-109.258],[26.379,-109.248],[26.321,-109.26],[26.517,-109.275],[26.682,-109.484],[26.669,-109.428],[26.713,-109.438],[26.753,-109.531],[26.704,-109.509],[26.7,-109.565],[26.67,-109.495],[26.708,-109.77],[26.996,-109.948],[26.93,-109.888],[27.0,-109.9165],[27.0,-97.3753]],[[27.0,-112.0124],[26.832,-111.873],[26.72,-111.909],[26.55,-111.766],[26.589,-111.677],[26.716,-111.815],[26.896,-111.821],[26.697,-111.562],[26.551,-111.557],[26.518,-111.442],[26.412,-111.468],[26.1,-111.324],[25.962,-111.359],[25.774,-111.306],[25.529,-111.122],[25.515,-111.017],[25.146,-110.908],[24.885,-110.685],[24.806,-110.657],[24.552,-110.738],[24.256,-110.612],[24.176,-110.325],[24.171,-110.4326],[24.101,-110.391],[24.18,-110.303],[24.329,-110.334],[24.344,-110.234],[24.16,-110.008],[24.044,-109.984],[24.062,-109.828],[23.933,-109.837],[23.799,-109.699],[23.662,-109.697],[23.555,-109.468],[23.387,-109.413],[23.196,-109.458],[22.876,-109.894],[22.95,-110.062],[23.321,-110.169],[23.56,-110.329],[23.708,-110.612],[24.095,-111.024],[24.348,-111.473],[24.467,-111.551],[24.426,-111.579],[24.56,-111.638],[24.546,-111.794],[24.614,-111.818],[24.521,-111.795],[24.513,-111.82],[24.88,-111.998],[24.752,-111.951],[24.736,-112.03],[24.823,-112.023],[24.85,-112.041],[24.753,-112.042],[24.726,-112.079],[25.009,-112.095],[24.873,-112.147],[24.956,-112.166],[25.184,-112.13],[25.178,-112.061],[25.193,-112.124],[25.255,-112.062],[25.455,-112.077],[25.473,-112.019],[25.506,-111.979],[25.479,-112.071],[25.725,-112.074],[25.686,-112.095],[25.984,-112.191],[26.243,-112.406],[26.316,-112.681],[26.53,-112.961],[26.446,-112.819],[26.499,-112.857],[26.596,-113.059],[26.798,-113.127],[26.765,-113.174],[26.789,-113.232],[26.858,-113.138],[26.993,-113.164],[26.754,-113.266],[26.832,-113.45],[26.706,-113.577],[26.8,-113.735],[26.972,-113.855],[27.0,-114.032],[27.0,-112.0124]],[[21.563,-97.401],[21.78,-97.621],[21.969,-97.706],[21.565,-97.328],[21.26,-97.434],[21.563,-97.401]]]};
+const mercv=lat=>Math.log(Math.tan(Math.PI/4+lat*Math.PI/360));
+function makeProj(latMin,latMax,lonMin,lonMax,W){
+  const m0=mercv(latMin),m1=mercv(latMax),lr=(lonMax-lonMin)*Math.PI/180;
+  const H=W*(m1-m0)/lr;
+  return{W,H,x:lon=>(lon-lonMin)/(lonMax-lonMin)*W,y:lat=>(m1-mercv(lat))/(m1-m0)*H};
+}
+const BAYPROJ=makeProj(20.28,21.02,-105.85,-104.93,720);
+function smoothPath(pts,P,close){ /* pts=[[lat,lon],..] -> midpoint-quadratic smoothed path */
+  const q=pts.map(p=>[P.x(p[1]),P.y(p[0])]);
+  if(q.length<3)return '';
+  let d='M'+q[0][0].toFixed(1)+' '+q[0][1].toFixed(1);
+  for(let i=1;i<q.length-1;i++){const mx=(q[i][0]+q[i+1][0])/2,my=(q[i][1]+q[i+1][1])/2;
+    d+='Q'+q[i][0].toFixed(1)+' '+q[i][1].toFixed(1)+' '+mx.toFixed(1)+' '+my.toFixed(1);}
+  d+='L'+q[q.length-1][0].toFixed(1)+' '+q[q.length-1][1].toFixed(1);
+  return d+(close?' Z':'');
+}
+function polyPath(pts,P,close){const q=pts.map(p=>P.x(p[1]).toFixed(1)+' '+P.y(p[0]).toFixed(1));return 'M'+q.join(' L')+(close?' Z':'');}
+const BAYTOWNS=[[20.869,-105.441,'Sayulita',1],[20.771,-105.516,'Punta Mita',1],[20.744,-105.377,'La Cruz',0],[20.751,-105.333,'Bucerías',1],[20.690,-105.290,'Nuevo Vta.',0],[20.703,-105.203,'Ixtapa·Las Juntas',1],[20.607,-105.236,'PV Centro',1],[20.532,-105.288,'Mismaloya',0],[20.517,-105.317,'Boca',0],[20.492,-105.446,'Yelapa',1],[20.402,-105.678,'C. Corrientes',0]];
+const BAYRIVERS=[[[20.79,-104.96],[20.755,-105.09],[20.72,-105.20],[20.700,-105.259]],[[20.60,-105.05],[20.60,-105.14],[20.609,-105.238]],[[20.66,-105.06],[20.649,-105.16],[20.662,-105.252]]];
+const SIERRAS=[{n:'SIERRA DE VALLEJO',pts:[[21.01,-105.34],[20.99,-105.09],[20.87,-105.03],[20.81,-105.19],[20.90,-105.32]],lx:20.945,ly:-105.21},
+               {n:'SIERRA EL TUITO',pts:[[20.56,-105.02],[20.54,-105.22],[20.42,-105.26],[20.30,-105.10],[20.44,-104.96]],lx:20.43,ly:-105.12}];
+function buildBayMap(id,mini){
+  const el=$(id);if(!el)return;
+  const P=BAYPROJ,W=P.W,H=Math.round(P.H),pfx=mini?'mm':'bm';
+  el.setAttribute('viewBox','0 0 '+W+' '+H);
+  let s='<defs>'
+   +`<radialGradient id="${pfx}sea" cx="42%" cy="52%" r="75%"><stop offset="0%" stop-color="#bcdcE8"/><stop offset="55%" stop-color="#a8cfdf"/><stop offset="100%" stop-color="#8fbdd2"/></radialGradient>`
+   +['N|#0a6a6a','B|#ee0000','S|#cc7a00','W|#27395c'].map(k=>{const[K,c]=k.split('|');
+     return `<marker id="${pfx}ah${K}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`;}).join('')
+   +'</defs>';
+  s+=`<rect x="0" y="0" width="${W}" height="${H}" fill="url(#${pfx}sea)"/>`;
+  /* graticule */
+  const gstep=0.2,gf=v=>Math.ceil(v/gstep)*gstep;
+  for(let lon=gf(-105.85);lon<-104.93;lon+=gstep){const x=P.x(lon);
+    s+=`<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${H}" stroke="#ffffff" stroke-opacity=".35" stroke-width=".8"/>`;
+    if(!mini)s+=`<text x="${(x+3).toFixed(1)}" y="${H-6}" font-family="'Red Hat Mono',monospace" font-size="9" fill="#48606d">${Math.abs(lon).toFixed(1)}°W</text>`;}
+  for(let lat=gf(20.28);lat<21.02;lat+=gstep){const y=P.y(lat);
+    s+=`<line x1="0" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="#ffffff" stroke-opacity=".35" stroke-width=".8"/>`;
+    if(!mini)s+=`<text x="4" y="${(y-3).toFixed(1)}" font-family="'Red Hat Mono',monospace" font-size="9" fill="#48606d">${lat.toFixed(1)}°N</text>`;}
+  /* land (real coastline) */
+  COAST.BAY.forEach(poly=>{s+=`<path d="${smoothPath(poly,P,true)}" fill="#f0ebdf" stroke="#a89a83" stroke-width="1.3"/>`;});
+  /* terrain tint */
+  SIERRAS.forEach(sr=>{s+=`<path d="${smoothPath(sr.pts,P,true)}" fill="#e2d8c4" opacity=".75"/>`;
+    if(!mini)s+=`<text x="${P.x(sr.ly).toFixed(0)}" y="${P.y(sr.lx).toFixed(0)}" font-family="'Red Hat Mono',monospace" font-size="10" letter-spacing="2" fill="#a2947c" text-anchor="middle">${sr.n}</text>`;});
+  /* rivers */
+  BAYRIVERS.forEach(r=>{s+=`<path d="${smoothPath(r,P,false)}" fill="none" stroke="#5f9cba" stroke-width="1.6" opacity=".85"/>`;});
+  /* warning zones — true coordinates */
+  ZONES.forEach(z=>{const gz=GEOZONES[z.id];if(!gz)return;
+    const attr=mini?`data-z="${z.id}"`:`id="${z.id}"`;
+    const polys=Array.isArray(gz[0][0])?gz:[gz];
+    if(polys.length>1){s+=`<g ${attr} class="wz t0">`+polys.map(pp=>`<path d="${polyPath(pp,P,true)}"/>`).join('')+'</g>';}
+    else s+=`<path ${attr} class="wz t0" d="${polyPath(polys[0],P,true)}"/>`;});
+  /* corridors */
+  Object.entries(GEOCORS).forEach(([cid,c])=>{
+    const attr=mini?`data-cor="${cid}"`:`id="${cid}"`;
+    if(c.circle){const rx=(c.circle[2]/1000)/(104.6)* (W/((-104.93)-(-105.85)));const ry=(c.circle[2]/1000/111)*(H/(21.02-20.28));
+      s+=`<ellipse ${attr} class="anchorpulse" cx="${P.x(c.circle[1]).toFixed(1)}" cy="${P.y(c.circle[0]).toFixed(1)}" rx="${rx.toFixed(0)}" ry="${ry.toFixed(0)}" fill="none" stroke="${c.c}" stroke-width="2.5" stroke-dasharray="4 5"/>`;return;}
+    const K=cid==='corNorth'?'N':cid==='corBay'?'B':cid==='corSouth'?'S':'W';
+    s+=`<g ${attr} class="arr"><path class="flow" d="${smoothPath(c.pts,P,false)}" fill="none" stroke="${c.c}" stroke-width="${mini?4.5:3.5}" marker-end="url(#${pfx}ah${K})"/>`;
+    if(!mini){const lp=c.pts[Math.floor(c.pts.length/2)];const lx2=clamp(P.x(lp[1])+6,8,W-150),ly2=clamp(P.y(lp[0])-8,14,H-14);s+=`<text x="${lx2.toFixed(0)}" y="${ly2.toFixed(0)}" font-family="'Red Hat Mono',monospace" font-size="11.5" letter-spacing="1" fill="${c.c}" font-weight="700">${c.label}</text>`;}
+    s+='</g>';});
+  /* towns */
+  BAYTOWNS.forEach(t=>{if(mini&&!t[3])return;
+    const x=P.x(t[1]),y=P.y(t[0]);const left=(t[2]==='PV Centro');
+    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="#3c3f42" stroke="#fff" stroke-width="1"/>`;
+    s+=`<text x="${(left?x-7:x+6).toFixed(1)}" y="${(y+4).toFixed(1)}"${left?' text-anchor="end"':''} font-family="'Red Hat Mono',monospace" font-size="${mini?13:10.5}" fill="#3c3f42">${t[2]}</text>`;});
+  /* bay label */
+  s+=`<text x="${P.x(-105.52).toFixed(0)}" y="${P.y(20.62).toFixed(0)}" font-family="'Red Hat Mono',monospace" font-size="${mini?15:12}" letter-spacing="2.5" fill="#5d90a6" text-anchor="middle">BAHÍA DE BANDERAS</text>`;
+  /* YOU pin */
+  const px=P.x(-105.2306),py=P.y(20.6125);
+  s+=`<g><path d="M${px.toFixed(1)},${(py-16).toFixed(1)} c-6,0 -10,4.5 -10,10 c0,7.5 10,16 10,16 s10,-8.5 10,-16 c0,-5.5 -4,-10 -10,-10 z" fill="#0a6a6a" stroke="#fff" stroke-width="1.5"/><circle cx="${px.toFixed(1)}" cy="${(py-6).toFixed(1)}" r="3.4" fill="#fff"/>${mini?'':`<text x="${(px+13).toFixed(1)}" y="${(py-6).toFixed(1)}" font-family="'Red Hat Mono',monospace" font-size="11" fill="#0a6a6a" font-weight="700">YOU</text>`}</g>`;
+  /* scale bar + north arrow */
+  const kmPx=P.x(-105.85+10/104.6)-P.x(-105.85); /* 10 km in px */
+  const sx=14,sy=H-(mini?14:26);
+  s+=`<g font-family="'Red Hat Mono',monospace" font-size="8.5" fill="#33454f">`
+   +`<rect x="${sx}" y="${sy}" width="${kmPx.toFixed(1)}" height="4" fill="#33454f"/><rect x="${sx}" y="${sy}" width="${(kmPx/2).toFixed(1)}" height="4" fill="#fff" stroke="#33454f" stroke-width=".7"/>`
+   +`<text x="${sx}" y="${sy-3}">0</text><text x="${(sx+kmPx).toFixed(1)}" y="${sy-3}" text-anchor="middle">10 km · 6.2 mi</text></g>`;
+  s+=`<g transform="translate(${W-24},${mini?26:30})" fill="#33454f"><path d="M0,-12 L5,6 L0,2 L-5,6 Z"/><text y="18" text-anchor="middle" font-family="'Red Hat Mono',monospace" font-size="9">N</text></g>`;
+  if(!mini)s+=`<text x="${W-8}" y="${H-20}" text-anchor="end" font-family="'Red Hat Mono',monospace" font-size="7.5" fill="#5b6f7a">coastline © OpenStreetMap contributors (geo-maps) · Web Mercator</text>`;
+  el.innerHTML=s;
+}
+function buildBayMaps(){buildBayMap('bayMain',false);buildBayMap('bayMini',true);}
+
+/* ---------- georegistered live map (Leaflet · Esri World Imagery, no key needed) ----------
+   To swap the basemap to Google Maps: the official Maps JavaScript API requires your own
+   billed API key — provide one and this layer block is the only thing that changes. */
+const GEO={map:null,zones:{},cors:{},ok:false,tried:false};
+const GEOZONES={
+ wSayulita:[[20.882,-105.455],[20.877,-105.427],[20.862,-105.430],[20.866,-105.458]],
+ wBucerias:[[20.762,-105.352],[20.755,-105.325],[20.740,-105.332],[20.748,-105.357]],
+ wLaCruz:[[20.750,-105.383],[20.744,-105.365],[20.735,-105.372],[20.741,-105.388]],
+ wPuntaMita:[[20.783,-105.525],[20.774,-105.490],[20.762,-105.505],[20.770,-105.530]],
+ wNuevo:[[20.710,-105.310],[20.703,-105.275],[20.687,-105.283],[20.694,-105.313]],
+ wAmeca:[[20.730,-105.270],[20.735,-105.190],[20.690,-105.170],[20.680,-105.250]],
+ wMarina:[[20.675,-105.260],[20.670,-105.243],[20.653,-105.248],[20.658,-105.265]],
+ wCuale:[[20.616,-105.240],[20.612,-105.203],[20.596,-105.207],[20.600,-105.242]],
+ wConchas:[[20.592,-105.248],[20.588,-105.238],[20.578,-105.242],[20.582,-105.252]],
+ wCoves:[[[20.535,-105.298],[20.532,-105.283],[20.524,-105.287],[20.527,-105.300]],
+         [[20.518,-105.322],[20.515,-105.308],[20.507,-105.312],[20.510,-105.325]],
+         [[20.497,-105.452],[20.494,-105.437],[20.486,-105.441],[20.489,-105.454]]]};
+const GEOCORS={
+ corNorth:{c:'#0a6a6a',pts:[[20.96,-105.02],[20.86,-105.22],[20.78,-105.34]],label:'N BREAK · off Vallejo'},
+ corBay:{c:'#ee0000',pts:[[20.79,-104.97],[20.72,-105.08],[20.65,-105.20],[20.62,-105.24]],label:'VALLEY → BAY'},
+ corSouth:{c:'#cc7a00',pts:[[20.36,-105.12],[20.46,-105.25],[20.52,-105.30]],label:'S BRUSH · El Tuito'},
+ corWide:{c:'#27395c',pts:[[20.55,-105.62],[20.60,-105.45],[20.63,-105.32]],label:'MARINE PUSH'},
+ corInland:{c:'#6a6e73',circle:[20.62,-105.03,13000],label:'INLAND ANCHOR'}};
+const ZSTYLE=[
+ {color:'#6a6e73',weight:1,opacity:.5,fillColor:'#9a9a9a',fillOpacity:.10},
+ {color:'#f0ab00',weight:1.2,opacity:.75,fillColor:'#f0ab00',fillOpacity:.18},
+ {color:'#cc7a00',weight:1.6,opacity:.95,fillColor:'#f0ab00',fillOpacity:.40},
+ {color:'#ee0000',weight:2,opacity:1,fillColor:'#ee0000',fillOpacity:.38}];
+function geoInit(){
+  if(GEO.map||!window.L)return;
+  try{
+    const m=L.map('geoMap',{scrollWheelZoom:false}).setView([20.655,-105.29],10);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:17,attribution:'Imagery © Esri · Maxar · Earthstar Geographics'}).addTo(m);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:17,opacity:.9}).addTo(m);
+    Object.entries(GEOZONES).forEach(([id,poly])=>{
+      const polys=Array.isArray(poly[0][0])?poly:[poly];
+      const nm=(ZONES.find(z=>z.id===id)||{}).n||id;
+      GEO.zones[id]=polys.map(pp=>L.polygon(pp,Object.assign({},ZSTYLE[0])).addTo(m).bindTooltip(nm,{sticky:true}));});
+    Object.entries(GEOCORS).forEach(([id,c])=>{
+      let lyr;
+      if(c.circle)lyr=L.circle([c.circle[0],c.circle[1]],{radius:c.circle[2],color:c.c,weight:2,dashArray:'4 6',fill:false,opacity:.12});
+      else lyr=L.polyline(c.pts,{color:c.c,weight:4,dashArray:'9 7',opacity:.12});
+      lyr.addTo(m).bindTooltip(c.label,{sticky:true,className:'corlabel'});
+      GEO.cors[id]=lyr;});
+    L.circleMarker([20.6125,-105.2306],{radius:7,color:'#fff',weight:2,fillColor:'#0a6a6a',fillOpacity:1}).addTo(m).bindTooltip('YOU · the pin');
+    GEO.map=m;
+    if(LASTPOP)geoPaint(LASTPOP.res);
+  }catch(e){}
+}
+function geoPaint(res){
+  if(!GEO.map||!res)return;
+  const w=res.w||{},bv=res.bv||0,best=res.best,score=res.score,hasLog=res.logged>0;
+  const thresh=Math.max(2,bv-1);
+  const armed={north:w.north>=thresh&&w.north>0,bay:w.bay>=thresh&&w.bay>0,south:w.south>=thresh&&w.south>0};
+  if(w.wide>=thresh&&w.wide>0){armed.north=true;armed.bay=true;armed.south=true;}
+  ZONES.forEach(z=>{let t=0;
+    if(hasLog){const a=armed[z.cor]?1:0;t=z.base+a+(score>=6?1:0);
+      let cap=score>=6?3:(score>=3?(a?3:1):1);if(best==='inland')cap=0;t=Math.min(t,cap);}
+    (GEO.zones[z.id]||[]).forEach(l=>l.setStyle(ZSTYLE[t]));});
+  const on={corNorth:w.north>=thresh&&w.north>0,corBay:w.bay>=thresh&&w.bay>0,corSouth:w.south>=thresh&&w.south>0,corWide:w.wide>=thresh&&w.wide>0,corInland:best==='inland'&&bv>0};
+  Object.entries(GEO.cors).forEach(([id,l])=>l.setStyle({opacity:on[id]?0.95:0.12}));
+}
+function setMapView(v){
+  const geo=v==='geo';
+  $('geoWrap').classList.toggle('hidden',!geo);
+  $('schWrap').classList.toggle('hidden',geo);
+  $('mtGeo').classList.toggle('on',geo);
+  $('mtSch').classList.toggle('on',!geo);
+  if(geo){geoInit();setTimeout(()=>{if(GEO.map)GEO.map.invalidateSize();},100);}
+}
+function geoProbe(){
+  if(GEO.tried)return;GEO.tried=true;
+  if(!window.L)return; /* leaflet blocked — schematic only */
+  const img=new Image();
+  const to=setTimeout(()=>{img.src='';},4500);
+  img.onload=()=>{clearTimeout(to);GEO.ok=true;$('mapToggle').classList.remove('hidden');setMapView('geo');};
+  img.onerror=()=>{clearTimeout(to);};
+  img.src='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/10/451/212';
+}
+
+/* ---------- static EN/ES swap (atlas PAIRS mechanism) ---------- */
+const PAIRS=[
+["NOMMSWEY · ¿WHY-arta? · water hazards, merged","NOMMSWEY · ¿WHY-arta? · peligros de agua, fusionados"],
+["Flooding","Inundación"],["Timing","Horarios"],["Amount","Cantidad"],
+["Risk · rains & storms","Riesgo · lluvias y tormentas"],["Onset","Inicio"],["Max rain","Lluvia máx"],["Waning","Amaina"],
+["High tide","Marea alta"],["Low tide","Marea baja"],["vs avg high","vs prom. alta"],
+["The Pop","El Chubasco"],["Inundation","Inundación"],["Areas to Watch","Zonas a Vigilar"],["Triggers","Disparadores"],["NOAA Live","NOAA en Vivo"],
+["Soaking · >1 in","Empapada · >1 in"],["Deluge · >3 in","Diluvio · >3 in"],["Where","Dónde"],["When · window 12:00→06:00","Cuándo · ventana 12:00→06:00"],
+["01 · Convective","01 · Convectivo"],["02 · Water on land","02 · Agua en tierra"],["03 · Who gets it","03 · A quién le toca"],["04 · What fires first","04 · Qué dispara primero"],["05 · NOAA over Jalisco","05 · NOAA sobre Jalisco"],
+["The nightly monsoon question. Four physics models + the GEFS ensemble score the 12:00→06:00 window; the FG07 auto-log below feeds the same terms the atlas check-in uses — model reads fetched, eyeball reads carried from the latest observation.","La pregunta nocturna del monzón. Cuatro modelos físicos + el ensamble GEFS califican la ventana 12:00→06:00; la bitácora automática FG07 alimenta los mismos términos del check-in del atlas — lecturas de modelo descargadas, lecturas de ojo tomadas de la última observación."],
+["For PV the dominant threat isn't surge — it's rainfall on the Sierra → flash flooding & river surge, compounded when the sea is high and the mouths can't drain. Three rivers into the bay: Cuale, Pitillal, Ameca; 24 flood-vulnerable points flagged in the 2026 Bahía de Banderas atlas.","Para PV la amenaza dominante no es la marejada — es la lluvia sobre la Sierra → inundación repentina y crecida de ríos, agravada cuando el mar está alto y las bocas no drenan. Tres ríos a la bahía: Cuale, Pitillal, Ameca; 24 puntos vulnerables señalados en el atlas 2026 de Bahía de Banderas."],
+["Two scopes. Around the bay: susceptibility × tonight's armed corridor × score — water hurts where it collects, not where it falls. In the basin: what NHC is tracking upstream of the moisture tap.","Dos escalas. Alrededor de la bahía: susceptibilidad × corredor armado × puntaje — el agua golpea donde se junta, no donde cae. En la cuenca: lo que el NHC rastrea aguas arriba de la llave de humedad."],
+["Upstream signals that fire before the bay cell, and the checklist of thresholds this page watches. Sierra storms build, collapse, and push outflow downslope into the bay 2–4 h later.","Señales aguas arriba que se activan antes de la celda de la bahía, y la lista de umbrales que vigila esta página. Las tormentas de la sierra crecen, colapsan y empujan su outflow ladera abajo hacia la bahía 2–4 h después."],
+["The official picture, straight from the federal feeds: the airport observation and forecast, the NHC outlook, the offshore marine warning, and the GOES view of the coast.","El panorama oficial, directo de los feeds federales: la observación y pronóstico del aeropuerto, el outlook del NHC, el aviso marino de altamar y la vista GOES de la costa."],
+["Model spread — today","Dispersión de modelos — hoy"],["Ingredients","Ingredientes"],["48-hour trace","Traza de 48 horas"],["FG07 auto-log","Bitácora automática FG07"],
+["Compound inundation index","Índice compuesto de inundación"],["Tropical inundation potential","Potencial tropical de inundación"],["Tide, waves & the river","Marea, oleaje y el río"],
+["Tonight around the bay","Esta noche en la bahía"],["Upstream in the basin","Aguas arriba en la cuenca"],
+["Live lead indicators","Indicadores líderes en vivo"],["Trigger board","Tablero de disparadores"],["Seasonal trigger calendar","Calendario estacional de disparadores"],
+["MMPR · Puerto Vallarta Intl","MMPR · Intl de Puerto Vallarta"],["Tropical weather outlook","Perspectiva de tiempo tropical"],["Offshore waters","Aguas de altamar"],["Satellite","Satélite"],
+["Alert — armed corridor × high susceptibility","Alerta — corredor armado × alta susceptibilidad"],["Watch","Vigilancia"],["Advisory","Aviso"],["Quiet tonight","Tranquilo esta noche"],
+["Active system","Sistema activo"],["NHC outlook area","Área de perspectiva NHC"],["Puerto Vallarta","Puerto Vallarta"],
+["Schematic positions — official track graphics at NHC.","Posiciones esquemáticas — gráficos oficiales de trayectoria en NHC."],
+["Handoff rule.","Regla de enlace."],
+["Why the zones sit where they sit.","Por qué las zonas están donde están."],
+["The sierra sheds; the flats receive. The Ameca floodplain (Ixtapa–Las Juntas–Pitillal strip) collects the whole valley corridor. The Cuale and Pitillal drop ~1,000 m in under 15 km, so an \"over the bay\" night is an arroyo night for Centro and Romántica — the pin sits between their two outlets. Bucerías and Sayulita flood at their crossings; the south-shore coves take short, violent debris-fan pulses; the headlands just drain.","La sierra escurre; los llanos reciben. La planicie del Ameca (franja Ixtapa–Las Juntas–Pitillal) junta todo el corredor del valle. El Cuale y el Pitillal caen ~1,000 m en menos de 15 km, así que una noche \"sobre la bahía\" es noche de arroyos para el Centro y la Romántica — el pin queda entre sus dos salidas. Bucerías y Sayulita se inundan en sus cruces; las caletas del sur reciben pulsos cortos y violentos de abanico de escombros; los promontorios solo drenan."],
+["Mechanism.","Mecanismo."],
+["Sources & honesty","Fuentes y honestidad"],["Sections","Secciones"],
+["— Vallarta Weather · merged from the Banderas Bay Hazard Atlas (Soak · Triggers · Tropical · Coastal) + WHY-ARTA Flooding & FG07 Afternoon Pop","— Vallarta Weather · fusión del Banderas Bay Hazard Atlas (Soak · Triggers · Tropical · Coastal) + Inundaciones y FG07 Chubasco Vespertino de WHY-ARTA"],
+["Hazard guidance is general & educational — defer to official Protección Civil / CONAGUA-SMN instructions in an emergency.","La guía de peligros es general y educativa — siga las instrucciones oficiales de Protección Civil / CONAGUA-SMN en una emergencia."]
+];
+const EN2ES={},ES2EN={};PAIRS.forEach(([en,es])=>{EN2ES[en]=es;ES2EN[es]=en;});
+function swap(map){
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(n){const p=n.parentNode&&n.parentNode.nodeName;
+    if(p==='SCRIPT'||p==='STYLE')return NodeFilter.FILTER_REJECT;
+    return n.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
+  const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  nodes.forEach(n=>{const raw=n.nodeValue,key=raw.trim();
+    if(map[key]!==undefined){const i=raw.indexOf(key);n.nodeValue=raw.slice(0,i)+map[key]+raw.slice(i+key.length);}});
+}
+function setLang(l){
+  if(l===LANG&&document.documentElement.lang)return;
+  const goES=l==='es';
+  swap(goES?EN2ES:ES2EN);LANG=l;
+  document.documentElement.lang=goES?'es-MX':'en';
+  try{localStorage.setItem('vw-lang',l);}catch(e){}
+  document.querySelectorAll('#langPill button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  /* re-render dynamic panes in the new language, then re-apply static ES on top */
+  if(soak.cache)renderSoak();
+  if(LASTPOP)renderPopLog(LASTPOP.res,LASTPOP.live);
+  if(DECKCTX)renderDeck(DECKCTX);
+  if(LASTNC)renderNowcast(LASTNC.gfs,LASTNC.metroJ,LASTNC.mraw,LASTNC.live);
+  if(goES)swap(EN2ES);
+}
+document.querySelectorAll('#langPill button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+
+/* ---------- boot + refresh ---------- */
+let LASTPOP=null,loading=false,timer=null;
+async function loadAll(){
+  if(loading)return;loading=true;clearTimeout(timer);
+  DATAMODE.live=0;DATAMODE.snap=0;
+  $('pageStamp').textContent='pulling feeds… · '+devDateTxt();
+  const popFetch=(async()=>{let j=await getJSON(popUrl());if(!j)j=await getJSON(popUrl2());return j;})();
+  const[cons,gfs,aifs,ens,marine,flood,sierra,gulf,nhc,popJ,metarTxt,metroJ]=await Promise.all([
+    getJSON(consUrl(),'cons'),getJSON(gfsUrl(),'gfs'),getJSON(aifsUrl(),'aifs'),getJSON(ensUrl(),'ens'),
+    getJSON(marineUrl(),'marine'),getJSON(floodUrl(),'flood'),
+    getJSON(fxPoint(SIERRA,'precipitation,cape,wind_speed_10m','&forecast_days=2'),'sierra'),
+    getJSON(fxPoint(GULF,'dew_point_2m,wind_direction_850hPa','&forecast_days=2'),'gulf'),
+    getJSON(NHC_URL,'nhc'),popFetch,getTEXT(METAR_URL),getJSON(metroUrl(),'metro')]);
+  soak.cache={G:gfs,cons,aifs,ens,marine};
+  renderSoak();
+  const gs0=gulfSurgeState(gulf);
+  let mraw=null;
+  if(metarTxt){const ti=metarTxt.search(/^TAF/m);mraw=(ti>0?metarTxt.slice(0,ti):metarTxt).trim().split('\n').filter(Boolean)[0]||null;}
+  const popRes=computePopTerms(popJ,mraw||NOAA_SNAP.metar.raw,!!metarTxt,nhc,gs0.active);
+  LASTPOP={res:popRes,live:!!popJ};
+  renderPopLog(popRes,!!popJ);
+  const inun=renderInundation(gfs,marine,flood);
+  renderTriggers(sierra,gulf,gfs,inun,soak.results[0],popRes,nhc);
+  renderDeck({gfs,metro:metroJ,inun});
+  renderNOAA(metarTxt);
+  drawEpac(nhc);
+  renderNowcast(gfs,metroJ,mraw||NOAA_SNAP.metar.raw,!!metarTxt);
+  geoProbe();
+  mode();
+  $('pageStamp').textContent=devDateTxt()+' · '+localNow().toISOString().slice(11,16)+' PV · live lanes '+DATAMODE.live+' · snapshot lanes '+DATAMODE.snap+' · refresh 30 min';
+  if(LANG==='es'){swap(EN2ES);document.querySelectorAll('#langPill button').forEach(b=>b.classList.toggle('on',b.dataset.lang==='es'));document.documentElement.lang='es-MX';}
+  loading=false;
+  timer=setTimeout(loadAll,18e5);
+}
+(function boot(){
+  try{buildBayMaps();}catch(e){}
+  const ci=$('corInland');if(ci)ci.removeAttribute('opacity');
+  const mg=$('mtGeo'),ms=$('mtSch');
+  if(mg)mg.addEventListener('click',()=>setMapView('geo'));
+  if(ms)ms.addEventListener('click',()=>setMapView('sch'));
+  loadAll();
+})();
+</script>
+
+</html>
