@@ -12,21 +12,21 @@ LOCS = [
     dict(id='frodriguez', lat=20.6014, lon=-105.2340),
 ]
 META = {
-    'ecmwf_ifs': ('ECMWF IFS', 'ECMWF · EU', 9, 'global'),
-    'ukmo_global_deterministic_10km': ('UK Met Office', 'Met Office · UK', 10, 'global'),
-    'icon_global': ('ICON', 'DWD · DE', 13, 'global'),
-    'gfs_global': ('GFS', 'NOAA · US', 13, 'global'),
-    'gem_global': ('GEM', 'ECCC · CA', 15, 'global'),
-    'cma_grapes_global': ('CMA GRAPES', 'CMA · CN', 15, 'global'),
-    'bom_access_global': ('ACCESS-G', 'BoM · AU', 15, 'global'),
-    'meteofrance_arpege_world': ('ARPEGE', 'Météo-France · FR', 25, 'global'),
-    'jma_gsm': ('JMA GSM', 'JMA · JP', 55, 'global'),
-    'ecmwf_aifs025_single': ('ECMWF AIFS', 'ECMWF · EU', 25, 'ai'),
-    'ncep_aigfs025': ('AI-GFS', 'NOAA · US', 25, 'ai'),
-    'kma_gdps': ('KMA GDPS', 'KMA · KR', 12, 'global'),
+    'ecmwf_ifs': ('ECMWF IFS', 'ECMWF', 9, 'global'),
+    'ukmo_global_deterministic_10km': ('UK Met Office', 'Met Office', 10, 'global'),
+    'icon_global': ('ICON', 'DWD', 13, 'global'),
+    'gfs_global': ('GFS', 'NOAA', 13, 'global'),
+    'gem_global': ('GEM', 'ECCC', 15, 'global'),
+    'cma_grapes_global': ('CMA GRAPES', 'CMA', 15, 'global'),
+    'bom_access_global': ('ACCESS-G', 'BoM', 15, 'global'),
+    'meteofrance_arpege_world': ('ARPEGE', 'Météo-France', 25, 'global'),
+    'jma_gsm': ('JMA GSM', 'JMA', 55, 'global'),
+    'ecmwf_aifs025_single': ('ECMWF AIFS', 'ECMWF', 25, 'ai'),
+    'ncep_aigfs025': ('AI-GFS', 'NOAA', 25, 'ai'),
+    'kma_gdps': ('KMA GDPS', 'KMA', 12, 'global'),
     'gfs_graphcast025': ('GraphCast', 'Google DeepMind', 25, 'ai'),
-    'hfsa': ('HAFS-A', 'NOAA · US', 6, 'hurricane'),
-    'hfsb': ('HAFS-B', 'NOAA · US', 6, 'hurricane'),
+    'hfsa': ('HAFS-A', 'NOAA', 6, 'hurricane'),
+    'hfsb': ('HAFS-B', 'NOAA', 6, 'hurricane'),
 }
 models = {}   # id -> dict(meta, per-loc inc[48], gust[49] or None, cell)
 ELEV = {}     # location index -> terrain elevation (m) reported by Open-Meteo for the address
@@ -44,6 +44,16 @@ def native_step(inc):
         b = a[:48].reshape(48 // n, n)
         if np.allclose(b, b[:, :1], atol=0.051): return n
     return 1
+
+def tail_step(inc):
+    # hourly models can coarsen near the end of the window (e.g. UK Met Office goes 3-hourly);
+    # returns (n, first index) when every aligned n-block from there on is flat and some rain falls in it
+    a = np.array(inc[:48])
+    for n in (6, 3):
+        k = 48
+        while k - n >= 0 and np.allclose(a[k - n:k], a[k - n], atol=0.051): k -= n
+        if k <= 48 - 2 * n and a[k:].sum() > 0.5: return n, k
+    return None
 
 for fn in sorted(glob.glob(os.path.join(D, 'om', '*.json'))):
     mid = os.path.basename(fn)[:-5]
@@ -66,7 +76,8 @@ for fn in sorted(glob.glob(os.path.join(D, 'om', '*.json'))):
                         pmin=round(min(pr), 1) if pr else None, missing=miss))
     if all(x is None for x in per):
         print('skip (no data)', mid); excluded.append(dict(m=mid, label=META[mid][0], why='nodata')); continue
-    models[mid] = dict(per=per, step=native_step(next(x for x in per if x)['inc']))
+    first = next(x for x in per if x)['inc']; st = native_step(first)
+    models[mid] = dict(per=per, step=st, tail=(tail_step(first) if st == 1 else None))
 
 for fn in sorted(glob.glob(os.path.join(D, 'hafs', '*_parent.json'))):
     d = json.load(open(fn)); mid = d['model']; cyc = d['cycle']
@@ -95,7 +106,7 @@ def roll(a, n):
 def scen(inc, model=None):
     a = np.array(inc); cum = np.concatenate([[0], np.cumsum(a)])
     pk = int(np.argmax(a)); s3, i3 = roll(a, 3); s6, i6 = roll(a, 6); s24, i24 = roll(a, 24)
-    return dict(model=model, inc=[round(float(x), 2) for x in a], cum=[round(float(x), 1) for x in cum],
+    return dict(model=model, inc=[round(float(x), 3) for x in a], cum=[round(float(x), 3) for x in cum],
                 total=round(float(a.sum()), 1), peak=round(float(a[pk]), 1), peakAt=pk,
                 max3=s3, max3At=i3, max6=s6, max6At=i6, max24=s24, max24At=i24)
 
@@ -142,7 +153,8 @@ for li, L in enumerate(LOCS):
     out_locs.append(rec)
     print(L['id'], 'n', len(order), 'worst', worst, round(tot[worst]), 'best', best, round(tot[best]), 'avg', round(avg.sum()), 'ens p50/p90', rec['ens']['p50'], rec['ens']['p90'], 'n', rec['ens']['n'])
 
-mods = {m: dict(label=META[m][0], org=META[m][1], km=META[m][2], kind=META[m][3], step=v['step'], cycle=v.get('cycle'))
+mods = {m: dict(label=META[m][0], org=META[m][1], km=META[m][2], kind=META[m][3], step=v['step'], cycle=v.get('cycle'),
+                tail=(dict(step=v['tail'][0], fromFrame=v['tail'][1]) if v.get('tail') else None))
         for m, v in models.items()}
 print('excluded', excluded)
 json.dump(dict(excluded=excluded, generated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), frames=FRAMES, models=mods, locs=out_locs),
