@@ -290,6 +290,7 @@ svg.wstrip{width:100%;height:30px;display:block;overflow:visible}
     </p>
     <div class="keyline" id="keyline"></div>
     <p class="caveat bi" id="caveat"></p>
+    <p class="caveat bi" id="eyenote" hidden></p>
   </section>
 
   <section class="block" aria-labelledby="h-threats" style="padding-top:8px">
@@ -428,7 +429,9 @@ var PLACE = {
     place: 'Zona Romántica · Col. Emiliano Zapata', area: 'Zona Romántica · Col. Emiliano Zapata',
     facts: [L('90 m from Playa Los Muertos', 'a 90 m de Playa Los Muertos')],
     hazard: L('Beachfront. Simon’s forecast track crosses the bay about {KM} km west of downtown, which puts this shore on the storm’s east side, where the NHC expects a dangerous storm surge and destructive waves. Runoff also pours down the Amapas hillside.',
-              'Frente al mar. La trayectoria pronosticada de Simon cruza la bahía a unos {KM} km al oeste del centro, lo que deja esta costa del lado este del ciclón, donde el NHC espera una marea de tormenta peligrosa y oleaje destructivo. Además, el agua baja con fuerza por la ladera de Amapas.')
+              'Frente al mar. La trayectoria pronosticada de Simon cruza la bahía a unos {KM} km al oeste del centro, lo que deja esta costa del lado este del ciclón, donde el NHC espera una marea de tormenta peligrosa y oleaje destructivo. Además, el agua baja con fuerza por la ladera de Amapas.'),
+    hazardEast: L('Beachfront. Simon’s forecast track passes about {KM} km east of downtown, which puts this shore on the storm’s west side, where storm surge is usually lower than east of the center. The NHC still warns of large, destructive waves near where the center comes ashore, and runoff pours down the Amapas hillside.',
+                  'Frente al mar. La trayectoria pronosticada de Simon pasa a unos {KM} km al este del centro, lo que deja esta costa del lado oeste del ciclón, donde la marea de tormenta suele ser menor que al este del centro. El NHC aun así advierte de oleaje grande y destructivo cerca de donde el centro toque tierra, y el agua baja con fuerza por la ladera de Amapas.')
   },
   pitillal: {
     name: L('Cinco de Mayo &amp; Calle España, El Pitillal', 'Cinco de Mayo y Calle España, El Pitillal'), short: 'Pitillal · 5 de Mayo',
@@ -484,10 +487,10 @@ var NIGHTS = [[6 + 40/60, 18 + 54/60], [30 + 40/60, 42 + 54/60]];
 function isNight(i){ return NIGHTS.some(function(n){ return i > n[0] && i < n[1]; }); }
 
 /* ---------- NHC forecast track, Advisory 13 (UTC) ---------- */
-var TRACK = D.nhc.track.map(function(p){ return { t: Date.parse(p.t.replace('Z', ':00Z')), lat: p.lat, lon: p.lon, kt: p.kt, gust: p.gust, inland: p.inland }; });
+var TRACK = D.nhc.track.map(function(p){ return { t: Date.parse(p.t.replace('Z', ':00Z')), lat: p.lat, lon: p.lon, kt: p.kt, gust: p.gust, inland: p.inland, note: p.note || '' }; });
 var PV = { lat: 20.6125, lon: -105.2306 };
-function stormAt(i){
-  var t = fdate(i).getTime() + 6 * 3600e3;    // CST -> UTC
+function stormAt(i){ return stormAtT(fdate(i).getTime() + 6 * 3600e3); }    // frame (CST) -> UTC
+function stormAtT(t){
   for (var k = 0; k < TRACK.length - 1; k++){
     var a = TRACK[k], b = TRACK[k+1];
     if (t >= a.t && t <= b.t){ var f = (t - a.t) / (b.t - a.t);
@@ -514,7 +517,11 @@ function cat(kt){
   if (kt >= 34)  return L('Tropical storm', 'Tormenta tropical');
   return L('Tropical depression', 'Depresión tropical');
 }
-var closest = (function(){ var best = null; for (var i = 0; i <= NH; i++){ var s = stormAt(i); if (!s) continue; var d = distBear(s); if (!best || d.km < best.km) best = { i: i, km: d.km, br: d.br, kt: s.kt }; } return best; })();
+var closest = (function(){ var best = null, t0 = fdate(0).getTime() + 6 * 3600e3;
+  for (var k = 0; k <= NH * 12; k++){ var s = stormAtT(t0 + k * 300e3); if (!s) continue; var d = distBear(s); if (!best || d.km < best.km) best = { i: Math.round(k / 12), t: t0 + k * 300e3, km: d.km, br: d.br, kt: s.kt }; }
+  return best; })();
+function hm(tUtc){ var d = new Date(tUtc - 6 * 3600e3), h = d.getUTCHours(), m = d.getUTCMinutes(), mm2 = String(m).padStart(2, '0');
+  return [DAY_EN[d.getUTCDay()] + ' ' + (h % 12 || 12) + (m ? ':' + mm2 : '') + ' ' + (h < 12 ? 'am' : 'pm'), 'las ' + String(h).padStart(2, '0') + ':' + mm2 + ' del ' + ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d.getUTCDay()]]; }
 
 /* ---------- rain categories ---------- */
 function rateLv(v){ return v < 0.1 ? 0 : v < 2.5 ? 1 : v < 7.6 ? 2 : v < 25 ? 3 : v < 50 ? 4 : 5; }
@@ -570,8 +577,8 @@ var THREATS = [
       if (sk === 'worst' && b != null){ ls = band(s0, CUT.wind); if (!east) ls = Math.max(0, ls - 1); }
       var byWind = ls > lw;
       return { lv: Math.max(lw, ls), v: Math.max(lw, ls) * 10 + hs,
-        en: 'waves ' + hs.toFixed(1) + ' m' + (byWind ? '; level set by NHC-track wind ' + s0 + ' km/h' + (east ? ' on the storm’s east side' : '') : ''),
-        es: 'oleaje ' + hs.toFixed(1) + ' m' + (byWind ? '; nivel según el viento de la trayectoria del NHC, ' + s0 + ' km/h' + (east ? ' del lado este del ciclón' : '') : '') }; } },
+        en: 'waves ' + hs.toFixed(1) + ' m' + (byWind ? '; level set by NHC-track wind ' + s0 + ' km/h' + (east ? ' on the storm’s east side' : ', one step lower off the east side') : ''),
+        es: 'oleaje ' + hs.toFixed(1) + ' m' + (byWind ? '; nivel según el viento de la trayectoria del NHC, ' + s0 + ' km/h' + (east ? ' del lado este del ciclón' : ', un nivel menos fuera del lado este') : '') }; } },
   { k: 'river', n: ['Río Pitillal', 'Río Pitillal'], at: ['pitillal'],
     ev: function(l, sk, i){ var v = trail(l[sk].inc, Math.max(0, i - 1), 6); return { lv: band(v, CUT.river), v: v, en: Math.round(v) + ' mm in the 6 h ending an hour earlier', es: Math.round(v) + ' mm en las 6 h que terminan una hora antes' }; } },
   { k: 'runoff', n: ['Street runoff', 'Escurrimiento en calles'], at: ['amapas', 'frodriguez'],
@@ -602,11 +609,17 @@ function peakOf(t, l, sk){ var best = { lv: -1, v: -1, i: 0 }, first = {}; for (
     L('<b>Worst of ' + NMOD + ' models, not the worst possible.</b> The NHC expects 250–500 mm over parts of southwestern Mexico, and the wettest of the ' + LOCS[0].ens.n + ' ensemble runs reaches ' + eLo + '–' + eHi + ' mm, depending on the address.',
       '<b>Es el peor de ' + NMOD + ' modelos, no el peor posible.</b> El NHC espera 250–500 mm en partes del suroeste de México, y la más lluviosa de las ' + LOCS[0].ens.n + ' corridas de ensamble llega a ' + eLo + '–' + eHi + ' mm, según la dirección.');
   var pp = D.nhc.pv_probs || {};
+  if (closest && closest.km < 10){
+    var en0 = hm(closest.t);
+    document.getElementById('eyenote').innerHTML = L('<b>The NHC track now takes Simon’s center within about ' + Math.round(closest.km) + ' km of downtown, around ' + en0[0] + '.</b> If the eye passes overhead, the wind can drop to near calm and then return suddenly from the opposite direction. Stay inside until officials say it is over.',
+      '<b>La trayectoria del NHC ahora lleva el centro de Simon a unos ' + Math.round(closest.km) + ' km del centro de la ciudad, hacia ' + en0[1] + '.</b> Si el ojo pasa encima, el viento puede calmarse y luego regresar de golpe desde la dirección opuesta. Permanezca resguardado hasta que las autoridades indiquen que pasó.');
+    document.getElementById('eyenote').hidden = false;
+  }
   var pmins = LOCS[0].ranking.map(function(r){ return r.pmin; }).filter(function(x){ return x != null; });
   var pLo = Math.round(Math.min.apply(null, pmins)), pHi = Math.round(Math.max.apply(null, pmins));
   document.getElementById('windnote').innerHTML =
-    L('<b>Two views of wind.</b> The worst-case wind comes from the NHC forecast: if Simon’s center follows the track exactly, these addresses get close to its strongest winds. The models’ own winds are much weaker, partly because none of them brings the center this close (their lowest pressure here is ' + pLo + '–' + pHi + ' hPa, even the 6 km hurricane model HAFS) and partly because most global grids are too coarse for Simon’s small core. So the average and best panes show model wind for reference only. For the likely wind, use the NHC odds for Puerto Vallarta over the next 5 days: ' + PP['34'] + '% for sustained winds of 63 km/h or more, ' + PP['50'] + '% for 93 km/h or more and ' + PP['64'] + '% for 119 km/h or more. Simon was nearly stationary at midday Saturday, so the time of closest approach could shift by several hours.',
-      '<b>Dos miradas al viento.</b> El viento del peor escenario sale del pronóstico del NHC: si el centro de Simon sigue la trayectoria al pie de la letra, estas direcciones quedan cerca de sus vientos más fuertes. Los vientos de los modelos son mucho más débiles, en parte porque ninguno acerca tanto el centro (su presión mínima aquí es de ' + pLo + '–' + pHi + ' hPa, incluso el modelo de huracanes HAFS de 6 km) y en parte porque la mayoría de las mallas globales son demasiado gruesas para el núcleo pequeño de Simon. Por eso los paneles del promedio y del mejor escenario muestran el viento de los modelos solo como referencia. Para el viento probable, use las probabilidades del NHC para Puerto Vallarta en los próximos 5 días: ' + PP['34'] + '% para vientos sostenidos de 63 km/h o más, ' + PP['50'] + '% para 93 km/h o más y ' + PP['64'] + '% para 119 km/h o más. Simon estaba casi estacionario el sábado a mediodía, así que la hora de máximo acercamiento podría cambiar varias horas.');
+    L('<b>Two views of wind.</b> The worst-case wind comes from the NHC forecast: if Simon’s center follows the track exactly, these addresses get close to its strongest winds. The models’ own winds are much weaker, partly because none of them brings the center this close (their lowest pressure here is ' + pLo + '–' + pHi + ' hPa, even the 6 km hurricane model HAFS) and partly because most global grids are too coarse for Simon’s small core. So the average and best panes show model wind for reference only. For the likely wind, use the NHC odds for Puerto Vallarta over the next 5 days: ' + PP['34'] + '% for sustained winds of 63 km/h or more, ' + PP['50'] + '% for 93 km/h or more and ' + PP['64'] + '% for 119 km/h or more. ' + (D.nhc.summary.move_kmh <= 3 ? 'Simon is nearly stationary, so the time of closest approach could shift by several hours.' : 'Simon’s forward speed has varied (it stalled at midday Saturday), so the time of closest approach could still shift by a few hours.'),
+      '<b>Dos miradas al viento.</b> El viento del peor escenario sale del pronóstico del NHC: si el centro de Simon sigue la trayectoria al pie de la letra, estas direcciones quedan cerca de sus vientos más fuertes. Los vientos de los modelos son mucho más débiles, en parte porque ninguno acerca tanto el centro (su presión mínima aquí es de ' + pLo + '–' + pHi + ' hPa, incluso el modelo de huracanes HAFS de 6 km) y en parte porque la mayoría de las mallas globales son demasiado gruesas para el núcleo pequeño de Simon. Por eso los paneles del promedio y del mejor escenario muestran el viento de los modelos solo como referencia. Para el viento probable, use las probabilidades del NHC para Puerto Vallarta en los próximos 5 días: ' + PP['34'] + '% para vientos sostenidos de 63 km/h o más, ' + PP['50'] + '% para 93 km/h o más y ' + PP['64'] + '% para 119 km/h o más. ' + (D.nhc.summary.move_kmh <= 3 ? 'Simon está casi estacionario, así que la hora de máximo acercamiento podría cambiar varias horas.' : 'La velocidad de avance de Simon ha variado (se detuvo el sábado a mediodía), así que la hora de máximo acercamiento aún podría cambiar unas horas.'));
   var g = D.generated.replace('T', ' ').replace('Z', ' UTC');
   var adv = D.nhc.summary.advisory, hc = (D.models.hfsa && D.models.hfsa.cycle || '').replace('Z', ' UTC');
   document.getElementById('asof').innerHTML = L('Models as of ' + g + ' · NHC Advisory ' + adv, 'Modelos al ' + g + ' · Boletín ' + adv + ' del NHC');
@@ -869,7 +882,7 @@ function overview(l, idx){
             return L('If the NHC track holds: <b>' + nm + ' km/h</b>, gusts ' + l.wind.nhc.g[ni] + ' (' + span(ni - 1, ni) + '). Strongest model gust: ' + Math.max.apply(null, l.gust.hi) + ' km/h.',
                      'Si se cumple la trayectoria del NHC: <b>' + nm + ' km/h</b>, ráfagas de ' + l.wind.nhc.g[ni] + ' (' + span(ni - 1, ni) + '). Ráfaga máxima de los modelos: ' + Math.max.apply(null, l.gust.hi) + ' km/h.'); })() + '</span></li>' +
       '</ul>' +
-      '<p class="hz bi">' + p.hazard.replace(/\{KM\}/g, closest ? Math.round(closest.km) : '20') + '</p>' +
+      '<p class="hz bi">' + ((p.hazardEast && closest && closest.br < 180) ? p.hazardEast : p.hazard).replace(/\{KM\}/g, closest ? Math.round(closest.km) : '20') + '</p>' +
       '<div class="ov">' + ov.svg + '<div class="tip" hidden></div></div>' +
       '<div class="legend"><span><i style="background:var(--s-worst)"></i>' + L('worst', 'peor') + '</span><span><i style="background:var(--s-avg)"></i>' + L('average', 'promedio') + '</span><span><i style="background:var(--s-best)"></i>' + L('best', 'mejor') + '</span><span><i class="band"></i>' + L('all models', 'todos los modelos') + '</span><span class="mono" style="font-size:11px">' + L('mm · Sat noon → Mon noon', 'mm · sáb 12:00 → lun 12:00') + '</span></div>';
     host.appendChild(card);
@@ -937,9 +950,10 @@ function overview(l, idx){
   var rows = TRACK.map(function(p){
     var d = new Date(p.t - 6 * 3600e3), db = distBear(p);
     var en = DAY_EN[d.getUTCDay()] + ' ' + h12(d.getUTCHours()), es = DAY_ES[d.getUTCDay()] + ' ' + String(d.getUTCHours()).padStart(2, '0') + ':00';
-    return '<tr><td>' + L(en, es) + '</td><td class="n">' + p.lat.toFixed(1) + '°N ' + L((-p.lon).toFixed(1) + '°W', (-p.lon).toFixed(1) + '°O') + '</td><td class="n">' + Math.round(p.kt * 1.852 / 5) * 5 + ' km/h</td><td class="n">' + Math.round(db.km) + ' km ' + compass(db.br) + '</td></tr>';
+    var NOTE = { 'INLAND': ['inland', 'tierra adentro'], 'ON THE COAST': ['on the coast', 'sobre la costa'], 'POST-TROP/INLAND': ['post-tropical, inland', 'postropical, tierra adentro'], 'OVER WATER': ['over water', 'sobre el mar'] }[p.note];
+    return '<tr><td>' + L(en, es) + '</td><td class="n">' + p.lat.toFixed(1) + '°N ' + L((-p.lon).toFixed(1) + '°W', (-p.lon).toFixed(1) + '°O') + (NOTE ? '<br><small>' + L(NOTE[0], NOTE[1]) + '</small>' : '') + '</td><td class="n">' + Math.round(p.kt * 1.852 / 5) * 5 + ' km/h</td><td class="n">' + Math.round(db.km) + ' km ' + compass(db.br) + '</td></tr>';
   }).join('');
-  var cl = closest ? '<tr><td colspan="4" style="color:var(--alert)"><b>' + L('Closest approach', 'Punto de mayor acercamiento') + ':</b> ' + L('about ', 'unos ') + Math.round(closest.km) + ' km ' + compass(closest.br) + ', ' + tlabel(closest.i, true) + ' (' + L('interpolated', 'interpolado') + ')</td></tr>' : '';
+  var cl = closest ? '<tr><td colspan="4" style="color:var(--alert)"><b>' + L('Closest approach', 'Punto de mayor acercamiento') + ':</b> ' + L('about ' + Math.round(closest.km) + ' km ', 'unos ' + Math.round(closest.km) + ' km al ') + compass(closest.br) + ', ' + L(hm(closest.t)[0], hm(closest.t)[1]) + ' (' + L('interpolated', 'interpolado') + ')</td></tr>' : '';
   document.getElementById('track').innerHTML = '<thead><tr><th>' + L('Time (CST)', 'Hora (tiempo del centro)') + '</th><th>' + L('Position', 'Posición') + '</th><th>' + L('Max sustained wind', 'Viento máx. sostenido') + '</th><th>' + L('From downtown PV', 'Distancia al centro de PV') + '</th></tr></thead><tbody>' + rows + cl + '</tbody>';
 })();
 
@@ -988,17 +1002,21 @@ function threatDetail(t, l, pk, pa){
   if (t.k === 'wind'){
     var nm = Math.max.apply(null, l.wind.nhc.s.filter(function(x){ return x != null; })), ni = l.wind.nhc.s.indexOf(nm), pp = D.nhc.pv_probs || {};
     var gm = Math.max.apply(null, l.gust.hi);
-    var dk = Math.round(Math.min.apply(null, l.wind.nhc.km.filter(function(x){ return x != null; })));
-    return L('If the center follows the NHC track exactly (passing ~' + dk + ' km away): <b>' + nm + ' km/h</b>, gusts ' + l.wind.nhc.g[ni] + ', ' + hshort(ni)[0] + '. Strongest model gust: ' + gm + ' km/h. NHC odds for PV: ' + pp['34'] + '% ≥ 63 km/h, ' + pp['50'] + '% ≥ 93, ' + pp['64'] + '% ≥ 119.',
-             'Si el centro sigue exactamente la trayectoria del NHC (pasando a ~' + dk + ' km): <b>' + nm + ' km/h</b>, ráfagas de ' + l.wind.nhc.g[ni] + ', ' + hlong(ni)[1] + '. Ráfaga máxima de los modelos: ' + gm + ' km/h. Probabilidades del NHC para PV: ' + pp['34'] + '% ≥ 63 km/h, ' + pp['50'] + '% ≥ 93, ' + pp['64'] + '% ≥ 119.');
+    var dk = Math.round(l.wind.minKm != null ? l.wind.minKm : Math.min.apply(null, l.wind.nhc.km.filter(function(x){ return x != null; })));
+    var eye = dk < 10 ? L(' If the eye passes overhead, the wind can drop to near calm and then return suddenly from the opposite direction: stay inside until officials say it is over.', ' Si el ojo pasa encima, el viento puede calmarse y luego regresar de golpe desde la dirección opuesta: permanezca resguardado hasta que las autoridades indiquen que pasó.') : '';
+    return L('If the center follows the NHC track exactly (passing ~' + dk + ' km away): <b>' + nm + ' km/h</b>, gusts ' + l.wind.nhc.g[ni] + ', ' + hshort(ni)[0] + '. Strongest model gust: ' + gm + ' km/h. NHC odds for PV: ' + pp['34'] + '% ≥ 63 km/h, ' + pp['50'] + '% ≥ 93, ' + pp['64'] + '% ≥ 119.' + LT(eye, 0),
+             'Si el centro sigue exactamente la trayectoria del NHC (pasando a ~' + dk + ' km): <b>' + nm + ' km/h</b>, ráfagas de ' + l.wind.nhc.g[ni] + ', ' + hlong(ni)[1] + '. Ráfaga máxima de los modelos: ' + gm + ' km/h. Probabilidades del NHC para PV: ' + pp['34'] + '% ≥ 63 km/h, ' + pp['50'] + '% ≥ 93, ' + pp['64'] + '% ≥ 119.' + LT(eye, 1));
   }
   if (t.k === 'rate') return L('<b>' + mm(w.peak) + ' mm/h</b> worst case, ' + LT(span(w.peakAt, w.peakAt + 1), 0) + '; ' + a.peak.toFixed(1) + ' mm/h average.',
                                '<b>' + mm(w.peak) + ' mm/h</b> en el peor escenario, ' + LT(span(w.peakAt, w.peakAt + 1), 1) + '; ' + a.peak.toFixed(1) + ' mm/h en promedio.');
   if (t.k === 'r24') return L('<b>' + mm(w.max24) + ' mm in 24 h</b> worst case (SMN: ' + LT(smn24(w.max24), 0) + '); ' + mm(a.max24) + ' mm average.',
                               '<b>' + mm(w.max24) + ' mm en 24 h</b> en el peor escenario (SMN: ' + LT(smn24(w.max24), 1) + '); ' + mm(a.max24) + ' mm en promedio.');
   if (t.k === 'surge'){ var hs = 0; for (var i = 0; i <= NH; i++) hs = Math.max(hs, waveAt(i, 'worst'));
-    return L('If the NHC track holds, this beach is on the storm’s east side around ' + hshort(pk.i)[0] + ', where the NHC expects dangerous surge and destructive waves. Bay waves up to ' + hs.toFixed(1) + ' m. Rough guide: the level follows the NHC-track wind; storm surge is not modeled.',
-             'Si se cumple la trayectoria del NHC, esta playa queda del lado este del ciclón hacia ' + hlong(pk.i)[1] + ', donde el NHC espera marea de tormenta peligrosa y oleaje destructivo. Oleaje en la bahía de hasta ' + hs.toFixed(1) + ' m. Guía aproximada: el nivel sigue al viento de la trayectoria del NHC; la marea de tormenta no está modelada.'); }
+    var bp = l.wind.nhc.brg[pk.i], onEast = bp != null && bp >= 30 && bp <= 150;
+    if (onEast) return L('If the NHC track holds, this beach is on the storm’s east side around ' + hshort(pk.i)[0] + ', where the NHC expects dangerous surge and destructive waves. Bay waves up to ' + hs.toFixed(1) + ' m. Rough guide: the level follows the NHC-track wind; storm surge is not modeled.',
+             'Si se cumple la trayectoria del NHC, esta playa queda del lado este del ciclón hacia ' + hlong(pk.i)[1] + ', donde el NHC espera marea de tormenta peligrosa y oleaje destructivo. Oleaje en la bahía de hasta ' + hs.toFixed(1) + ' m. Guía aproximada: el nivel sigue al viento de la trayectoria del NHC; la marea de tormenta no está modelada.');
+    return L('The NHC track keeps this beach off the storm’s east side, where surge is worst, but the center passes close by around ' + hshort(pk.i)[0] + ' and the NHC warns of large, destructive waves near landfall. Bay waves up to ' + hs.toFixed(1) + ' m. Rough guide: the level follows the NHC-track wind, one step lower off the east side; storm surge is not modeled.',
+             'La trayectoria del NHC deja esta playa fuera del lado este del ciclón, donde la marea de tormenta es peor, pero el centro pasa cerca hacia ' + hlong(pk.i)[1] + ' y el NHC advierte de oleaje grande y destructivo cerca de donde toque tierra. Oleaje en la bahía de hasta ' + hs.toFixed(1) + ' m. Guía aproximada: el nivel sigue al viento de la trayectoria del NHC, un nivel menos fuera del lado este; la marea de tormenta no está modelada.'); }
   if (t.k === 'river') return L('<b>' + Math.round(pk.v) + ' mm in 6 h</b> worst case, ending ' + hshort(pk.i - 1)[0] + ' (the level lags one hour for the river’s delay). Rain from the sierra arrives hours later, so the river can rise after the rain here eases. Rough guide.',
                                 '<b>' + Math.round(pk.v) + ' mm en 6 h</b> en el peor escenario, hasta ' + hlong(pk.i - 1)[1] + ' (el nivel va una hora atrás por el retraso del río). La lluvia de la sierra llega horas después, así que el río puede subir aunque aquí ya llueva menos. Guía aproximada.');
   if (t.k === 'runoff') return L('<b>' + Math.round(pk.v) + ' mm in 3 h</b> worst case, ending ' + hshort(pk.i)[0] + '. Steep streets turn into channels. Rough guide.',

@@ -194,7 +194,12 @@ for li, L in enumerate(LOCS):
         best=dict(s=R0(np.nanmin(W, axis=0)), g=R0(np.nanmin(G, axis=0))),
         modelS={m: R0(np.array([np.nan if x is None else x for x in ws[m]], dtype=float)) for m in ws},
     )
-    print('   wind', L['id'], 'nhc peak', int(np.nanmax(ns)), '/', int(np.nanmax(ng)), 'km/h at', FRAMES[int(np.nanargmax(ns))],
+    if NHC:   # closest approach of the NHC-track center, at 5-minute resolution
+        t0 = dt.datetime.strptime(FRAMES[0], '%Y-%m-%dT%H:%M') + dt.timedelta(hours=6)
+        near = min(((x['km'], k) for k in range(0, NH * 12 + 1) for x in [nhc_wind(t0 + dt.timedelta(minutes=5 * k), L['lat'], L['lon'])] if x), default=None)
+        if near:
+            rec['wind']['minKm'] = round(near[0], 1); rec['wind']['minAt'] = (t0 + dt.timedelta(minutes=5 * near[1]) - dt.timedelta(hours=6)).strftime('%Y-%m-%dT%H:%M')
+    print('   wind', L['id'], 'closest', rec['wind'].get('minKm'), 'km at', rec['wind'].get('minAt'), '| nhc peak', int(np.nanmax(ns)), '/', int(np.nanmax(ng)), 'km/h at', FRAMES[int(np.nanargmax(ns))],
           'min dist', min(x['km'] for x in nhc if x), '| models S max', int(np.nanmax(W)), 'G max', int(np.nanmax(G)))
     # ensemble context
     ens = {}; pool = []

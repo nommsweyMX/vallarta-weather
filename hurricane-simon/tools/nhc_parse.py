@@ -36,13 +36,15 @@ for k in (64, 50, 34):
     mm = re.search(rf'^{k} KT\.+\s*(.*)$', blk0, re.M)
     pt[f'r{k}'] = radii(mm.group(1)) if mm else [0, 0, 0, 0]
 track.append(pt)
-for m in re.finditer(r'FORECAST VALID (\S+) ([\d.]+[NS]) ([\d.]+[EW])(\.\.\.[A-Z/\-]+)?\s*\nMAX WIND\s+(\d+) KT\.\.\.GUSTS\s+(\d+) KT\.(.*?)(?=\n\s*\n)', tcm, re.S):
+for m in re.finditer(r'FORECAST VALID (\S+) ([\d.]+[NS]) ([\d.]+[EW])(\.\.\.[A-Z/\- ]+)?[ \t]*\nMAX WIND\s+(\d+) KT\.\.\.GUSTS\s+(\d+) KT\.(.*?)(?=\n\s*\n)', tcm, re.S):
     pt = dict(t=when(m.group(1).rstrip('Z') + 'Z', ref), lat=lat(m.group(2)), lon=lon(m.group(3)), kt=int(m.group(5)), gust=int(m.group(6)),
-              inland=bool(m.group(4) and 'INLAND' in m.group(4)), note=(m.group(4) or '').strip('.'))
+              inland=bool(m.group(4) and 'INLAND' in m.group(4)), note=(m.group(4) or '').strip('. '))
     for k in (64, 50, 34):
         mm = re.search(rf'^{k} KT\.+\s*(.*)$', m.group(7), re.M)
         pt[f'r{k}'] = radii(mm.group(1)) if mm else [0, 0, 0, 0]
     track.append(pt)
+n_valid = len(re.findall(r'FORECAST VALID \S+ [\d.]+[NS] [\d.]+[EW]', tcm))
+assert len(track) == n_valid + 1, ('forecast points parsed', len(track) - 1, 'of', n_valid)
 for p in track: p['t'] = p['t'].strftime('%Y-%m-%dT%H:%MZ')
 
 # ---- public advisory summary ----
