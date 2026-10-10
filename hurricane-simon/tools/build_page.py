@@ -13,7 +13,7 @@ cut = frag.index('</style>') + len('</style>')
 head, body = frag[:cut], frag[cut:]
 doc = ('<!doctype html>\n<html lang="en" data-lang="both">\n<head>\n<meta charset="utf-8">\n'
        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-       '<meta name="description" content="Hour-by-hour rain forecast for Hurricane Simon at three Puerto Vallarta addresses: worst case, model average and best case, in English and Spanish.">\n'
+       '<meta name="description" content="Hour-by-hour rain, wind and threat forecast for Hurricane Simon at three Puerto Vallarta addresses: worst case, model average and best case, in English and Spanish.">\n'
        + head + '\n</head>\n<body>\n' + body + '\n</body>\n</html>\n')
 open(os.path.join(ROOT, 'index.html'), 'w', encoding='utf-8').write(doc)
 if len(sys.argv) > 1:
