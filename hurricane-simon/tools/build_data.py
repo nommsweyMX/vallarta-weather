@@ -9,7 +9,7 @@ FRAMES = [(T0 + dt.timedelta(hours=i)).strftime('%Y-%m-%dT%H:%M') for i in range
 LOCS = [
     dict(id='amapas', lat=20.5984, lon=-105.2382),
     dict(id='pitillal', lat=20.6477, lon=-105.2087),
-    dict(id='frodriguez', lat=20.6012, lon=-105.2358),
+    dict(id='frodriguez', lat=20.6014, lon=-105.2340),
 ]
 META = {
     'ecmwf_ifs': ('ECMWF IFS', 'ECMWF · EU', 9, 'global'),
@@ -21,14 +21,15 @@ META = {
     'bom_access_global': ('ACCESS-G', 'BoM · AU', 15, 'global'),
     'meteofrance_arpege_world': ('ARPEGE', 'Météo-France · FR', 25, 'global'),
     'jma_gsm': ('JMA GSM', 'JMA · JP', 55, 'global'),
-    'ecmwf_aifs025_single': ('ECMWF AIFS', 'ECMWF · AI model', 25, 'ai'),
-    'ncep_aigfs025': ('AI-GFS', 'NOAA · AI model', 25, 'ai'),
+    'ecmwf_aifs025_single': ('ECMWF AIFS', 'ECMWF · EU', 25, 'ai'),
+    'ncep_aigfs025': ('AI-GFS', 'NOAA · US', 25, 'ai'),
     'kma_gdps': ('KMA GDPS', 'KMA · KR', 12, 'global'),
-    'gfs_graphcast025': ('GraphCast', 'Google DeepMind · AI model', 25, 'ai'),
-    'hfsa': ('HAFS-A', 'NOAA · hurricane model', 6, 'hurricane'),
-    'hfsb': ('HAFS-B', 'NOAA · hurricane model', 6, 'hurricane'),
+    'gfs_graphcast025': ('GraphCast', 'Google DeepMind', 25, 'ai'),
+    'hfsa': ('HAFS-A', 'NOAA · US', 6, 'hurricane'),
+    'hfsb': ('HAFS-B', 'NOAA · US', 6, 'hurricane'),
 }
 models = {}   # id -> dict(meta, per-loc inc[48], gust[49] or None, cell)
+ELEV = {}     # location index -> terrain elevation (m) reported by Open-Meteo for the address
 OM_TRIED = [m for m in META if m not in ('hfsa', 'hfsb')]
 excluded = []
 for m in OM_TRIED:
@@ -36,10 +37,13 @@ for m in OM_TRIED:
         excluded.append(dict(m=m, label=META[m][0], why='blocked'))
 
 def native_step(inc):
+    # block structure is aligned to 00/06/12/18 UTC = 18/00/06/12 CST; frame 0 is 12 CST, so blocks start at index 0
     a = np.array(inc)
     if a.sum() < 1: return None
-    trip = a[:48].reshape(16, 3)
-    return 3 if np.allclose(trip, trip[:, :1], atol=0.051) else 1
+    for n in (6, 3):
+        b = a[:48].reshape(48 // n, n)
+        if np.allclose(b, b[:, :1], atol=0.051): return n
+    return 1
 
 for fn in sorted(glob.glob(os.path.join(D, 'om', '*.json'))):
     mid = os.path.basename(fn)[:-5]
@@ -57,6 +61,7 @@ for fn in sorted(glob.glob(os.path.join(D, 'om', '*.json'))):
         gv = [x for x in g if x is not None]
         gust = [None if x is None else float(x) for x in g] if gv and max(gv) > 0 else None
         pr = [x for x in h.get('pressure_msl') or [] if x is not None]
+        ELEV.setdefault(li, loc.get('elevation'))
         per.append(dict(inc=inc, gust=gust, cell=[round(loc['latitude'], 3), round(loc['longitude'], 3)],
                         pmin=round(min(pr), 1) if pr else None, missing=miss))
     if all(x is None for x in per):
@@ -107,7 +112,7 @@ for li, L in enumerate(LOCS):
     G = np.array([[np.nan if x is None else x for x in g] for g in gusts], dtype=float)
     pkm = M.argmax(axis=0)
     rec = dict(
-        id=L['id'], lat=L['lat'], lon=L['lon'],
+        id=L['id'], lat=L['lat'], lon=L['lon'], elev=ELEV.get(li),
         n=len(order), ranking=[dict(m=m, total=round(tot[m], 1), peak=round(max(avail[m]['inc']), 1),
                                      cell=avail[m]['cell'], pmin=avail[m]['pmin'], wmax=avail[m].get('wmax'),
                                      gustMax=(round(max(x for x in avail[m]['gust'] if x is not None)) if avail[m]['gust'] else None))

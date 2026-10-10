@@ -8,9 +8,9 @@
   --bg:#f1f2f4; --card:#ffffff; --ink:#151515; --ink2:#3c3f42; --muted:#62666b; --line:#dcdfe3; --grid:#e9ebee;
   --bar:#151515; --bar-ink:#ffffff; --brand:#ee0000;
   --rain:#1769d6; --rain-fut:#c7d7ee; --rain-band:rgba(23,105,214,.12);
-  --s-worst:#0d366b; --s-avg:#2a78d6; --s-best:#86b6ef;
-  --alert:#c9190b; --alert-bg:#fdeceb; --alert-ink:#7d1007;
-  --c-mod:#2a78d6; --c-heavy:#b7791f; --c-vheavy:#c9541a; --c-violent:#c9190b;
+  --s-worst:#c9190b; --s-avg:#1769d6; --s-best:#4a86cf;
+  --alert:#c9190b; --alert-fill:#c9190b; --alert-bg:#fdeceb; --alert-ink:#7d1007;
+  --c-mod:#1a5fb8; --c-heavy:#8a5a10; --c-vheavy:#a8410f; --c-violent:#c9190b;
   --night:rgba(39,57,92,.09); --focus:#0066cc;
   --display:"Red Hat Display", "Segoe UI", system-ui, sans-serif;
   --text:"Red Hat Text", "Segoe UI", system-ui, sans-serif;
@@ -21,9 +21,9 @@
     --bg:#0d1015; --card:#161a21; --ink:#eef1f5; --ink2:#c7cdd5; --muted:#949ca7; --line:#2b323c; --grid:#222831;
     --bar:#07090c; --bar-ink:#ffffff; --brand:#ff3b30;
     --rain:#4c9bff; --rain-fut:#253852; --rain-band:rgba(76,155,255,.16);
-    --s-worst:#cde2fb; --s-avg:#4c9bff; --s-best:#2f6fbf;
-    --alert:#ff5c4d; --alert-bg:#341311; --alert-ink:#ffc9c3;
-    --c-mod:#4c9bff; --c-heavy:#e0a43a; --c-vheavy:#ff8a4c; --c-violent:#ff5c4d;
+    --s-worst:#ff5c4d; --s-avg:#4c9bff; --s-best:#3b7fd4;
+    --alert:#ff5c4d; --alert-fill:#b3170b; --alert-bg:#341311; --alert-ink:#ffc9c3;
+    --c-mod:#6aaeff; --c-heavy:#e0a43a; --c-vheavy:#ff9a66; --c-violent:#b3170b;
     --night:rgba(150,180,230,.08); --focus:#7fb5ff;
     color-scheme:dark;
   }
@@ -32,9 +32,9 @@
   --bg:#0d1015; --card:#161a21; --ink:#eef1f5; --ink2:#c7cdd5; --muted:#949ca7; --line:#2b323c; --grid:#222831;
   --bar:#07090c; --bar-ink:#ffffff; --brand:#ff3b30;
   --rain:#4c9bff; --rain-fut:#253852; --rain-band:rgba(76,155,255,.16);
-  --s-worst:#cde2fb; --s-avg:#4c9bff; --s-best:#2f6fbf;
-  --alert:#ff5c4d; --alert-bg:#341311; --alert-ink:#ffc9c3;
-  --c-mod:#4c9bff; --c-heavy:#e0a43a; --c-vheavy:#ff8a4c; --c-violent:#ff5c4d;
+  --s-worst:#ff5c4d; --s-avg:#4c9bff; --s-best:#3b7fd4;
+  --alert:#ff5c4d; --alert-fill:#b3170b; --alert-bg:#341311; --alert-ink:#ffc9c3;
+  --c-mod:#6aaeff; --c-heavy:#e0a43a; --c-vheavy:#ff9a66; --c-violent:#b3170b;
   --night:rgba(150,180,230,.08); --focus:#7fb5ff;
   color-scheme:dark;
 }
@@ -50,12 +50,12 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
 /* bilingual: data-lang on <html>; en, es, or both */
 [data-lang="en"] .es{display:none}
 [data-lang="es"] .en{display:none}
-[data-lang="both"] .es{opacity:.72}
-[data-lang="both"] .en + .es::before{content:" / "}
+[data-lang="both"] .es{font-style:italic}
+[data-lang="both"] .en + .es::before{content:" / ";font-style:normal}
 [data-lang="both"] .bi > .es{display:block}
 [data-lang="both"] .bi > .en + .es::before{content:none}
-[data-lang="both"] .bi > .es{font-style:italic}
-[data-lang="both"] h1 .es, [data-lang="both"] h2 .es{font-weight:500}
+[data-lang="both"] h1 .es, [data-lang="both"] h2 .es{font-weight:500;font-style:normal;color:var(--muted)}
+[data-lang="both"] .mono .es, [data-lang="both"] .eyebrow .es, [data-lang="both"] .chip .es, [data-lang="both"] .pill .es, [data-lang="both"] .btn .es, [data-lang="both"] .seg .es, [data-lang="both"] .tag .es{font-style:normal}
 
 /* top bar (house chrome) */
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bar);color:var(--bar-ink);border-bottom:3px solid var(--brand)}
@@ -65,12 +65,13 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
 .lang{margin-left:auto;display:flex;border:1px solid #ffffff40;border-radius:8px;overflow:hidden}
 .lang button{all:unset;cursor:pointer;font-family:var(--mono);font-size:12px;padding:6px 11px;color:#ffffffc0}
 .lang button[aria-pressed="true"]{background:#ffffff;color:#151515}
-.lang button:focus-visible{outline:2px solid #7fb5ff;outline-offset:-2px}
+.lang button:focus-visible{outline:2px solid #7fb5ff;outline-offset:-3px}
+.lang button[aria-pressed="true"]:focus-visible{outline-color:#0066cc}
 
 /* alert */
 .alert{background:var(--alert-bg);border-bottom:1px solid var(--line)}
 .alert .wrap{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;padding-block:14px;align-items:start}
-.alert .tag{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--alert);padding:5px 9px;border-radius:5px;white-space:nowrap}
+.alert .tag{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--alert-fill);padding:5px 9px;border-radius:5px;white-space:nowrap}
 .alert p{margin:0;color:var(--alert-ink);max-width:95ch}
 .alert p b{color:var(--alert-ink)}
 @media (max-width:640px){.alert .wrap{grid-template-columns:1fr}.alert .tag{justify-self:start;white-space:normal}}
@@ -83,6 +84,9 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
 @media (max-width:640px){.keyline{display:grid;grid-template-columns:1fr 1fr}.keyline div:last-child{grid-column:1/-1}}
 .keyline div{display:grid;gap:0}
 .keyline b{font-family:var(--display);font-weight:900;font-size:24px;font-variant-numeric:tabular-nums}
+.keyline .nw{white-space:nowrap}
+.caveat{margin:2px 0 0;font-size:13.5px;color:var(--ink2);max-width:90ch;border-left:3px solid var(--alert);padding-left:10px}
+.windnote{margin:0;font-size:13px;color:var(--ink2);border-left:3px solid var(--alert);padding-left:10px}
 .keyline .k-worst b{color:var(--alert)}
 .keyline span.lab{font-size:12.5px;color:var(--muted)}
 
@@ -101,7 +105,7 @@ section.block{padding-block:26px}
 .storm{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:14px;color:var(--ink2);min-width:0}
 .storm .eyebrow{flex-basis:100%}
 .storm .dist{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
-.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);max-width:100%}
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;padding:3px 8px;border-radius:8px;border:1px solid var(--line);color:var(--ink2);max-width:100%}
 .pill.cat{border-color:var(--alert);color:var(--alert)}
 .pill.night::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink2);display:inline-block;margin-right:5px}
 .controls{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--grid);padding-top:12px}
@@ -111,6 +115,7 @@ section.block{padding-block:26px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{font-family:var(--mono);font-size:12px;background:none;border:0;color:var(--ink2);padding:7px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.seg button:focus-visible{outline-offset:-3px}
 .ctl-lab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 @media (max-width:820px){.clock{grid-template-columns:1fr}}
 
@@ -144,10 +149,13 @@ section.block{padding-block:26px}
 .chip[data-lv="3"]{border-color:var(--c-heavy);color:var(--c-heavy)}
 .chip[data-lv="4"]{border-color:var(--c-vheavy);color:var(--c-vheavy);font-weight:700}
 .chip[data-lv="5"]{background:var(--c-violent);border-color:var(--c-violent);color:#fff;font-weight:700}
+@media (max-width:420px){.chip{white-space:normal}}
 .chip.g1{border-color:var(--c-heavy);color:var(--c-heavy)}
-.chip.g2{background:var(--c-violent);border-color:var(--c-violent);color:#fff}
+.chip.g2{background:var(--alert-fill);border-color:var(--alert-fill);color:#fff}
 svg.bars{width:100%;height:58px;display:block;overflow:visible}
-.bars-ax{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.bars-ax{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.bars-ax span:nth-child(2){text-align:center}
+.bars-ax span:last-child{text-align:right}
 
 .timeline{display:grid;gap:4px}
 .tl-wrap{position:relative}
@@ -175,7 +183,7 @@ svg.tl{width:100%;height:44px;display:block}
 .threats .ic{font-family:var(--mono);font-size:11px;color:var(--alert);font-weight:700}
 .ov{position:relative}
 svg.ovc{width:100%;height:auto;display:block;overflow:visible}
-.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:12px;line-height:1.35;padding:6px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);font-family:var(--mono)}
+.tip{position:absolute;top:4px;pointer-events:none;background:var(--ink);color:var(--card);font-size:12px;line-height:1.35;padding:6px 8px;border-radius:6px;max-width:min(270px,80vw);font-family:var(--mono);z-index:2}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink2)}
 .legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:3px;margin-right:5px}
 .legend i.band{height:10px;vertical-align:-1px;background:var(--rain-band)}
@@ -189,7 +197,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;
 tr:last-child td{border-bottom:0}
 .mb{display:inline-block;height:6px;border-radius:3px;background:var(--rain);vertical-align:middle;margin-left:6px}
 .badge{font-family:var(--mono);font-size:10px;padding:1px 5px;border-radius:4px;margin-left:5px;vertical-align:1px}
-.badge.w{background:var(--alert);color:#fff}
+.badge.w{background:var(--alert-fill);color:#fff}
 .badge.b{border:1px solid var(--line);color:var(--muted)}
 td .org{display:block;font-size:11.5px;color:var(--muted)}
 
@@ -217,7 +225,7 @@ footer p{margin:0 0 6px;max-width:95ch}
 
 <header class="bar">
   <div class="wrap">
-    <span class="brand">Vallarta Weather <small>Huracán Simon</small></span>
+    <span class="brand">Vallarta Weather <small><span class="en">Hurricane Simon</span><span class="es">Huracán Simon</span></small></span>
     <div class="lang" role="group" aria-label="Language / Idioma">
       <button type="button" id="lang-en" data-lang="en" aria-pressed="false">EN</button>
       <button type="button" id="lang-es" data-lang="es" aria-pressed="false">ES</button>
@@ -230,8 +238,8 @@ footer p{margin:0 0 6px;max-width:95ch}
   <div class="wrap">
     <span class="tag"><span class="en">HURRICANE WARNING</span><span class="es">AVISO DE HURACÁN</span></span>
     <p class="bi">
-      <span class="en"><b>Simon is a Category 4 hurricane</b> (240 km/h, 150 mph) 345 km SSE of Cabo Corrientes, moving north at 7 km/h. A Hurricane Warning covers Punta San Telmo to El Roblito, including Puerto Vallarta. The NHC expects the center near or just inland of the coast on Sunday. Rain this heavy brings life-threatening flooding and mudslides.</span>
-      <span class="es"><b>Simon es un huracán categoría 4</b> (240 km/h) a 345 km al SSE de Cabo Corrientes, avanzando al norte a 7 km/h. Hay aviso de huracán de Punta San Telmo a El Roblito, incluido Puerto Vallarta. El NHC prevé el centro cerca o justo tierra adentro de la costa el domingo. Lluvia así provoca inundaciones y deslaves que ponen en riesgo la vida.</span>
+      <span class="en"><b>Simon is a Category 4 hurricane</b> with 240 km/h (150 mph) winds, 345 km SSE of Cabo Corrientes and moving north at 6 km/h. A Hurricane Warning covers Punta San Telmo to El Roblito, including Puerto Vallarta. The NHC expects the center to be near or just inland of the coast on Sunday. Its rain can cause life-threatening flooding and mudslides, especially on steep slopes.</span>
+      <span class="es"><b>Simon es un huracán categoría 4</b> con vientos de 240 km/h, a 345 km al SSE de Cabo Corrientes; se desplaza hacia el norte a 6 km/h. Hay aviso de huracán de Punta San Telmo a El Roblito, incluido Puerto Vallarta. El NHC prevé que el centro esté cerca de la costa, o justo tierra adentro, el domingo. Sus lluvias pueden causar inundaciones y deslaves que ponen en peligro la vida, sobre todo en terrenos con pendiente.</span>
     </p>
   </div>
 </div>
@@ -242,16 +250,17 @@ footer p{margin:0 0 6px;max-width:95ch}
     <span class="eyebrow" id="asof"></span>
     <h1 id="h1"><span class="en">Simon, hour by hour</span><span class="es">Simon, hora por hora</span></h1>
     <p class="sub bi">
-      <span class="en">Rain forecast for three Puerto Vallarta addresses from Saturday 10 October at noon to Monday 12 October at noon (CST, UTC−6), from <span class="nmod">11</span> weather models.</span>
-      <span class="es">Pronóstico de lluvia para tres direcciones de Puerto Vallarta del sábado 10 de octubre a mediodía al lunes 12 de octubre a mediodía (hora del centro, UTC−6), con <span class="nmod">11</span> modelos meteorológicos.</span>
+      <span class="en">Rain forecast for three Puerto Vallarta addresses from Saturday 10 October at noon to Monday 12 October at noon (CST, UTC−6), from <span class="nmod">__NMOD__</span> weather models.</span>
+      <span class="es">Pronóstico de lluvia para tres direcciones de Puerto Vallarta del sábado 10 de octubre al mediodía al lunes 12 de octubre al mediodía (hora del centro, UTC−6), con <span class="nmod">__NMOD__</span> modelos meteorológicos.</span>
     </p>
     <div class="keyline" id="keyline"></div>
+    <p class="caveat bi" id="caveat"></p>
   </section>
 
   <section class="block" aria-labelledby="h-player" style="padding-top:12px">
     <div class="shead">
-      <h2 id="h-player"><span class="en">48 hours of rain, animated</span><span class="es">48 horas de lluvia, animadas</span></h2>
-      <p class="bi"><span class="en">Each frame is one hour. Big number: rain collected since Saturday noon. Bars: rain per hour, on one shared scale, so the panes compare directly.</span><span class="es">Cada cuadro es una hora. Número grande: lluvia acumulada desde el sábado a mediodía. Barras: lluvia por hora, en una misma escala para comparar los paneles.</span></p>
+      <h2 id="h-player"><span class="en">48 hours of rain, animated</span><span class="es">48 horas de lluvia en animación</span></h2>
+      <p class="bi"><span class="en">Each frame is one hour. Big number: rain collected since Saturday noon. Bars: rain per hour, on one shared scale, so the panes compare directly.</span><span class="es">Cada cuadro es una hora. Número grande: lluvia acumulada desde el sábado al mediodía. Barras: lluvia por hora, en una misma escala para comparar los paneles.</span></p>
     </div>
     <div class="player" id="player">
       <div class="clock">
@@ -274,13 +283,14 @@ footer p{margin:0 0 6px;max-width:95ch}
         </div>
       </div>
       <div class="panes" id="panes"></div>
+      <p class="windnote bi" id="windnote"></p>
       <div class="timeline">
         <div class="tl-wrap"><svg class="tl" id="tl" viewBox="0 0 960 44" preserveAspectRatio="none" aria-hidden="true"></svg></div>
         <input type="range" id="scrub" min="0" max="48" step="1" value="48" aria-label="Forecast hour / Hora del pronóstico">
         <div class="tl-legend">
           <span><i style="background:var(--night)"></i><span class="en">Night (18:40–06:54)</span><span class="es">Noche (18:40–06:54)</span></span>
-          <span><i style="background:var(--alert);width:3px"></i><span class="en">Simon's closest approach (NHC track)</span><span class="es">Máximo acercamiento de Simon (trayectoria NHC)</span></span>
-          <span class="mono" style="font-size:11.5px"><span class="en">Space = play/pause · ← → = step</span><span class="es">Espacio = reproducir/pausa · ← → = avanzar</span></span>
+          <span><i style="background:var(--alert);width:3px"></i><span class="en">Simon's closest approach (NHC track)</span><span class="es">Punto de mayor acercamiento de Simon (trayectoria del NHC)</span></span>
+          <span class="mono" style="font-size:11.5px"><span class="en">Space = play/pause · ← → = previous/next hour</span><span class="es">Espacio = reproducir/pausa · ← → = hora anterior/siguiente</span></span>
         </div>
       </div>
     </div>
@@ -289,7 +299,7 @@ footer p{margin:0 0 6px;max-width:95ch}
   <section class="block" aria-labelledby="h-sum">
     <div class="shead">
       <h2 id="h-sum"><span class="en">The threat at each address</span><span class="es">La amenaza en cada dirección</span></h2>
-      <p class="bi"><span class="en">48-hour totals, the fastest hour, and the wettest six hours. The shaded band is the range of all <span class="nmod">11</span> models.</span><span class="es">Totales de 48 horas, la hora más intensa y las seis horas más lluviosas. La franja sombreada es el rango de los <span class="nmod">11</span> modelos.</span></p>
+      <p class="bi"><span class="en">48-hour totals, the heaviest hour, and the wettest six hours. The shaded band is the range of all <span class="nmod">__NMOD__</span> models.</span><span class="es">Totales de 48 horas, la hora más intensa y las seis horas más lluviosas. La franja sombreada es el rango de los <span class="nmod">__NMOD__</span> modelos.</span></p>
     </div>
     <div class="cards" id="cards"></div>
   </section>
@@ -297,7 +307,7 @@ footer p{margin:0 0 6px;max-width:95ch}
   <section class="block" aria-labelledby="h-odds">
     <div class="shead">
       <h2 id="h-odds"><span class="en">Odds from 212 ensemble runs</span><span class="es">Probabilidades de 212 corridas de ensamble</span></h2>
-      <p class="bi"><span class="en">Six forecast centers each re-run their model many times with small changes. The share of runs above each total is a fair estimate of the odds.</span><span class="es">Seis centros de pronóstico corren su modelo muchas veces con pequeños cambios. La proporción de corridas que superan cada total es una estimación razonable de la probabilidad.</span></p>
+      <p class="bi"><span class="en">Five forecast centers run six ensemble systems, each re-running its model many times with small changes. The share of runs above each total is a fair estimate of the odds.</span><span class="es">Cinco centros de pronóstico corren seis sistemas de ensamble; cada uno repite su modelo muchas veces con pequeños cambios. La proporción de corridas que superan cada total es una estimación razonable de la probabilidad.</span></p>
     </div>
     <div class="odds" id="odds"></div>
   </section>
@@ -313,20 +323,20 @@ footer p{margin:0 0 6px;max-width:95ch}
   <section class="block" aria-labelledby="h-nhc">
     <div class="shead">
       <h2 id="h-nhc"><span class="en">What the National Hurricane Center says</span><span class="es">Lo que dice el Centro Nacional de Huracanes</span></h2>
-      <p class="bi"><span class="en">Advisory 13, issued 9:00 am CST Saturday. The next full advisory is due at 3:00 pm.</span><span class="es">Aviso 13, emitido a las 9:00 h del sábado. El siguiente aviso completo sale a las 15:00 h.</span></p>
+      <p class="bi"><span class="en">Advisory 13, issued 9:00 am CST Saturday. The next full advisory is due at 3:00 pm CST.</span><span class="es">Boletín 13, emitido a las 09:00 h (hora del centro) del sábado. El siguiente boletín completo sale a las 15:00 h.</span></p>
     </div>
     <div class="nhc">
       <div class="card">
-        <span class="eyebrow"><span class="en">Puerto Vallarta: chance of sustained winds of at least</span><span class="es">Puerto Vallarta: probabilidad de vientos sostenidos de al menos</span></span>
+        <span class="eyebrow"><span class="en">Puerto Vallarta, next 5 days: chance of sustained winds of at least</span><span class="es">Puerto Vallarta, próximos 5 días: probabilidad de vientos sostenidos de al menos</span></span>
         <div class="probs">
           <div><b>76%</b><small>63 km/h · 39 mph</small><small><span class="en">tropical-storm force</span><span class="es">fuerza de tormenta tropical</span></small></div>
           <div><b>31%</b><small>93 km/h · 58 mph</small><small><span class="en">damaging</span><span class="es">dañinos</span></small></div>
           <div><b>6%</b><small>119 km/h · 74 mph</small><small><span class="en">hurricane force</span><span class="es">fuerza de huracán</span></small></div>
         </div>
-        <p class="bi"><span class="en">Tropical-storm winds most likely begin Sunday between 6 am and 6 pm. Rainfall: 250–500 mm (10–20 in) over parts of southwestern Mexico, locally 760 mm (30 in) in Michoacán, Colima and Jalisco through Sunday. Storm surge with large, destructive waves is expected near and east of where the center comes ashore.</span><span class="es">Lo más probable es que los vientos de tormenta tropical empiecen el domingo entre las 6:00 y las 18:00 h. Lluvia: 250–500 mm en partes del suroeste de México, hasta 760 mm en puntos de Michoacán, Colima y Jalisco hasta el domingo. Se espera marea de tormenta con oleaje grande y destructivo cerca y al este de donde el centro toque tierra.</span></p>
+        <p class="bi"><span class="en">Tropical-storm winds most likely begin Sunday between 6 am and 6 pm. Rainfall through Sunday: 250–500 mm (10–20 in) over parts of southwestern Mexico, with isolated totals up to 760 mm (30 in) possible in Michoacán, Colima and Jalisco. A dangerous storm surge, with large and destructive waves, is expected along the immediate coast near and east of where the center comes ashore.</span><span class="es">Lo más probable es que los vientos de tormenta tropical empiecen el domingo entre las 06:00 y las 18:00 h. Lluvia acumulada hasta el domingo: 250–500 mm en partes del suroeste de México, con máximos aislados posibles de hasta 760 mm en Michoacán, Colima y Jalisco. Se espera una marea de tormenta peligrosa, con oleaje grande y destructivo, en la costa cerca y al este de donde el centro toque tierra.</span></p>
       </div>
       <div class="card">
-        <span class="eyebrow"><span class="en">Forecast track (Advisory 13)</span><span class="es">Trayectoria pronosticada (aviso 13)</span></span>
+        <span class="eyebrow"><span class="en">Forecast track (Advisory 13)</span><span class="es">Trayectoria pronosticada (boletín 13)</span></span>
         <div class="tblwrap" style="border:0"><table id="track" style="min-width:0"></table></div>
       </div>
     </div>
@@ -341,7 +351,7 @@ footer p{margin:0 0 6px;max-width:95ch}
 
 <footer>
   <div class="wrap">
-    <p class="bi"><span class="en"><b>Not an official forecast.</b> Follow Protección Civil de Jalisco and Puerto Vallarta, SMN-CONAGUA and the NHC. In an emergency call 911.</span><span class="es"><b>No es un pronóstico oficial.</b> Siga a Protección Civil de Jalisco y de Puerto Vallarta, al SMN-CONAGUA y al NHC. En una emergencia llame al 911.</span></p>
+    <p class="bi"><span class="en"><b>Not an official forecast.</b> Follow instructions from Protección Civil de Jalisco and Puerto Vallarta, and check SMN-CONAGUA and the NHC. In an emergency call 911.</span><span class="es"><b>No es un pronóstico oficial.</b> Siga las indicaciones de Protección Civil de Jalisco y de Puerto Vallarta, y consulte al SMN-CONAGUA y al NHC. En una emergencia llame al 911.</span></p>
     <p id="foot-gen" class="mono"></p>
   </div>
 </footer>
@@ -355,7 +365,8 @@ var NH = D.frames.length - 1;              // 48 hourly steps
 var root = document.documentElement;
 var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function L(en, es){ return '<span class="en">' + en + '</span><span class="es">' + es + '</span>'; }
+function L(en, es){ return en === es ? en : '<span class="en" lang="en">' + en + '</span><span class="es" lang="es">' + es + '</span>'; }
+function T(en, es){ var v = root.getAttribute('data-lang'); return v === 'es' ? es : v === 'en' ? en : en + ' / ' + es; }  // plain text, for attributes
 function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function mm(v){ return v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(0) : v.toFixed(1); }
 function inch(v){ var i = v / 25.4; return (i >= 10 ? i.toFixed(1) : i >= 1 ? i.toFixed(1) : i.toFixed(2)) + ' in'; }
@@ -364,34 +375,34 @@ function inch(v){ var i = v / 25.4; return (i >= 10 ? i.toFixed(1) : i >= 1 ? i.
 var PLACE = {
   amapas: {
     name: L('Amapas at Cafeto &amp; Olas Altas', 'Amapas esq. Cafeto y Olas Altas'), short: 'Amapas · Olas Altas',
-    place: 'Zona Romántica · Col. Emiliano Zapata', elev: 13,
+    place: 'Zona Romántica · Col. Emiliano Zapata',
     facts: [L('90 m from Playa Los Muertos', 'a 90 m de Playa Los Muertos')],
-    hazard: L('Beachfront. Simon’s forecast track passes west of the bay, which puts this shore on the side where the NHC expects surge and destructive waves. Runoff also pours down the Amapas hillside.',
-              'Frente al mar. La trayectoria pronosticada pasa al oeste de la bahía, lo que deja esta costa del lado donde el NHC espera marea de tormenta y oleaje destructivo. Además, el agua baja con fuerza por la ladera de Amapas.')
+    hazard: L('Beachfront. Simon’s forecast track crosses the bay about {KM} km west of downtown, which puts this shore on its east side, where the NHC expects a dangerous storm surge and destructive waves. Runoff also pours down the Amapas hillside.',
+              'Frente al mar. La trayectoria pronosticada de Simon cruza la bahía a unos {KM} km al oeste del centro, lo que deja esta costa del lado este, donde el NHC espera una marea de tormenta peligrosa y oleaje destructivo. Además, el agua baja con fuerza por la ladera de Amapas.')
   },
   pitillal: {
     name: L('Cinco de Mayo &amp; Calle España, El Pitillal', 'Cinco de Mayo y Calle España, El Pitillal'), short: 'Pitillal · 5 de Mayo',
-    place: 'El Pitillal', elev: 19,
+    place: 'El Pitillal',
     facts: [L('160 m from the Río Pitillal', 'a 160 m del Río Pitillal')],
     hazard: L('The Río Pitillal runs 160 m away. Rain that falls upstream in the sierra reaches this stretch hours later, so the river can keep rising after the rain here eases.',
               'El Río Pitillal corre a 160 m. La lluvia que cae río arriba en la sierra llega a este tramo horas después, así que el río puede seguir subiendo aunque aquí ya llueva menos.')
   },
   frodriguez: {
     name: L('Francisco Rodríguez 336, C.P. 48380', 'Francisco Rodríguez 336, C.P. 48380'), short: 'F. Rodríguez 336',
-    place: L('Zona Romántica · OpenStreetMap spells it Francisca Rodríguez', 'Zona Romántica · OpenStreetMap la registra como Francisca Rodríguez'), elev: 21,
-    facts: [L('about 300 m from the beach', 'a unos 300 m de la playa')],
-    hazard: L('The street drops toward the Los Muertos pier and turns into a channel in a downpour. Position is approximate: the map has no house numbers on this block.',
-              'La calle baja hacia el muelle de Los Muertos y se vuelve cauce durante un aguacero. La posición es aproximada: el mapa no tiene numeración en esta cuadra.')
+    place: L('Zona Romántica · usually written Francisca Rodríguez (as in OpenStreetMap)', 'Zona Romántica · la calle suele escribirse Francisca Rodríguez (así aparece en OpenStreetMap)'),
+    facts: [L('about 500 m from the beach', 'a unos 500 m de la playa')],
+    hazard: L('The street drops toward the Los Muertos pier and turns into a channel in a downpour. Position is approximate: no house numbers are mapped on this block, so No. 336 is placed between Constitución and Insurgentes, where the 300 block starts on the parallel streets.',
+              'La calle baja hacia el muelle de Los Muertos y se vuelve cauce durante un aguacero. La posición es aproximada: no hay numeración en el mapa para esta cuadra, así que el 336 se ubica entre Constitución e Insurgentes, donde empieza la numeración 300 en las calles paralelas.')
   }
 };
 var SC = {
-  worst: { name: L('Worst case', 'Peor escenario'), color: 'var(--alert)', line: 'var(--s-worst)',
+  worst: { name: L('Worst case', 'Peor escenario'), color: 'var(--alert)', line: 'var(--s-worst)', short: L('worst', 'peor'),
            desc: function(n){ return L('Wettest of ' + n + ' models at each address', 'El más lluvioso de ' + n + ' modelos en cada dirección'); },
            gust: L('highest of the models', 'el más alto de los modelos') },
-  avg:   { name: L('Model average', 'Promedio de modelos'), color: 'var(--rain)', line: 'var(--s-avg)',
-           desc: function(n){ return L('Hour-by-hour mean of all ' + n + ' models', 'Media hora por hora de los ' + n + ' modelos'); },
+  avg:   { name: L('Model average', 'Promedio de modelos'), color: 'var(--rain)', line: 'var(--s-avg)', short: L('average', 'promedio'),
+           desc: function(n){ return L('Hour-by-hour mean of all ' + n + ' models', 'Promedio, hora por hora, de los ' + n + ' modelos'); },
            gust: L('mean of the models', 'media de los modelos') },
-  best:  { name: L('Best case', 'Mejor escenario'), color: 'var(--s-best)', line: 'var(--s-best)',
+  best:  { name: L('Best case', 'Mejor escenario'), color: 'var(--s-best)', line: 'var(--s-best)', short: L('best', 'mejor'),
            desc: function(n){ return L('Driest of ' + n + ' models at each address', 'El más seco de ' + n + ' modelos en cada dirección'); },
            gust: L('lowest of the models', 'el más bajo de los modelos') }
 };
@@ -399,7 +410,8 @@ var SKEYS = ['worst', 'avg', 'best'];
 var LOCS = D.locs;
 var NMOD = LOCS[0].n;
 document.querySelectorAll('.nmod').forEach(function(e){ e.textContent = NMOD; });
-function modelName(m){ return m === 'mean' ? L('mean', 'media') : esc(D.models[m].label); }
+function modelName(m){ return m === 'mean' ? L('average', 'promedio') : esc(D.models[m].label); }
+function elevOf(l){ return l.elev != null ? Math.round(l.elev) : null; }
 
 /* ---------- time ---------- */
 var DAY_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], DAY_ES = ['dom','lun','mar','mié','jue','vie','sáb'];
@@ -411,10 +423,12 @@ function tlabel(i, withDay){
   var es = (withDay ? DAY_ES[d.getUTCDay()] + ' ' + dd + ' oct, ' : '') + String(h).padStart(2,'0') + ':00';
   return L(en, es);
 }
+function tplain(i){ var d = fdate(i), h = d.getUTCHours(), dd = d.getUTCDate();
+  return [DAY_EN[d.getUTCDay()] + ' ' + dd + ' Oct, ' + h12(h), DAY_ES[d.getUTCDay()] + ' ' + dd + ' oct, ' + String(h).padStart(2,'0') + ':00']; }
 function span(i0, i1){  // label for hours i0..i1 as clock range
   var a = fdate(i0), b = fdate(i1);
-  return L(DAY_EN[a.getUTCDay()] + ' ' + h12(a.getUTCHours()) + '–' + h12(b.getUTCHours()),
-           DAY_ES[a.getUTCDay()] + ' ' + String(a.getUTCHours()).padStart(2,'0') + '–' + String(b.getUTCHours()).padStart(2,'0') + ' h');
+  return '<span class="nw">' + L(DAY_EN[a.getUTCDay()] + ' ' + h12(a.getUTCHours()) + '–' + h12(b.getUTCHours()),
+           DAY_ES[a.getUTCDay()] + '\u00a0' + String(a.getUTCHours()).padStart(2,'0') + '–' + String(b.getUTCHours()).padStart(2,'0') + '\u00a0h') + '</span>';
 }
 var NIGHTS = [[6 + 40/60, 18 + 54/60], [30 + 40/60, 42 + 54/60]];
 function isNight(i){ return NIGHTS.some(function(n){ return i > n[0] && i < n[1]; }); }
@@ -455,14 +469,15 @@ function cat(kt){
   if (kt >= 83)  return L('Cat 2 hurricane', 'Huracán cat. 2');
   if (kt >= 64)  return L('Cat 1 hurricane', 'Huracán cat. 1');
   if (kt >= 34)  return L('Tropical storm', 'Tormenta tropical');
-  return L('Depression', 'Depresión');
+  return L('Tropical depression', 'Depresión tropical');
 }
 var closest = (function(){ var best = null; for (var i = 0; i <= NH; i++){ var s = stormAt(i); if (!s) continue; var d = distBear(s); if (!best || d.km < best.km) best = { i: i, km: d.km, br: d.br, kt: s.kt }; } return best; })();
 
 /* ---------- rain categories ---------- */
 function rateLv(v){ return v < 0.1 ? 0 : v < 2.5 ? 1 : v < 7.6 ? 2 : v < 25 ? 3 : v < 50 ? 4 : 5; }
-var RATE_TXT = [L('dry', 'seco'), L('light', 'ligera'), L('moderate', 'moderada'), L('heavy', 'fuerte'), L('very heavy', 'muy fuerte'), L('violent', 'violenta')];
+var RATE_TXT = [L('no rain', 'sin lluvia'), L('light', 'ligera'), L('moderate', 'moderada'), L('heavy', 'fuerte'), L('very heavy', 'muy fuerte'), L('violent', 'violenta')];
 function smn24(v){  // SMN-CONAGUA 24-hour categories
+  if (v > 250) return L('extraordinary', 'extraordinarias');
   if (v > 150) return L('torrential', 'torrenciales');
   if (v > 75) return L('intense', 'intensas');
   if (v > 50) return L('very heavy', 'muy fuertes');
@@ -484,13 +499,20 @@ var BAR_MAX = Math.ceil(Math.max.apply(null, LOCS.map(function(l){ return l.wors
   var bHi = Math.max.apply(null, bs);
   var pk = wl.worst;
   document.getElementById('keyline').innerHTML =
-    '<div class="k-worst"><b>' + mm(w) + ' mm</b><span class="lab">' + L('worst case', 'peor escenario') + ' · ' + inch(w) + '</span></div>' +
+    '<div class="k-worst"><b>' + mm(w) + ' mm</b><span class="lab">' + L('worst case: wettest of ' + NMOD + ' models', 'peor escenario: el más lluvioso de ' + NMOD + ' modelos') + ' · ' + inch(w) + '</span></div>' +
     '<div><b>' + mm(avLo) + '–' + mm(avHi) + ' mm</b><span class="lab">' + L('model average', 'promedio de modelos') + '</span></div>' +
-    '<div><b>' + mm(bHi) + ' mm</b><span class="lab">' + L('best case', 'mejor escenario') + '</span></div>' +
-    '<div><b>' + mm(pk.peak) + ' mm/h</b><span class="lab">' + L('fastest hour, worst case', 'hora más intensa, peor escenario') + ' · ' + span(pk.peakAt, pk.peakAt + 1) + '</span></div>' +
+    '<div><b>' + mm(bHi) + ' mm</b><span class="lab">' + L('best case: driest model', 'mejor escenario: el modelo más seco') + '</span></div>' +
+    '<div><b>' + mm(pk.peak) + ' mm/h</b><span class="lab">' + L('heaviest hour, worst case', 'hora más intensa, peor escenario') + ' · ' + span(pk.peakAt, pk.peakAt + 1) + '</span></div>' +
     '<div><b>' + span(pk.max6At, pk.max6At + 6) + '</b><span class="lab">' + L('wettest 6 hours, worst case', 'las 6 horas más lluviosas, peor escenario') + '</span></div>';
+  var emax = LOCS.map(function(l){ return l.ens.max; }), eLo = Math.min.apply(null, emax), eHi = Math.max.apply(null, emax);
+  document.getElementById('caveat').innerHTML =
+    L('<b>Worst of ' + NMOD + ' models, not the worst possible.</b> The NHC expects 250–500 mm over parts of southwestern Mexico, and the wettest of ' + LOCS[0].ens.n + ' ensemble runs reach ' + eLo + '–' + eHi + ' mm at these addresses.',
+      '<b>Es el peor de ' + NMOD + ' modelos, no el peor posible.</b> El NHC espera 250–500 mm en partes del suroeste de México, y las corridas de ensamble más lluviosas (de ' + LOCS[0].ens.n + ') llegan a ' + eLo + '–' + eHi + ' mm en estas direcciones.');
+  document.getElementById('windnote').innerHTML =
+    L('<b>Gusts are model values.</b> These grids are too coarse for Simon’s core, where hurricane-force winds reach 30 km from the center. The NHC gives Puerto Vallarta a 76% chance of sustained winds of 63 km/h or more, 31% for 93 km/h and 6% for 119 km/h.',
+      '<b>Las ráfagas son valores de los modelos.</b> Estas mallas son demasiado gruesas para el núcleo de Simon, donde los vientos de huracán llegan a 30 km del centro. El NHC da a Puerto Vallarta 76% de probabilidad de vientos sostenidos de 63 km/h o más, 31% de 93 km/h y 6% de 119 km/h.');
   var g = D.generated.replace('T', ' ').replace('Z', ' UTC');
-  document.getElementById('asof').innerHTML = L('Models as of ' + g + ' · NHC Advisory 13', 'Modelos al ' + g + ' · Aviso 13 del NHC');
+  document.getElementById('asof').innerHTML = L('Models as of ' + g + ' · NHC Advisory 13', 'Modelos al ' + g + ' · Boletín 13 del NHC');
   document.getElementById('foot-gen').innerHTML = L('Built ' + g + ' from model runs available at that time. HAFS run: 06 UTC 10 Oct.', 'Generado ' + g + ' con las corridas disponibles a esa hora. Corrida de HAFS: 06 UTC 10 oct.');
 })();
 
@@ -509,7 +531,7 @@ function barsSVG(inc, sk){
     out += '<rect x="' + (i*bw + 0.6).toFixed(1) + '" y="' + (H - h).toFixed(2) + '" width="' + (bw - 1.2).toFixed(1) + '" height="' + h.toFixed(2) + '" fill="var(--rain-fut)"><title>' + D.frames[i].slice(5).replace('T', ' ') + '–' + D.frames[i+1].slice(11) + ' · ' + inc[i].toFixed(1) + ' mm</title></rect>';
   }
   out += '<line class="ph" x1="0" x2="0" y1="0" y2="' + H + '" stroke="var(--ink)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';
-  return '<svg class="bars" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Hourly rain bars">' + out + '</svg>';
+  return '<svg class="bars" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Hourly rain / Lluvia por hora">' + out + '</svg>';
 }
 
 function buildPanes(){
@@ -523,11 +545,11 @@ function buildPanes(){
       var top = LOCS.reduce(function(a, l){ return l[pk].peak > a[pk].peak ? l : a; }, LOCS[0]);
       pane.style.setProperty('--pc', s.color);
       head = '<div class="phead"><h3>' + s.name + '</h3><span class="d">' + s.desc(NMOD) + '</span>' +
-        '<span class="threat">' + L('Fastest hour', 'Hora más intensa') + ': <b>' + mm(top[pk].peak) + ' mm/h</b> · ' + span(top[pk].peakAt, top[pk].peakAt + 1) + '</span></div>';
+        '<span class="threat">' + L('Heaviest hour', 'Hora más intensa') + ': <b>' + mm(top[pk].peak) + ' mm/h</b> · ' + span(top[pk].peakAt, top[pk].peakAt + 1) + '</span></div>';
     } else {
       var l = LOCS.filter(function(x){ return x.id === pk; })[0], p = PLACE[pk];
       pane.style.setProperty('--pc', 'var(--rain)');
-      head = '<div class="phead"><h3>' + p.name + '</h3><span class="d">' + p.place + ' · ' + p.elev + ' m</span>' +
+      head = '<div class="phead"><h3>' + p.name + '</h3><span class="d">' + p.place + (elevOf(l) != null ? ' · ' + elevOf(l) + ' m' : '') + '</span>' +
         '<span class="threat">' + L('Worst-case total', 'Total en el peor escenario') + ': <b>' + mm(l.worst.total) + ' mm</b> · ' + inch(l.worst.total) + '</span></div>';
     }
     pane.innerHTML = head + '<div class="rows"></div>';
@@ -541,14 +563,14 @@ function buildPanes(){
       var div = document.createElement('div'); div.className = 'row';
       var ticks = ''; for (var t = 50; t < TUBE_MAX; t += 50) ticks += '<span class="tk" style="left:' + (t / TUBE_MAX * 100) + '%"></span>';
       div.innerHTML = '<div class="rhead">' + title + '<span class="src">' + modelName(sc.model) + '</span></div>' +
-        '<div class="nums"><span class="big">0</span><span class="u">mm</span><span class="inch"></span><span class="lab">' + L('since Sat noon', 'desde el sáb. a mediodía') + '</span></div>' +
+        '<div class="nums"><span class="big">0</span><span class="u">mm</span><span class="inch"></span><span class="lab">' + L('since Sat noon', 'desde el sáb 12:00') + '</span></div>' +
         '<div class="tube" role="img"><i></i>' + ticks + '</div>' +
         (ri === rowKeys.length - 1 ? '<div class="tscale"><span>0</span><span>' + (TUBE_MAX/2) + '</span><span>' + TUBE_MAX + ' mm</span></div>' : '') +
         '<div class="rate"><span class="inc"></span><span class="chip rl"></span><span class="gst"></span></div>' +
         barsSVG(sc.inc, sk) +
-        (ri === rowKeys.length - 1 ? '<div class="bars-ax"><span>' + L('Sat 12', 'sáb 12') + '</span><span>' + L('bar top = ' + BAR_MAX + ' mm/h', 'tope = ' + BAR_MAX + ' mm/h') + '</span><span>' + L('Mon 12', 'lun 12') + '</span></div>' : '');
+        (ri === rowKeys.length - 1 ? '<div class="bars-ax"><span>' + L('Sat noon', 'sáb 12:00') + '</span><span>' + L('full bar = ' + BAR_MAX + ' mm/h', 'barra completa = ' + BAR_MAX + ' mm/h') + '</span><span>' + L('Mon noon', 'lun 12:00') + '</span></div>' : '');
       rows.appendChild(div);
-      rowsEls.push({ loc: loc, sk: sk, sc: sc, big: div.querySelector('.big'), inch: div.querySelector('.inch'), fill: div.querySelector('.tube i'), tube: div.querySelector('.tube'),
+      rowsEls.push({ row: div, loc: loc, sk: sk, sc: sc, big: div.querySelector('.big'), inch: div.querySelector('.inch'), fill: div.querySelector('.tube i'), tube: div.querySelector('.tube'),
         inc: div.querySelector('.inc'), rl: div.querySelector('.rl'), gst: div.querySelector('.gst'), rects: div.querySelectorAll('rect'), ph: div.querySelector('.ph') });
     });
     host.appendChild(pane);
@@ -576,16 +598,17 @@ function buildTimeline(){
 function draw(){
   var i = frame;
   document.getElementById('clock-t').innerHTML = tlabel(i, true);
-  document.getElementById('clock-h').innerHTML = i === 0 ? L('Start of window · hour 0 of 48', 'Inicio de la ventana · hora 0 de 48')
-    : L('Hour ' + i + ' of 48', 'Hora ' + i + ' de 48') + ' · ' + L('last hour', 'última hora') + ' ' + span(i - 1, i);
+  document.getElementById('clock-h').innerHTML = i === 0 ? L('Start of forecast · hour 0 of 48', 'Inicio del pronóstico · hora 0 de 48')
+    : L('Hour ' + i + ' of 48', 'Hora ' + i + ' de 48') + ' · ' + L('rain from', 'lluvia de') + ' ' + span(i - 1, i);
+  var tp = tplain(i); document.getElementById('scrub').setAttribute('aria-valuetext', T(tp[0], tp[1]));
   var s = stormAt(i), st = '';
   if (s){
     var db = distBear(s), kmh = Math.round(s.kt * 1.852 / 5) * 5;
-    st = '<span class="eyebrow">' + L('Simon’s center, NHC track', 'Centro de Simon, trayectoria NHC') + '</span>' +
+    st = '<span class="eyebrow">' + L('Simon’s center (NHC track)', 'Centro de Simon (trayectoria del NHC)') + '</span>' +
       '<span class="dist">' + Math.round(db.km) + ' km ' + compass(db.br) + '</span>' +
-      '<span>' + L('of downtown', 'del centro') + '</span>' +
+      '<span>' + L('from downtown Puerto Vallarta', 'del centro de Puerto Vallarta') + '</span>' +
       '<span class="pill cat">' + cat(s.kt) + ' · ' + kmh + ' km/h</span>' +
-      (isNight(i) ? '<span class="pill night">' + L('night', 'noche') + '</span>' : '');
+      '<span class="pill night"' + (isNight(i) ? '' : ' style="visibility:hidden"') + '>' + L('night', 'noche') + '</span>';
   }
   document.getElementById('storm').innerHTML = st;
   rowsEls.forEach(function(r){
@@ -598,7 +621,7 @@ function draw(){
     r.rl.innerHTML = i > 0 ? RATE_TXT[lv] : L('start', 'inicio');
     r.rl.setAttribute('data-lv', i > 0 ? lv : 0);
     var g = gustOf(r.loc, r.sk, i);
-    r.gst.innerHTML = L('gusts', 'ráfagas') + ' <b class="num">' + g + '</b> km/h' + (g >= 119 ? ' <span class="chip g2">' + L('hurricane force', 'fuerza de huracán') + '</span>' : g >= 63 ? ' <span class="chip g1">' + L('storm force', 'fuerza de tormenta') + '</span>' : '');
+    r.gst.innerHTML = L('gusts', 'ráfagas de') + ' <b class="num">' + g + '</b> km/h' + (g >= 119 ? ' <span class="chip g2">' + L('hurricane force', 'fuerza de huracán') + '</span>' : g >= 63 ? ' <span class="chip g1">' + L('tropical-storm force', 'fuerza de tormenta tropical') + '</span>' : '');
     for (var k = 0; k < r.rects.length; k++){
       r.rects[k].setAttribute('fill', k < i - 1 ? 'var(--rain)' : k === i - 1 ? 'var(--ink)' : 'var(--rain-fut)');
     }
@@ -619,7 +642,7 @@ function setPlay(p){
 }
 function tick(now){
   if (!playing) return;
-  var dt = now - last; last = now;
+  var dt = Math.min(now - last, 250); last = now;
   if (frame >= NH){ hold += dt; if (hold > 2500){ frame = 0; hold = 0; draw(); } }
   else { acc += dt; var step = 650 / speed; while (acc >= step && frame < NH){ acc -= step; frame++; } draw(); }
   raf = requestAnimationFrame(tick);
@@ -631,22 +654,43 @@ document.getElementById('scrub').addEventListener('input', function(e){ userAct(
 document.querySelectorAll('[data-sp]').forEach(function(b){ b.addEventListener('click', function(){
   speed = +b.getAttribute('data-sp'); document.querySelectorAll('[data-sp]').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); }); });
 document.querySelectorAll('[data-mode]').forEach(function(b){ b.addEventListener('click', function(){
-  mode = b.getAttribute('data-mode'); document.querySelectorAll('[data-mode]').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); buildPanes(); }); });
+  mode = b.getAttribute('data-mode'); document.querySelectorAll('[data-mode]').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); buildPanes(); lockHeights(); }); });
 document.addEventListener('keydown', function(e){
-  var tag = (e.target && e.target.tagName) || '';
-  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
-  if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'ArrowLeft') userAct();
-  if (e.key === ' ' && tag !== 'BUTTON'){ e.preventDefault(); setPlay(!playing); }
-  else if (e.key === 'ArrowRight'){ setPlay(false); frame = Math.min(NH, frame + 1); draw(); }
-  else if (e.key === 'ArrowLeft'){ setPlay(false); frame = Math.max(0, frame - 1); draw(); }
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  var t = e.target && e.target.closest ? e.target : document.body;
+  var inter = t.closest('a,button,summary,input,select,textarea,[contenteditable],[tabindex]');
+  var inPlayer = t.closest('#player');
+  if (e.key === ' ' && !inter){ userAct(); e.preventDefault(); setPlay(!playing); }
+  else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && inPlayer && !t.closest('input,select,textarea')){
+    userAct(); e.preventDefault(); setPlay(false);
+    frame = e.key === 'ArrowRight' ? Math.min(NH, frame + 1) : Math.max(0, frame - 1); draw();
+  }
 });
+
+/* keep the player's height steady while frames change, so controls don't move under a finger */
+function lockHeights(){
+  var clock = document.querySelector('.clock');
+  if (!clock || !rowsEls.length) return;
+  clock.style.minHeight = ''; rowsEls.forEach(function(r){ r.row.style.minHeight = ''; });
+  var f0 = frame, hc = 0, hr = rowsEls.map(function(){ return 0; });
+  for (var i = 0; i <= NH; i++){
+    frame = i; draw(); hc = Math.max(hc, clock.offsetHeight);
+    rowsEls.forEach(function(r, k){ hr[k] = Math.max(hr[k], r.row.offsetHeight); });
+  }
+  frame = f0; draw();
+  clock.style.minHeight = hc + 'px'; rowsEls.forEach(function(r, k){ r.row.style.minHeight = hr[k] + 'px'; });
+}
+var rsz = null;
+window.addEventListener('resize', function(){ clearTimeout(rsz); rsz = setTimeout(lockHeights, 200); });
 
 /* ---------- language ---------- */
 function setLang(v){
   root.setAttribute('data-lang', v);
   document.querySelectorAll('[data-lang]').forEach(function(b){ if (b.tagName === 'BUTTON') b.setAttribute('aria-pressed', b.getAttribute('data-lang') === v); });
   root.setAttribute('lang', v === 'es' ? 'es' : 'en');
+  document.title = v === 'es' ? 'Simon, hora por hora' : 'Simon Hour by Hour';
   try { localStorage.setItem('simon-lang', v); } catch (e) {}
+  if (rowsEls.length){ draw(); lockHeights(); }
 }
 document.querySelectorAll('.lang button').forEach(function(b){ b.addEventListener('click', function(){ setLang(b.getAttribute('data-lang')); }); });
 var saved = null; try { saved = localStorage.getItem('simon-lang'); } catch (e) {}
@@ -662,7 +706,7 @@ function overview(l, idx){
     out += '<line x1="' + m.l + '" x2="' + (m.l + iw) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + (v ? 'var(--grid)' : 'var(--line)') + '" stroke-width="1"/>';
     out += '<text x="' + (m.l - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end" font-size="10" font-family="var(--mono)" fill="var(--muted)">' + v + '</text>';
   }
-  [[0, 'sáb/Sat 12'], [12, '00'], [24, '12'], [36, '00'], [48, 'lun/Mon 12']].forEach(function(t, k){
+  [[0, '12:00'], [12, '00:00'], [24, '12:00'], [36, '00:00'], [48, '12:00']].forEach(function(t, k){
     out += '<text x="' + x(t[0]) + '" y="' + (H - 6) + '" text-anchor="' + (k === 0 ? 'start' : k === 4 ? 'end' : 'middle') + '" font-size="10" font-family="var(--mono)" fill="var(--muted)">' + t[1] + '</text>';
   });
   var band = l.band.hi.map(function(v, i){ return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ') + ' ' +
@@ -684,7 +728,7 @@ function overview(l, idx){
   out += '<line class="ov-ph" data-x0="' + m.l + '" data-w="' + iw + '" x1="' + x(frame) + '" x2="' + x(frame) + '" y1="' + m.t + '" y2="' + (m.t + ih) + '" stroke="var(--ink)" stroke-width="1" opacity=".55"/>';
   out += '<line class="ov-x" x1="0" x2="0" y1="' + m.t + '" y2="' + (m.t + ih) + '" stroke="var(--ink)" stroke-width="1" visibility="hidden"/>';
   out += '<rect class="ov-hit" x="' + m.l + '" y="' + m.t + '" width="' + iw + '" height="' + ih + '" fill="transparent"/>';
-  return { svg: '<svg class="ovc" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Accumulated rain, worst case, average and best case">' + out + '</svg>', m: m, iw: iw, W: W };
+  return { svg: '<svg class="ovc" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Accumulated rain: worst case, average and best case / Lluvia acumulada: peor escenario, promedio y mejor escenario">' + out + '</svg>', m: m, iw: iw, W: W };
 }
 
 (function(){
@@ -693,7 +737,7 @@ function overview(l, idx){
     var p = PLACE[l.id], w = l.worst, a = l.avg, b = l.best, ov = overview(l, idx);
     var card = document.createElement('article'); card.className = 'card';
     card.innerHTML = '<div><h3>' + p.name + '</h3><span class="place">' + p.place + '</span></div>' +
-      '<div class="facts"><span class="pill">' + p.elev + ' m ' + L('above sea level', 'sobre el nivel del mar') + '</span>' + p.facts.map(function(f){ return '<span class="pill">' + f + '</span>'; }).join('') +
+      '<div class="facts">' + (elevOf(l) != null ? '<span class="pill">' + elevOf(l) + ' m ' + L('above sea level', 'sobre el nivel del mar') + '</span>' : '') + p.facts.map(function(f){ return '<span class="pill">' + f + '</span>'; }).join('') +
       '<span class="pill">' + l.lat.toFixed(4) + ', ' + l.lon.toFixed(4) + '</span></div>' +
       '<div class="trio">' +
         '<div class="w"><span class="lab">' + L('Worst', 'Peor') + '</span><b>' + mm(w.total) + ' mm</b><small>' + inch(w.total) + ' · ' + modelName(w.model) + '</small></div>' +
@@ -701,14 +745,14 @@ function overview(l, idx){
         '<div><span class="lab">' + L('Best', 'Mejor') + '</span><b>' + mm(b.total) + ' mm</b><small>' + inch(b.total) + ' · ' + modelName(b.model) + '</small></div>' +
       '</div>' +
       '<ul class="threats">' +
-        '<li><span class="ic">1 h</span><span>' + L('Fastest hour', 'Hora más intensa') + ': <b>' + mm(w.peak) + ' mm/h</b> ' + L('worst', 'peor') + ' (' + span(w.peakAt, w.peakAt + 1) + '), <b>' + a.peak.toFixed(1) + ' mm/h</b> ' + L('average', 'promedio') + ' (' + span(a.peakAt, a.peakAt + 1) + ')</span></li>' +
-        '<li><span class="ic">6 h</span><span>' + L('Wettest 6 hours', 'Las 6 horas más lluviosas') + ': <b>' + mm(w.max6) + ' mm</b> ' + L('worst', 'peor') + ' (' + span(w.max6At, w.max6At + 6) + '), <b>' + mm(a.max6) + ' mm</b> ' + L('average', 'promedio') + '</span></li>' +
-        '<li><span class="ic">24 h</span><span>' + L('Wettest 24 hours', 'Las 24 horas más lluviosas') + ': <b>' + mm(w.max24) + ' mm</b> (' + L('SMN', 'SMN') + ': ' + smn24(w.max24) + ') ' + L('worst', 'peor') + ', <b>' + mm(a.max24) + ' mm</b> (' + smn24(a.max24) + ') ' + L('average', 'promedio') + '</span></li>' +
-        '<li><span class="ic">' + L('wind', 'viento') + '</span><span>' + L('Strongest gust in any model', 'Ráfaga más fuerte en cualquier modelo') + ': <b>' + Math.max.apply(null, l.gust.hi) + ' km/h</b></span></li>' +
+        '<li><span class="ic">1 h</span><span>' + L('Heaviest hour', 'Hora más intensa') + ': <b>' + mm(w.peak) + ' mm/h</b> ' + L('worst case', 'en el peor escenario') + ' (' + span(w.peakAt, w.peakAt + 1) + '), <b>' + a.peak.toFixed(1) + ' mm/h</b> ' + L('average', 'en promedio') + ' (' + span(a.peakAt, a.peakAt + 1) + ')</span></li>' +
+        '<li><span class="ic">6 h</span><span>' + L('Wettest 6 hours', 'Las 6 horas más lluviosas') + ': <b>' + mm(w.max6) + ' mm</b> ' + L('worst case', 'en el peor escenario') + ' (' + span(w.max6At, w.max6At + 6) + '), <b>' + mm(a.max6) + ' mm</b> ' + L('average', 'en promedio') + '</span></li>' +
+        '<li><span class="ic">24 h</span><span>' + L('Wettest 24 hours', 'Las 24 horas más lluviosas') + ': <b>' + mm(w.max24) + ' mm</b> ' + L('worst case', 'en el peor escenario') + ' (SMN: ' + smn24(w.max24) + '), <b>' + mm(a.max24) + ' mm</b> ' + L('average', 'en promedio') + ' (' + smn24(a.max24) + ')</span></li>' +
+        '<li><span class="ic">' + L('wind', 'viento') + '</span><span>' + L('Strongest model gust', 'Ráfaga máxima entre todos los modelos') + ': <b>' + Math.max.apply(null, l.gust.hi) + ' km/h</b>. ' + L('The models under-resolve Simon’s core; see the NHC wind odds below.', 'Los modelos no resuelven bien el núcleo de Simon; vea abajo las probabilidades de viento del NHC.') + '</span></li>' +
       '</ul>' +
-      '<p class="hz bi">' + p.hazard + '</p>' +
+      '<p class="hz bi">' + p.hazard.replace(/\{KM\}/g, closest ? Math.round(closest.km) : '20') + '</p>' +
       '<div class="ov">' + ov.svg + '<div class="tip" hidden></div></div>' +
-      '<div class="legend"><span><i style="background:var(--s-worst)"></i>' + L('worst', 'peor') + '</span><span><i style="background:var(--s-avg)"></i>' + L('average', 'promedio') + '</span><span><i style="background:var(--s-best)"></i>' + L('best', 'mejor') + '</span><span><i class="band"></i>' + L('all models', 'todos los modelos') + '</span><span class="mono" style="font-size:11px">mm</span></div>';
+      '<div class="legend"><span><i style="background:var(--s-worst)"></i>' + L('worst', 'peor') + '</span><span><i style="background:var(--s-avg)"></i>' + L('average', 'promedio') + '</span><span><i style="background:var(--s-best)"></i>' + L('best', 'mejor') + '</span><span><i class="band"></i>' + L('all models', 'todos los modelos') + '</span><span class="mono" style="font-size:11px">' + L('mm · Sat noon → Mon noon', 'mm · sáb 12:00 → lun 12:00') + '</span></div>';
     host.appendChild(card);
     // hover crosshair
     var svg = card.querySelector('svg.ovc'), hit = svg.querySelector('.ov-hit'), xl = svg.querySelector('.ov-x'), tip = card.querySelector('.tip');
@@ -716,8 +760,10 @@ function overview(l, idx){
       var r = svg.getBoundingClientRect(), sx = (evt.clientX - r.left) / r.width * ov.W;
       var i = Math.max(0, Math.min(NH, Math.round((sx - ov.m.l) / ov.iw * NH)));
       var px = ov.m.l + i / NH * ov.iw; xl.setAttribute('x1', px); xl.setAttribute('x2', px); xl.setAttribute('visibility', 'visible');
-      tip.hidden = false; tip.style.left = (px / ov.W * r.width) + 'px'; tip.style.top = '6px';
+      tip.hidden = false;
       tip.innerHTML = tlabel(i, true) + '<br>' + L('worst', 'peor') + ' ' + mm(w.cum[i]) + ' · ' + L('avg', 'prom.') + ' ' + mm(a.cum[i]) + ' · ' + L('best', 'mejor') + ' ' + mm(b.cum[i]) + ' mm';
+      var tw = tip.offsetWidth, cx = px / ov.W * r.width;
+      tip.style.left = Math.max(0, Math.min(r.width - tw, cx - tw / 2)) + 'px';
     }
     hit.addEventListener('pointermove', show);
     hit.addEventListener('pointerleave', function(){ xl.setAttribute('visibility', 'hidden'); tip.hidden = true; });
@@ -735,9 +781,9 @@ function overview(l, idx){
     var c = document.createElement('article'); c.className = 'card';
     c.innerHTML = '<h3>' + PLACE[l.id].short + '</h3>' +
       rows.map(function(r){ return '<div class="meter"><span>&gt; ' + r[0] + ' mm</span><span class="trk"><i style="width:' + r[1] + '%"></i></span><span class="p">' + r[1] + '%</span></div>'; }).join('') +
-      '<p class="hz">' + L('Middle run: <b>' + e.p50 + ' mm</b>. One run in ten tops <b>' + e.p90 + ' mm</b>. Wettest run: ' + e.max + ' mm.',
-                           'Corrida intermedia: <b>' + e.p50 + ' mm</b>. Una de cada diez supera <b>' + e.p90 + ' mm</b>. La más lluviosa: ' + e.max + ' mm.') + '</p>' +
-      '<details><summary>' + L('By forecast center', 'Por centro de pronóstico') + '</summary><div class="tblwrap" style="margin-top:8px"><table style="min-width:0"><thead><tr><th>' + L('System', 'Sistema') + '</th><th>' + L('runs', 'corridas') + '</th><th>' + L('middle', 'mediana') + '</th><th>' + L('1 in 10', '1 de 10') + '</th><th>&gt;100</th></tr></thead><tbody>' + sys + '</tbody></table></div></details>';
+      '<p class="hz">' + L('Median run: <b>' + e.p50 + ' mm</b>. One run in ten exceeds <b>' + e.p90 + ' mm</b>. Wettest run: ' + e.max + ' mm.',
+                           'Mediana de las corridas: <b>' + e.p50 + ' mm</b>. Una de cada diez supera <b>' + e.p90 + ' mm</b>. La más lluviosa: ' + e.max + ' mm.') + '</p>' +
+      '<details><summary>' + L('By ensemble system', 'Por sistema de ensamble') + '</summary><div class="tblwrap" style="margin-top:8px"><table style="min-width:0"><thead><tr><th>' + L('System', 'Sistema') + '</th><th>' + L('runs', 'corridas') + '</th><th>' + L('median', 'mediana') + '</th><th>' + L('1 in 10 above', '1 de 10 supera') + '</th><th>' + L('% over 100 mm', '% sobre 100 mm') + '</th></tr></thead><tbody>' + sys + '</tbody></table></div></details>';
     host.appendChild(c);
   });
 })();
@@ -745,10 +791,10 @@ function overview(l, idx){
 /* ---------- model table ---------- */
 (function(){
   var order = LOCS[0].ranking.map(function(r){ return r.m; });
-  var kind = { global: L('global', 'global'), ai: L('AI', 'IA'), hurricane: L('hurricane', 'huracán') };
+  var kind = { global: L('global', 'global'), ai: L('AI model', 'modelo de IA'), hurricane: L('hurricane model', 'modelo de huracanes') };
   var head = '<thead><tr><th>' + L('Model', 'Modelo') + '</th><th>' + L('Grid', 'Malla') + '</th>' +
     LOCS.map(function(l){ return '<th style="text-align:right">' + PLACE[l.id].short + '</th>'; }).join('') +
-    '<th style="text-align:right">' + L('Fastest hour', 'Hora más intensa') + '</th><th style="text-align:right">' + L('Lowest pressure', 'Presión mínima') + '</th></tr></thead>';
+    '<th style="text-align:right">' + L('Heaviest hour (Amapas)', 'Hora más intensa (Amapas)') + '</th><th style="text-align:right">' + L('Lowest pressure (Amapas)', 'Presión mínima (Amapas)') + '</th></tr></thead>';
   var body = order.map(function(m){
     var md = D.models[m];
     var cells = LOCS.map(function(l){
@@ -757,8 +803,9 @@ function overview(l, idx){
       return '<td class="n">' + mm(r.total) + badge + '<span class="mb" style="width:' + Math.max(1, r.total / TUBE_MAX * 60).toFixed(0) + 'px"></span></td>';
     }).join('');
     var r0 = LOCS[0].ranking.filter(function(x){ return x.m === m; })[0];
-    return '<tr><td><b>' + esc(md.label) + '</b><span class="org">' + esc(md.org) + (md.cycle ? ' · ' + md.cycle : '') + '</span></td>' +
-      '<td>' + md.km + ' km · ' + kind[md.kind] + (md.step === 3 ? ' · ' + L('3-hourly', 'cada 3 h') : '') + '</td>' + cells +
+    var cyc = md.cycle ? ' · ' + L('run ' + md.cycle.replace('Z', ' UTC'), 'corrida ' + md.cycle.replace('Z', ' UTC').replace('Oct', 'oct')) : '';
+    return '<tr><td><b>' + esc(md.label) + '</b><span class="org">' + esc(md.org) + cyc + '</span></td>' +
+      '<td>' + md.km + ' km · ' + kind[md.kind] + (md.step === 6 ? ' · ' + L('6-hourly', 'cada 6 h') : md.step === 3 ? ' · ' + L('3-hourly', 'cada 3 h') : '') + '</td>' + cells +
       '<td class="n">' + r0.peak.toFixed(1) + ' mm/h</td><td class="n">' + (r0.pmin ? Math.round(r0.pmin) + ' hPa' : '—') + '</td></tr>';
   }).join('');
   document.getElementById('mtable').innerHTML = head + '<tbody>' + body + '</tbody>';
@@ -771,7 +818,7 @@ function overview(l, idx){
     var en = DAY_EN[d.getUTCDay()] + ' ' + h12(d.getUTCHours()), es = DAY_ES[d.getUTCDay()] + ' ' + String(d.getUTCHours()).padStart(2, '0') + ':00';
     return '<tr><td>' + L(en, es) + '</td><td class="n">' + p.lat.toFixed(1) + '°N ' + (-p.lon).toFixed(1) + '°W</td><td class="n">' + Math.round(p.kt * 1.852 / 5) * 5 + ' km/h</td><td class="n">' + Math.round(db.km) + ' km ' + compass(db.br) + '</td></tr>';
   }).join('');
-  var cl = closest ? '<tr><td colspan="4" style="color:var(--alert)"><b>' + L('Closest approach', 'Máximo acercamiento') + ':</b> ' + L('about ', 'unos ') + Math.round(closest.km) + ' km ' + compass(closest.br) + ', ' + tlabel(closest.i, true) + ' (' + L('interpolated', 'interpolado') + ')</td></tr>' : '';
+  var cl = closest ? '<tr><td colspan="4" style="color:var(--alert)"><b>' + L('Closest approach', 'Punto de mayor acercamiento') + ':</b> ' + L('about ', 'unos ') + Math.round(closest.km) + ' km ' + compass(closest.br) + ', ' + tlabel(closest.i, true) + ' (' + L('interpolated', 'interpolado') + ')</td></tr>' : '';
   document.getElementById('track').innerHTML = '<thead><tr><th>' + L('Time (CST)', 'Hora (centro)') + '</th><th>' + L('Center', 'Centro') + '</th><th>' + L('Wind', 'Viento') + '</th><th>' + L('From downtown PV', 'Desde el centro de PV') + '</th></tr></thead><tbody>' + rows + cl + '</tbody>';
 })();
 
@@ -783,10 +830,12 @@ function exclText(){
   var en = [], es = [];
   if (nd.length){ en.push(nd.join(', ') + ' (no data for this area and window)'); es.push(nd.join(', ') + ' (sin datos para esta zona y ventana)'); }
   if (bl.length){ en.push(bl.join(', ') + ' (download refused by the data provider’s daily limit)'); es.push(bl.join(', ') + ' (descarga rechazada por el límite diario del proveedor)'); }
-  return en.length ? L('<b>Not used:</b> ' + en.join('; ') + '.', '<b>No usados:</b> ' + es.join('; ') + '.') : '';
+  return en.length ? L('<b>Not used:</b> ' + en.join('; ') + '.', '<b>Modelos no incluidos:</b> ' + es.join('; ') + '.') : '';
 }
 (function(){
   var gm = Object.keys(D.models).filter(function(m){ return D.models[m].kind !== 'hurricane'; }).map(function(m){ return D.models[m].label; }).join(', ');
+  var byStep = function(n){ return Object.keys(D.models).filter(function(m){ return D.models[m].step === n; }).map(function(m){ return D.models[m].label; }).join(', '); };
+  var s3 = byStep(3), s6 = byStep(6);
   var items = [
     L('<b>Window.</b> 48 hours, Saturday 10 Oct 12:00 to Monday 12 Oct 12:00, Central time (UTC−6, no daylight saving). Each bar is the rain that falls in that hour.',
       '<b>Ventana.</b> 48 horas, del sábado 10 oct 12:00 al lunes 12 oct 12:00, hora del centro (UTC−6, sin horario de verano). Cada barra es la lluvia que cae en esa hora.'),
@@ -794,16 +843,16 @@ function exclText(){
       '<b>Modelos globales</b> (' + gm + ') vía Open-Meteo, en la celda de malla más cercana a cada dirección. Sus mallas miden de 9 a 55 km, así que las dos direcciones de la Zona Romántica a menudo comparten celda.'),
     L('<b>Hurricane models.</b> HAFS-A and HAFS-B are NOAA’s hurricane models (06 UTC run), read from NOAA’s open-data bucket on their fixed 6 km grid. Their 2 km storm-following grid stores rain relative to the moving storm, which gives wrong totals at a fixed address, so it is not used.',
       '<b>Modelos de huracanes.</b> HAFS-A y HAFS-B son los modelos de huracanes de la NOAA (corrida de 06 UTC), leídos de su repositorio de datos abiertos en su malla fija de 6 km. Su malla de 2 km que sigue a la tormenta guarda la lluvia relativa al ciclón en movimiento, lo que da totales erróneos en una dirección fija; por eso no se usa.'),
-    L('<b>Scenarios.</b> Worst case is the one model with the most rain over 48 hours at that address, shown hour by hour; best case is the one with the least. The average is the mean of all ' + NMOD + ' models for each hour. Gusts: the worst-case pane shows the highest gust any model gives for that hour, the best-case pane the lowest, the average pane the mean (HAFS and the AI models do not report gusts).',
-      '<b>Escenarios.</b> El peor escenario es el modelo con más lluvia en 48 horas en esa dirección, mostrado hora por hora; el mejor, el que tiene menos. El promedio es la media de los ' + NMOD + ' modelos en cada hora. Ráfagas: el panel del peor escenario muestra la ráfaga más alta de cualquier modelo en esa hora, el del mejor la más baja y el del promedio la media (HAFS y los modelos de IA no reportan ráfagas).'),
-    L('<b>3-hourly models</b> (HAFS, JMA, ECMWF AIFS, AI-GFS) are spread evenly over each three hours, which smooths their peaks.',
-      '<b>Modelos cada 3 horas</b> (HAFS, JMA, ECMWF AIFS, AI-GFS): su lluvia se reparte por igual entre las tres horas, lo que suaviza sus picos.'),
+    L('<b>Scenarios.</b> Worst case is the one model with the most rain over 48 hours at that address, shown hour by hour; best case is the one with the least. The average is the mean of all ' + NMOD + ' models for each hour. Gusts: the worst-case pane shows the highest gust any model gives for that hour, the best-case pane the lowest, the average pane the mean (HAFS gusts are not used; JMA GSM and the AI models report none).',
+      '<b>Escenarios.</b> El peor escenario es el modelo con más lluvia en 48 horas en esa dirección, mostrado hora por hora; el mejor, el que tiene menos. El promedio es la media de los ' + NMOD + ' modelos en cada hora. Ráfagas: el panel del peor escenario muestra la ráfaga más alta de cualquier modelo en esa hora, el del mejor la más baja y el del promedio la media (no se usan las ráfagas de HAFS; JMA GSM y los modelos de IA no las reportan).'),
+    L('<b>Coarser time steps.</b> Models that give rain every 3 hours (' + s3 + ') or every 6 hours (' + s6 + ') are spread evenly over those hours, which smooths their peaks.',
+      '<b>Pasos de tiempo más largos.</b> La lluvia de los modelos que la dan cada 3 horas (' + s3 + ') o cada 6 horas (' + s6 + ') se reparte por igual entre esas horas, lo que suaviza sus picos.'),
     L('<b>Limits.</b> Simon’s hurricane-force winds reach only 30 km from its center, too small for most of these grids to resolve. No model here brings the core over town the way the NHC track does, so treat the worst case as plausible rather than extreme. NHC expects 250–500 mm across parts of southwestern Mexico.',
-      '<b>Límites.</b> Los vientos de huracán de Simon llegan solo a 30 km de su centro, demasiado poco para que la mayoría de estas mallas lo resuelva. Ningún modelo aquí trae el núcleo sobre la ciudad como lo hace la trayectoria del NHC, así que el peor escenario es plausible, no extremo. El NHC espera 250–500 mm en partes del suroeste de México.'),
-    exclText() + ' ' + L('Rain-rate words follow common hourly bands (light under 2.5 mm/h, moderate to 7.6, heavy to 25, very heavy to 50, violent above). 24-hour words follow SMN-CONAGUA (heavy 25–50 mm, very heavy 50–75, intense 75–150, torrential above 150).',
-      'Las palabras de intensidad horaria siguen rangos comunes (ligera bajo 2.5 mm/h, moderada hasta 7.6, fuerte hasta 25, muy fuerte hasta 50, violenta arriba). Las de 24 horas siguen al SMN-CONAGUA (fuertes 25–50 mm, muy fuertes 50–75, intensas 75–150, torrenciales arriba de 150).'),
+      '<b>Límites.</b> Los vientos de huracán de Simon se extienden solo 30 km desde su centro, una escala demasiado pequeña para la mayoría de estas mallas. Ningún modelo aquí trae el núcleo sobre la ciudad como lo hace la trayectoria del NHC, así que tome el peor escenario como plausible, no como extremo. El NHC espera 250–500 mm en partes del suroeste de México.'),
+    exclText() + ' ' + L('Hourly rain words follow common bands (light: under 2.5 mm/h; moderate: to 7.6; heavy: to 25; very heavy: to 50; violent: over 50). 24-hour words follow SMN-CONAGUA (light: up to 5 mm; showers: 5–25; heavy: 25–50; very heavy: 50–75; intense: 75–150; torrential: 150–250; extraordinary: over 250).',
+      'Los términos de intensidad por hora siguen rangos de uso común (ligera: menos de 2.5 mm/h; moderada: hasta 7.6; fuerte: hasta 25; muy fuerte: hasta 50; violenta: más de 50). Los de 24 horas siguen la clasificación del SMN-CONAGUA (ligeras: hasta 5 mm; chubascos: 5–25; fuertes: 25–50; muy fuertes: 50–75; intensas: 75–150; torrenciales: 150–250; extraordinarias: más de 250).'),
     L('<b>Sources:</b> <a href="https://www.nhc.noaa.gov/graphics_ep5.shtml" target="_blank" rel="noopener">NHC Simon advisories</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://noaa-nws-hafs-pds.s3.amazonaws.com/index.html" target="_blank" rel="noopener">NOAA HAFS open data</a> · <a href="https://smn.conagua.gob.mx/" target="_blank" rel="noopener">SMN-CONAGUA</a> · addresses from <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap</a>.',
-      '<b>Fuentes:</b> <a href="https://www.nhc.noaa.gov/graphics_ep5.shtml" target="_blank" rel="noopener">avisos del NHC sobre Simon</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://noaa-nws-hafs-pds.s3.amazonaws.com/index.html" target="_blank" rel="noopener">datos abiertos HAFS de la NOAA</a> · <a href="https://smn.conagua.gob.mx/" target="_blank" rel="noopener">SMN-CONAGUA</a> · direcciones de <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap</a>.')
+      '<b>Fuentes:</b> <a href="https://www.nhc.noaa.gov/graphics_ep5.shtml" target="_blank" rel="noopener">boletines del NHC sobre Simon</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://noaa-nws-hafs-pds.s3.amazonaws.com/index.html" target="_blank" rel="noopener">datos abiertos HAFS de la NOAA</a> · <a href="https://smn.conagua.gob.mx/" target="_blank" rel="noopener">SMN-CONAGUA</a> · direcciones de <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap</a>.')
   ];
   document.getElementById('method').innerHTML = items.map(function(t){ return '<li class="bi">' + t + '</li>'; }).join('');
 })();
@@ -812,6 +861,10 @@ function exclText(){
 buildTimeline();
 buildPanes();
 setPlay(false);
+document.querySelectorAll('span.es:not([lang])').forEach(function(e){ e.setAttribute('lang', 'es'); });
+document.querySelectorAll('span.en:not([lang])').forEach(function(e){ e.setAttribute('lang', 'en'); });
+lockHeights();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockHeights);
 if (!reduce){ autoTimer = setTimeout(function(){ autoTimer = null; frame = 0; setPlay(true); }, 1400); }
 })();
 </script>

@@ -1,6 +1,6 @@
 import json, sys, time, urllib.request, urllib.parse, os
 OUT = sys.argv[1]; MODELS = sys.argv[2].split(',')
-PTS = [(20.5984, -105.2382), (20.6477, -105.2087), (20.6012, -105.2358)]
+PTS = [(20.5984, -105.2382), (20.6477, -105.2087), (20.6014, -105.2340)]
 for m in MODELS:
     fn = os.path.join(OUT, f'{m}.json')
     if os.path.exists(fn): print(m, 'cached', flush=True); continue

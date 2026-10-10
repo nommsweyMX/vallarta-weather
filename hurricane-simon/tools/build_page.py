@@ -7,8 +7,8 @@ ROOT = os.path.dirname(HERE)
 src = open(os.path.join(ROOT, 'src', 'page.html'), encoding='utf-8').read()
 data = json.load(open(os.path.join(ROOT, 'data', 'forecast.json')))
 blob = json.dumps(data, separators=(',', ':'), ensure_ascii=False).replace('</', '<\\/')
-frag = src.replace('__FORECAST_JSON__', blob)
-assert '__FORECAST_JSON__' not in frag
+frag = src.replace('__FORECAST_JSON__', blob).replace('__NMOD__', str(data['locs'][0]['n']))
+assert '__FORECAST_JSON__' not in frag and '__NMOD__' not in frag
 cut = frag.index('</style>') + len('</style>')
 head, body = frag[:cut], frag[cut:]
 doc = ('<!doctype html>\n<html lang="en" data-lang="both">\n<head>\n<meta charset="utf-8">\n'

@@ -7,7 +7,7 @@ OUT = sys.argv[3]
 F0, F1 = int(sys.argv[4]), int(sys.argv[5])    # forecast hours covering the window
 D, H = CYC[:8], CYC[8:]
 BASE = f'https://noaa-nws-hafs-pds.s3.amazonaws.com/{MODEL}/{D}/{H}/20e.{CYC}.{MODEL}'
-PTS = [(20.5984, -105.2382), (20.6477, -105.2087), (20.6012, -105.2358)]
+PTS = [(20.5984, -105.2382), (20.6477, -105.2087), (20.6014, -105.2340)]
 def get(url, rng=None):
     for i in range(6):
         try:
@@ -59,7 +59,7 @@ def one(f):
     o = fields(DOM0, f)
     if 'apcp3' not in o or any(x is None for x in o['apcp3']):
         o = fields('parent', f); o['dom'] = 'parent'
-    else: o['dom'] = 'storm'
+    else: o['dom'] = DOM0
     print(MODEL, CYC, f, o['dom'], [round(x['v'],1) if x else None for x in o['apcp3']], file=sys.stderr)
     return f, o
 with ThreadPoolExecutor(6) as ex:
