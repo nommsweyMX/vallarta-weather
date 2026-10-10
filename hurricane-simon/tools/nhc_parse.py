@@ -36,6 +36,11 @@ for k in (64, 50, 34):
     mm = re.search(rf'^{k} KT\.+\s*(.*)$', blk0, re.M)
     pt[f'r{k}'] = radii(mm.group(1)) if mm else [0, 0, 0, 0]
 track.append(pt)
+prev = re.search(r'AT (\d+/\d{4})Z CENTER WAS LOCATED NEAR ([\d.]+[NS]) ([\d.]+[EW])', tcm)
+if prev:
+    t_prev = when(prev.group(1) + 'Z', ref)
+    if t_prev < track[0]['t']:
+        track.insert(0, dict(track[0], t=t_prev, lat=lat(prev.group(2)), lon=lon(prev.group(3)), earlier_fix=True))
 for m in re.finditer(r'FORECAST VALID (\S+) ([\d.]+[NS]) ([\d.]+[EW])(\.\.\.[A-Z/\- ]+)?[ \t]*\nMAX WIND\s+(\d+) KT\.\.\.GUSTS\s+(\d+) KT\.(.*?)(?=\n\s*\n)', tcm, re.S):
     pt = dict(t=when(m.group(1).rstrip('Z') + 'Z', ref), lat=lat(m.group(2)), lon=lon(m.group(3)), kt=int(m.group(5)), gust=int(m.group(6)),
               inland=bool(m.group(4) and 'INLAND' in m.group(4)), note=(m.group(4) or '').strip('. '))
@@ -44,7 +49,7 @@ for m in re.finditer(r'FORECAST VALID (\S+) ([\d.]+[NS]) ([\d.]+[EW])(\.\.\.[A-Z
         pt[f'r{k}'] = radii(mm.group(1)) if mm else [0, 0, 0, 0]
     track.append(pt)
 n_valid = len(re.findall(r'FORECAST VALID \S+ [\d.]+[NS] [\d.]+[EW]', tcm))
-assert len(track) == n_valid + 1, ('forecast points parsed', len(track) - 1, 'of', n_valid)
+assert len(track) == n_valid + 1 + (1 if track[0].get('earlier_fix') else 0), ('forecast points parsed', len(track), 'of', n_valid)
 for p in track: p['t'] = p['t'].strftime('%Y-%m-%dT%H:%MZ')
 
 # ---- public advisory summary ----
@@ -62,6 +67,8 @@ summary = dict(
     move_dir=g(r'PRESENT MOVEMENT\.\.\.(\w+) OR \d+ DEGREES'),
     move_kmh=int(g(r'PRESENT MOVEMENT\.\.\..*?AT \d+ MPH\.\.\.(\d+) KM/H')),
     pressure_mb=int(g(r'MINIMUM CENTRAL PRESSURE\.\.\.(\d+) MB')),
+    hf_km=int(g(r'Hurricane-force winds extend outward up to \d+ miles\s+\((\d+) km\)') or 0) or None,
+    ts_km=int(g(r'tropical-storm-force winds extend outward up to \d+ miles\s+\((\d+) km\)') or 0) or None,
     warnings=re.findall(r'^\* (.+)$', re.split(r'\n\s*\n', tcp.split('A Hurricane Warning is in effect for')[1], maxsplit=1)[0], re.M) if 'A Hurricane Warning is in effect for' in tcp else [],
 )
 
@@ -81,7 +88,9 @@ ph = re.search(r'\n(\d{2})00 UTC \w{3} (\w{3}) (\d+) (\d{4})', pws)
 m34 = re.search(r'^P VALLARTA\s+34\s+(.*)$', pws, re.M)
 if ph and m34:
     issued = dt.datetime.strptime(f'{ph.group(2)} {ph.group(3)} {ph.group(4)} {ph.group(1)}', '%b %d %Y %H')
-    base = issued.replace(hour=(issued.hour // 12) * 12)
+    bm = re.search(r'BETWEEN\s+(\d{2})Z \w{3} AND THE FORECAST HOUR', pws)
+    base = issued.replace(hour=int(bm.group(1))) if bm else issued.replace(hour=(issued.hour // 6) * 6)
+    if base > issued: base -= dt.timedelta(days=1)
     ops = [0 if v == 'X' else int(v) for v in re.findall(r'(X|\d+)(?:\(\s*(?:X|\d+)\))?', m34.group(1))]
     edges = [0, 12, 24, 36, 48, 72, 96, 120]
     if ops:

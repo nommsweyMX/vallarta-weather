@@ -1,5 +1,7 @@
 """Fetch Open-Meteo deterministic models for the 3 addresses, nearest grid cell, with retries."""
 import json, sys, time, urllib.request, urllib.parse, os
+# Optional commercial key: set OPEN_METEO_API_KEY in the environment (never commit it).
+KEY = os.environ.get('OPEN_METEO_API_KEY')
 OUT = sys.argv[1]
 MODELS = sys.argv[2].split(',')
 PTS = [(20.5984, -105.2382), (20.6477, -105.2087), (20.6014, -105.2340)]
@@ -8,7 +10,8 @@ def url(m):
          'hourly': 'precipitation,wind_gusts_10m,wind_speed_10m,pressure_msl', 'models': m,
          'timezone': 'America/Mexico_City', 'start_hour': '2026-10-10T12:00', 'end_hour': '2026-10-12T12:00',
          'wind_speed_unit': 'kmh', 'cell_selection': 'nearest'}
-    return 'https://api.open-meteo.com/v1/forecast?' + urllib.parse.urlencode(q)
+    if KEY: q['apikey'] = KEY
+    return ('https://customer-api.open-meteo.com/v1/forecast?' if KEY else 'https://api.open-meteo.com/v1/forecast?') + urllib.parse.urlencode(q)
 for m in MODELS:
     fn = os.path.join(OUT, f'{m}.json')
     if os.path.exists(fn): print(m, 'cached'); continue

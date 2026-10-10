@@ -196,10 +196,14 @@ for li, L in enumerate(LOCS):
     )
     if NHC:   # closest approach of the NHC-track center, at 5-minute resolution
         t0 = dt.datetime.strptime(FRAMES[0], '%Y-%m-%dT%H:%M') + dt.timedelta(hours=6)
-        near = min(((x['km'], k) for k in range(0, NH * 12 + 1) for x in [nhc_wind(t0 + dt.timedelta(minutes=5 * k), L['lat'], L['lon'])] if x), default=None)
-        if near:
-            rec['wind']['minKm'] = round(near[0], 1); rec['wind']['minAt'] = (t0 + dt.timedelta(minutes=5 * near[1]) - dt.timedelta(hours=6)).strftime('%Y-%m-%dT%H:%M')
-    print('   wind', L['id'], 'closest', rec['wind'].get('minKm'), 'km at', rec['wind'].get('minAt'), '| nhc peak', int(np.nanmax(ns)), '/', int(np.nanmax(ng)), 'km/h at', FRAMES[int(np.nanargmax(ns))],
+        fine = [(k, nhc_wind(t0 + dt.timedelta(minutes=5 * k), L['lat'], L['lon'])) for k in range(0, NH * 12 + 1)]
+        fine = [(k, x) for k, x in fine if x]
+        local = lambda k: (t0 + dt.timedelta(minutes=5 * k) - dt.timedelta(hours=6)).strftime('%Y-%m-%dT%H:%M')
+        if fine:
+            kn, xn = min(fine, key=lambda kx: kx[1]['km']); kp, xp = max(fine, key=lambda kx: kx[1]['kt'])
+            rec['wind'].update(minKm=round(xn['km'], 2), minAt=local(kn),
+                               peakS=int(round(xp['kt'] * 1.852)), peakG=int(round(xp['gust'] * 1.852)), peakAt=local(kp), peakKm=round(xp['km'], 1))
+    print('   wind', L['id'], 'closest', rec['wind'].get('minKm'), 'km at', rec['wind'].get('minAt'), '| 5-min peak', rec['wind'].get('peakS'), rec['wind'].get('peakG'), rec['wind'].get('peakAt'), '| hourly nhc peak', int(np.nanmax(ns)), '/', int(np.nanmax(ng)), 'km/h at', FRAMES[int(np.nanargmax(ns))],
           'min dist', min(x['km'] for x in nhc if x), '| models S max', int(np.nanmax(W)), 'G max', int(np.nanmax(G)))
     # ensemble context
     ens = {}; pool = []
