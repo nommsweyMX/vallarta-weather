@@ -70,9 +70,12 @@ for fn in sorted(glob.glob(os.path.join(D, 'om', '*.json'))):
         g = h.get('wind_gusts_10m') or []
         gv = [x for x in g if x is not None]
         gust = [None if x is None else float(x) for x in g] if gv and max(gv) > 0 else None
+        ws = h.get('wind_speed_10m') or []
+        wv = [x for x in ws if x is not None]
+        wind = [None if x is None else float(x) for x in ws] if wv and max(wv) > 0 and len(wv) >= NH else None
         pr = [x for x in h.get('pressure_msl') or [] if x is not None]
         ELEV.setdefault(li, loc.get('elevation'))
-        per.append(dict(inc=inc, gust=gust, cell=[round(loc['latitude'], 3), round(loc['longitude'], 3)],
+        per.append(dict(inc=inc, gust=gust, wind=wind, cell=[round(loc['latitude'], 3), round(loc['longitude'], 3)],
                         pmin=round(min(pr), 1) if pr else None, missing=miss))
     if all(x is None for x in per):
         print('skip (no data)', mid); excluded.append(dict(m=mid, label=META[mid][0], why='nodata')); continue
@@ -94,11 +97,50 @@ for fn in sorted(glob.glob(os.path.join(D, 'hafs', '*_parent.json'))):
         chk = a0(f0 + NH) - a0(f0)
         assert abs(chk - sum(inc)) < 0.3, (mid, li, chk, sum(inc))
         pr = [st[str(f)]['prmsl'][li]['v'] / 100 for f in range(f0, f0 + NH + 1, 3)]
-        per.append(dict(inc=inc, gust=None, cell=[LOCS[li]['lat'], LOCS[li]['lon']], pmin=round(min(pr), 1), missing=0,
+        wk = [st[str(f)]['wmax'][li]['v'] * 3.6 for f in range(f0, f0 + NH + 1, 3)]          # km/h at every 3rd frame
+        wind = [float(np.interp(i, range(0, NH + 1, 3), wk)) for i in range(NH + 1)]
+        per.append(dict(inc=inc, gust=None, wind=wind, cell=[LOCS[li]['lat'], LOCS[li]['lon']], pmin=round(min(pr), 1), missing=0,
                         wmax=round(max(st[str(f)]['wmax'][li]['v'] for f in range(f0 + 3, f0 + NH + 1, 3)) * 3.6, 0)))
     models[mid] = dict(per=per, step=3, cycle=c0.strftime('%HZ %d %b'))
 
 print('models:', list(models))
+
+# ---- NHC forecast track -> wind at a fixed point (estimate) ----
+NHC = json.load(open(os.path.join(D, 'nhc.json'))) if os.path.exists(os.path.join(D, 'nhc.json')) else None
+
+def geo(la1, lo1, la2, lo2):
+    p1, p2, dl = np.radians(la1), np.radians(la2), np.radians(lo2 - lo1)
+    d = 2 * 6371 * np.arcsin(np.sqrt(np.sin((p2 - p1) / 2) ** 2 + np.cos(p1) * np.cos(p2) * np.sin(dl / 2) ** 2))
+    b = (np.degrees(np.arctan2(np.sin(dl) * np.cos(p2), np.cos(p1) * np.sin(p2) - np.sin(p1) * np.cos(p2) * np.cos(dl))) + 360) % 360
+    return float(d), float(b)
+
+def nhc_wind(t_utc, la, lo):
+    """Sustained wind and gust (kt) at a point if Simon follows the NHC track exactly.
+    Track, intensity and the 34/50/64-kt radii (largest extent per quadrant) are interpolated in time; the radius
+    toward the point is interpolated between quadrant centres; speed is piecewise-linear between the radii,
+    with a radius of maximum wind of half the 64-kt radius (8 nm minimum) and a 1/r decay beyond the 34-kt radius."""
+    tr = NHC['track']; ts = [dt.datetime.strptime(p['t'], '%Y-%m-%dT%H:%MZ') for p in tr]
+    if t_utc < ts[0] or t_utc > ts[-1]: return None
+    k = max(i for i in range(len(ts) - 1) if ts[i] <= t_utc)
+    a, b = tr[k], tr[k + 1]; f = (t_utc - ts[k]) / (ts[k + 1] - ts[k])
+    I = lambda x, y: x + f * (y - x)
+    clat, clon, vmax, gmax = I(a['lat'], b['lat']), I(a['lon'], b['lon']), I(a['kt'], b['kt']), I(a['gust'], b['gust'])
+    km, brg = geo(clat, clon, la, lo); r = km / 1.852
+    def toward(key):
+        q = [I(a[key][j], b[key][j]) for j in range(4)]            # NE SE SW NW
+        x = ((brg - 45) % 360) / 90; i = int(x) % 4; w = x - int(x)
+        return q[i] * (1 - w) + q[(i + 1) % 4] * w
+    r64, r50, r34 = toward('r64'), toward('r50'), toward('r34')
+    rmw = max(8.0, 0.5 * r64) if r64 > 0 else 10.0
+    knots = [(rmw, vmax)]
+    for rr, vv in ((r64, 64), (r50, 50), (r34, 34)):
+        if vmax > vv and rr > knots[-1][0]: knots.append((rr, vv))
+    if r <= rmw: v = vmax * r / rmw
+    elif r >= knots[-1][0]: v = knots[-1][1] * (knots[-1][0] / r)
+    else:
+        for (ra, va), (rb, vb) in zip(knots, knots[1:]):
+            if ra <= r <= rb: v = va + (vb - va) * (r - ra) / (rb - ra); break
+    return dict(kt=v, gust=v * (gmax / vmax if vmax else 1.25), km=km, brg=brg, ctr=(clat, clon), vmax=vmax)
 
 def roll(a, n):
     s = np.convolve(a, np.ones(n), 'valid'); i = int(np.argmax(s)); return round(float(s[i]), 1), i
@@ -135,6 +177,25 @@ for li, L in enumerate(LOCS):
                   lo=[round(float(x)) for x in np.nanmin(G, axis=0)]),
         series={m: [round(x, 2) for x in avail[m]['inc']] for m in order},
     )
+    # ---- wind: models (sustained + gusts), NHC-track estimate, worst/avg/best ----
+    ws = {m: avail[m]['wind'] for m in order if avail[m].get('wind')}
+    W = np.array([[np.nan if x is None else x for x in ws[m]] for m in ws], dtype=float)
+    nhc = [nhc_wind(dt.datetime.strptime(fr, '%Y-%m-%dT%H:%M') + dt.timedelta(hours=6), L['lat'], L['lon']) if NHC else None for fr in FRAMES]
+    ns = np.array([x['kt'] * 1.852 if x else np.nan for x in nhc]); ng = np.array([x['gust'] * 1.852 if x else np.nan for x in nhc])
+    hiS, hiG = np.nanmax(W, axis=0), np.nanmax(G, axis=0)
+    wS, wG = np.fmax(ns, hiS), np.fmax(ng, hiG)
+    srcS = [('nhc' if (not np.isnan(ns[i]) and ns[i] >= hiS[i]) else list(ws)[int(np.nanargmax(W[:, i]))]) for i in range(NH + 1)]
+    R0 = lambda a: [None if np.isnan(x) else int(round(float(x))) for x in a]
+    rec['wind'] = dict(
+        nS=len(ws), nG=len(gusts), models=list(ws), gModels=[m for m in order if avail[m]['gust']],
+        nhc=dict(s=R0(ns), g=R0(ng), km=[None if x is None else round(x['km'], 1) for x in nhc], brg=[None if x is None else round(x['brg']) for x in nhc]),
+        worst=dict(s=R0(wS), g=R0(wG), src=srcS),
+        avg=dict(s=R0(np.nanmean(W, axis=0)), g=R0(np.nanmean(G, axis=0))),
+        best=dict(s=R0(np.nanmin(W, axis=0)), g=R0(np.nanmin(G, axis=0))),
+        modelS={m: R0(np.array([np.nan if x is None else x for x in ws[m]], dtype=float)) for m in ws},
+    )
+    print('   wind', L['id'], 'nhc peak', int(np.nanmax(ns)), '/', int(np.nanmax(ng)), 'km/h at', FRAMES[int(np.nanargmax(ns))],
+          'min dist', min(x['km'] for x in nhc if x), '| models S max', int(np.nanmax(W)), 'G max', int(np.nanmax(G)))
     # ensemble context
     ens = {}; pool = []
     for fn in sorted(glob.glob(os.path.join(D, 'ens', '*.json'))):
@@ -157,6 +218,24 @@ mods = {m: dict(label=META[m][0], org=META[m][1], km=META[m][2], kind=META[m][3]
                 tail=(dict(step=v['tail'][0], fromFrame=v['tail'][1]) if v.get('tail') else None))
         for m, v in models.items()}
 print('excluded', excluded)
-json.dump(dict(excluded=excluded, generated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), frames=FRAMES, models=mods, locs=out_locs),
+# ---- waves in the bay off Los Muertos (context only; storm surge is not modeled here) ----
+waves = {}
+for fn in sorted(glob.glob(os.path.join(D, 'waves', '*_ww3.json'))):
+    d = json.load(open(fn)); c0 = dt.datetime.strptime(d['cycle'], '%Y%m%d%H')
+    f0 = int(((T0 + dt.timedelta(hours=6)) - c0).total_seconds() // 3600)
+    hs = [d['steps'][str(f)]['hs'] for f in range(f0, f0 + NH + 1, 3)]
+    waves[d['model'] + '_ww3'] = dict(label=META[d['model']][0] + ' WAVEWATCH III', hs=[round(float(np.interp(i, range(0, NH + 1, 3), hs)), 2) for i in range(NH + 1)],
+                                      km=round(d['steps'][str(f0)]['km'], 1))
+for fn in sorted(glob.glob(os.path.join(D, 'marine', '*.json'))):
+    mid = os.path.basename(fn)[:-5]
+    if mid == 'best_match': continue
+    d = json.load(open(fn)); hs = (d.get('hourly') or {}).get('wave_height') or []
+    if len(hs) == NH + 1 and all(x is not None for x in hs) and max(hs) > 0.05:
+        km, _ = geo(20.597, -105.243, d['latitude'], d['longitude'])
+        waves[mid] = dict(label={'meteofrance_wave': 'Météo-France MFWAM', 'ecmwf_wam025': 'ECMWF WAM', 'ncep_gfswave025': 'GFS-Wave'}.get(mid, mid),
+                          hs=[round(x, 2) for x in hs], km=round(km, 1))
+print('waves', {k: (v['label'], max(v['hs']), v['km']) for k, v in waves.items()})
+
+json.dump(dict(nhc=NHC, waves=waves, excluded=excluded, generated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), frames=FRAMES, models=mods, locs=out_locs),
           open(OUT, 'w'), separators=(',', ':'))
 print('wrote', OUT, os.path.getsize(OUT), 'bytes')
