@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="en" data-lang="both">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Hour-by-hour rain forecast for Hurricane Simon at three Puerto Vallarta addresses: worst case, model average and best case, in English and Spanish.">
+<title>Simon Hour by Hour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;900&family=Red+Hat+Mono:wght@400;500;700&family=Red+Hat+Text:wght@400;500;700&display=swap">
+<style>
+/* Layout: a storm instrument panel. Alert strip, then three rain-gauge panes over one shared 48-hour timeline, then the evidence. */
+:root{
+  --bg:#f1f2f4; --card:#ffffff; --ink:#151515; --ink2:#3c3f42; --muted:#62666b; --line:#dcdfe3; --grid:#e9ebee;
+  --bar:#151515; --bar-ink:#ffffff; --brand:#ee0000;
+  --rain:#1769d6; --rain-fut:#c7d7ee; --rain-band:rgba(23,105,214,.12);
+  --s-worst:#0d366b; --s-avg:#2a78d6; --s-best:#86b6ef;
+  --alert:#c9190b; --alert-bg:#fdeceb; --alert-ink:#7d1007;
+  --c-mod:#2a78d6; --c-heavy:#b7791f; --c-vheavy:#c9541a; --c-violent:#c9190b;
+  --night:rgba(39,57,92,.09); --focus:#0066cc;
+  --display:"Red Hat Display", "Segoe UI", system-ui, sans-serif;
+  --text:"Red Hat Text", "Segoe UI", system-ui, sans-serif;
+  --mono:"Red Hat Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1015; --card:#161a21; --ink:#eef1f5; --ink2:#c7cdd5; --muted:#949ca7; --line:#2b323c; --grid:#222831;
+    --bar:#07090c; --bar-ink:#ffffff; --brand:#ff3b30;
+    --rain:#4c9bff; --rain-fut:#253852; --rain-band:rgba(76,155,255,.16);
+    --s-worst:#cde2fb; --s-avg:#4c9bff; --s-best:#2f6fbf;
+    --alert:#ff5c4d; --alert-bg:#341311; --alert-ink:#ffc9c3;
+    --c-mod:#4c9bff; --c-heavy:#e0a43a; --c-vheavy:#ff8a4c; --c-violent:#ff5c4d;
+    --night:rgba(150,180,230,.08); --focus:#7fb5ff;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1015; --card:#161a21; --ink:#eef1f5; --ink2:#c7cdd5; --muted:#949ca7; --line:#2b323c; --grid:#222831;
+  --bar:#07090c; --bar-ink:#ffffff; --brand:#ff3b30;
+  --rain:#4c9bff; --rain-fut:#253852; --rain-band:rgba(76,155,255,.16);
+  --s-worst:#cde2fb; --s-avg:#4c9bff; --s-best:#2f6fbf;
+  --alert:#ff5c4d; --alert-bg:#341311; --alert-ink:#ffc9c3;
+  --c-mod:#4c9bff; --c-heavy:#e0a43a; --c-vheavy:#ff8a4c; --c-violent:#ff5c4d;
+  --night:rgba(150,180,230,.08); --focus:#7fb5ff;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--text);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;margin:0}
+a{color:var(--rain)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:clamp(16px,3vw,32px)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* bilingual: data-lang on <html>; en, es, or both */
+[data-lang="en"] .es{display:none}
+[data-lang="es"] .en{display:none}
+[data-lang="both"] .es{opacity:.72}
+[data-lang="both"] .en + .es::before{content:" / "}
+[data-lang="both"] .bi > .es{display:block}
+[data-lang="both"] .bi > .en + .es::before{content:none}
+[data-lang="both"] .bi > .es{font-style:italic}
+[data-lang="both"] h1 .es, [data-lang="both"] h2 .es{font-weight:500}
+
+/* top bar (house chrome) */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bar);color:var(--bar-ink);border-bottom:3px solid var(--brand)}
+.bar .wrap{display:flex;align-items:center;gap:12px;padding-block:9px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:900;letter-spacing:.01em;font-size:15px;color:var(--bar-ink);text-decoration:none}
+.brand small{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.08em;opacity:.7;margin-left:8px;text-transform:uppercase}
+.lang{margin-left:auto;display:flex;border:1px solid #ffffff40;border-radius:8px;overflow:hidden}
+.lang button{all:unset;cursor:pointer;font-family:var(--mono);font-size:12px;padding:6px 11px;color:#ffffffc0}
+.lang button[aria-pressed="true"]{background:#ffffff;color:#151515}
+.lang button:focus-visible{outline:2px solid #7fb5ff;outline-offset:-2px}
+
+/* alert */
+.alert{background:var(--alert-bg);border-bottom:1px solid var(--line)}
+.alert .wrap{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;padding-block:14px;align-items:start}
+.alert .tag{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--alert);padding:5px 9px;border-radius:5px;white-space:nowrap}
+.alert p{margin:0;color:var(--alert-ink);max-width:95ch}
+.alert p b{color:var(--alert-ink)}
+@media (max-width:640px){.alert .wrap{grid-template-columns:1fr}.alert .tag{justify-self:start;white-space:normal}}
+
+/* hero */
+.hero{padding-block:28px 10px;display:grid;gap:10px}
+.hero h1{font-size:clamp(30px,5vw,50px);font-weight:900;line-height:1.02;letter-spacing:-.01em}
+.hero .sub{color:var(--ink2);max-width:75ch;margin:0}
+.keyline{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:6px}
+@media (max-width:640px){.keyline{display:grid;grid-template-columns:1fr 1fr}.keyline div:last-child{grid-column:1/-1}}
+.keyline div{display:grid;gap:0}
+.keyline b{font-family:var(--display);font-weight:900;font-size:24px;font-variant-numeric:tabular-nums}
+.keyline .k-worst b{color:var(--alert)}
+.keyline span.lab{font-size:12.5px;color:var(--muted)}
+
+/* section headings */
+section.block{padding-block:26px}
+.shead{display:grid;gap:4px;margin-bottom:14px}
+.shead h2{font-size:clamp(20px,2.6vw,26px);font-weight:900}
+.shead p{margin:0;color:var(--ink2);max-width:80ch}
+
+/* player */
+.player{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+.clock{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:12px 32px;align-items:center}
+.clock .when{display:grid}
+.clock .when .t{font-family:var(--display);font-weight:900;font-size:clamp(22px,3vw,30px);line-height:1.1;font-variant-numeric:tabular-nums}
+.clock .when .h{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.storm{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:14px;color:var(--ink2);min-width:0}
+.storm .eyebrow{flex-basis:100%}
+.storm .dist{font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);max-width:100%}
+.pill.cat{border-color:var(--alert);color:var(--alert)}
+.pill.night::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink2);display:inline-block;margin-right:5px}
+.controls{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--grid);padding-top:12px}
+.btn{font-family:var(--mono);font-size:12.5px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer;line-height:1}
+.btn:hover{border-color:var(--ink2)}
+.btn.primary{background:var(--ink);color:var(--card);border-color:var(--ink);min-width:92px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font-family:var(--mono);font-size:12px;background:none;border:0;color:var(--ink2);padding:7px 10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.ctl-lab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:820px){.clock{grid-template-columns:1fr}}
+
+.panes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.panes{grid-template-columns:1fr}}
+.pane{border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0;background:var(--card)}
+.pane .phead{padding:12px 14px 10px;border-top:5px solid var(--pc,var(--line));display:grid;gap:3px;border-bottom:1px solid var(--line)}
+.pane .phead h3{font-size:17px;font-weight:900}
+.pane .phead .d{font-size:12.5px;color:var(--muted)}
+.pane .phead .threat{font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.pane .phead .threat b{color:var(--ink)}
+.rows{display:grid}
+.row{padding:12px 14px;display:grid;gap:6px;border-bottom:1px solid var(--grid)}
+.row:last-child{border-bottom:0}
+.rhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline;min-width:0}
+.rhead .nm{font-weight:700;font-size:14px;min-width:0}
+.rhead .src{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.nums{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.nums .big{font-family:var(--display);font-weight:900;font-size:32px;line-height:1;font-variant-numeric:tabular-nums}
+.nums .u{font-family:var(--mono);font-size:13px;color:var(--ink2)}
+.nums .inch{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.nums .lab{font-size:12px;color:var(--muted)}
+.tube{position:relative;height:12px;border-radius:6px;background:var(--grid);overflow:hidden}
+.tube i{position:absolute;inset:0 auto 0 0;background:var(--rain);border-radius:6px;width:0;transition:width .25s linear}
+.tube .tk{position:absolute;top:0;bottom:0;width:1px;background:var(--card);opacity:.9}
+.tscale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:-2px}
+.rate{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13px;color:var(--ink2)}
+.rate .inc{font-family:var(--mono);font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.chip{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid var(--line);color:var(--ink2);white-space:nowrap}
+.chip[data-lv="2"]{border-color:var(--c-mod);color:var(--c-mod)}
+.chip[data-lv="3"]{border-color:var(--c-heavy);color:var(--c-heavy)}
+.chip[data-lv="4"]{border-color:var(--c-vheavy);color:var(--c-vheavy);font-weight:700}
+.chip[data-lv="5"]{background:var(--c-violent);border-color:var(--c-violent);color:#fff;font-weight:700}
+.chip.g1{border-color:var(--c-heavy);color:var(--c-heavy)}
+.chip.g2{background:var(--c-violent);border-color:var(--c-violent);color:#fff}
+svg.bars{width:100%;height:58px;display:block;overflow:visible}
+.bars-ax{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+.timeline{display:grid;gap:4px}
+.tl-wrap{position:relative}
+svg.tl{width:100%;height:44px;display:block}
+#scrub{width:100%;margin:0;accent-color:var(--rain)}
+.tl-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--muted)}
+.tl-legend i{display:inline-block;width:14px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+
+/* summary cards */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.card h3{font-size:17px;font-weight:900}
+.card .place{font-size:12.5px;color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;gap:6px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-block:1px solid var(--grid);padding-block:8px}
+.trio div{display:grid}
+.trio b{font-family:var(--display);font-weight:900;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.1}
+.trio .w b{color:var(--alert)}
+.trio small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.trio .lab{font-size:12px;color:var(--ink2)}
+.hz{font-size:13.5px;color:var(--ink2);margin:0}
+.threats{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:13.5px}
+.threats li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline}
+.threats .ic{font-family:var(--mono);font-size:11px;color:var(--alert);font-weight:700}
+.ov{position:relative}
+svg.ovc{width:100%;height:auto;display:block;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:12px;line-height:1.35;padding:6px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);font-family:var(--mono)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink2)}
+.legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:3px;margin-right:5px}
+.legend i.band{height:10px;vertical-align:-1px;background:var(--rain-band)}
+
+/* tables */
+.tblwrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:720px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--grid);vertical-align:middle}
+th{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--card)}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.mb{display:inline-block;height:6px;border-radius:3px;background:var(--rain);vertical-align:middle;margin-left:6px}
+.badge{font-family:var(--mono);font-size:10px;padding:1px 5px;border-radius:4px;margin-left:5px;vertical-align:1px}
+.badge.w{background:var(--alert);color:#fff}
+.badge.b{border:1px solid var(--line);color:var(--muted)}
+td .org{display:block;font-size:11.5px;color:var(--muted)}
+
+.odds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.odds{grid-template-columns:1fr}}
+.meter{display:grid;grid-template-columns:72px 1fr 44px;gap:8px;align-items:center;font-size:13px}
+.meter .trk{height:10px;background:var(--grid);border-radius:5px;overflow:hidden}
+.meter .trk i{display:block;height:100%;background:var(--rain);border-radius:5px}
+.meter .p{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+
+.nhc{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
+@media (max-width:980px){.nhc{grid-template-columns:1fr}}
+.nhc .card p{margin:0;font-size:14px}
+.probs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.probs div{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:2px}
+.probs b{font-family:var(--display);font-weight:900;font-size:26px}
+.probs small{font-size:12px;color:var(--muted)}
+.method ul{margin:0;padding-left:18px;display:grid;gap:8px;max-width:95ch}
+.method li{color:var(--ink2)}
+details summary{cursor:pointer;font-weight:700}
+footer{padding-block:24px 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:10px}
+footer p{margin:0 0 6px;max-width:95ch}
+@media (prefers-reduced-motion: reduce){.tube i{transition:none}}
+</style>
+</head>
+<body>
+
+
+<header class="bar">
+  <div class="wrap">
+    <span class="brand">Vallarta Weather <small>Huracán Simon</small></span>
+    <div class="lang" role="group" aria-label="Language / Idioma">
+      <button type="button" id="lang-en" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" id="lang-es" data-lang="es" aria-pressed="false">ES</button>
+      <button type="button" id="lang-both" data-lang="both" aria-pressed="true">EN + ES</button>
+    </div>
+  </div>
+</header>
+
+<div class="alert" role="note">
+  <div class="wrap">
+    <span class="tag"><span class="en">HURRICANE WARNING</span><span class="es">AVISO DE HURACÁN</span></span>
+    <p class="bi">
+      <span class="en"><b>Simon is a Category 4 hurricane</b> (240 km/h, 150 mph) 345 km SSE of Cabo Corrientes, moving north at 7 km/h. A Hurricane Warning covers Punta San Telmo to El Roblito, including Puerto Vallarta. The NHC expects the center near or just inland of the coast on Sunday. Rain this heavy brings life-threatening flooding and mudslides.</span>
+      <span class="es"><b>Simon es un huracán categoría 4</b> (240 km/h) a 345 km al SSE de Cabo Corrientes, avanzando al norte a 7 km/h. Hay aviso de huracán de Punta San Telmo a El Roblito, incluido Puerto Vallarta. El NHC prevé el centro cerca o justo tierra adentro de la costa el domingo. Lluvia así provoca inundaciones y deslaves que ponen en riesgo la vida.</span>
+    </p>
+  </div>
+</div>
+
+<main>
+<div class="wrap">
+  <section class="hero" aria-labelledby="h1">
+    <span class="eyebrow" id="asof"></span>
+    <h1 id="h1"><span class="en">Simon, hour by hour</span><span class="es">Simon, hora por hora</span></h1>
+    <p class="sub bi">
+      <span class="en">Rain forecast for three Puerto Vallarta addresses from Saturday 10 October at noon to Monday 12 October at noon (CST, UTC−6), from <span class="nmod">11</span> weather models.</span>
+      <span class="es">Pronóstico de lluvia para tres direcciones de Puerto Vallarta del sábado 10 de octubre a mediodía al lunes 12 de octubre a mediodía (hora del centro, UTC−6), con <span class="nmod">11</span> modelos meteorológicos.</span>
+    </p>
+    <div class="keyline" id="keyline"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-player" style="padding-top:12px">
+    <div class="shead">
+      <h2 id="h-player"><span class="en">48 hours of rain, animated</span><span class="es">48 horas de lluvia, animadas</span></h2>
+      <p class="bi"><span class="en">Each frame is one hour. Big number: rain collected since Saturday noon. Bars: rain per hour, on one shared scale, so the panes compare directly.</span><span class="es">Cada cuadro es una hora. Número grande: lluvia acumulada desde el sábado a mediodía. Barras: lluvia por hora, en una misma escala para comparar los paneles.</span></p>
+    </div>
+    <div class="player" id="player">
+      <div class="clock">
+        <div class="when"><span class="t num" id="clock-t" aria-live="off"></span><span class="h" id="clock-h"></span></div>
+        <div class="storm" id="storm"></div>
+        <div class="controls">
+          <button type="button" class="btn" id="b-prev" aria-label="Previous hour / Hora anterior">◀</button>
+          <button type="button" class="btn primary" id="b-play"></button>
+          <button type="button" class="btn" id="b-next" aria-label="Next hour / Hora siguiente">▶</button>
+          <span class="seg" role="group" aria-label="Speed / Velocidad">
+            <button type="button" id="sp-1" data-sp="1" aria-pressed="true">1×</button>
+            <button type="button" id="sp-2" data-sp="2" aria-pressed="false">2×</button>
+            <button type="button" id="sp-4" data-sp="4" aria-pressed="false">4×</button>
+          </span>
+          <span class="ctl-lab"><span class="en">Panes</span><span class="es">Paneles</span></span>
+          <span class="seg" role="group" aria-label="Panes by / Paneles por">
+            <button type="button" id="mode-scen" data-mode="scen" aria-pressed="true"><span class="en">Scenario</span><span class="es">Escenario</span></button>
+            <button type="button" id="mode-loc" data-mode="loc" aria-pressed="false"><span class="en">Address</span><span class="es">Dirección</span></button>
+          </span>
+        </div>
+      </div>
+      <div class="panes" id="panes"></div>
+      <div class="timeline">
+        <div class="tl-wrap"><svg class="tl" id="tl" viewBox="0 0 960 44" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+        <input type="range" id="scrub" min="0" max="48" step="1" value="48" aria-label="Forecast hour / Hora del pronóstico">
+        <div class="tl-legend">
+          <span><i style="background:var(--night)"></i><span class="en">Night (18:40–06:54)</span><span class="es">Noche (18:40–06:54)</span></span>
+          <span><i style="background:var(--alert);width:3px"></i><span class="en">Simon's closest approach (NHC track)</span><span class="es">Máximo acercamiento de Simon (trayectoria NHC)</span></span>
+          <span class="mono" style="font-size:11.5px"><span class="en">Space = play/pause · ← → = step</span><span class="es">Espacio = reproducir/pausa · ← → = avanzar</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-sum">
+    <div class="shead">
+      <h2 id="h-sum"><span class="en">The threat at each address</span><span class="es">La amenaza en cada dirección</span></h2>
+      <p class="bi"><span class="en">48-hour totals, the fastest hour, and the wettest six hours. The shaded band is the range of all <span class="nmod">11</span> models.</span><span class="es">Totales de 48 horas, la hora más intensa y las seis horas más lluviosas. La franja sombreada es el rango de los <span class="nmod">11</span> modelos.</span></p>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-odds">
+    <div class="shead">
+      <h2 id="h-odds"><span class="en">Odds from 212 ensemble runs</span><span class="es">Probabilidades de 212 corridas de ensamble</span></h2>
+      <p class="bi"><span class="en">Six forecast centers each re-run their model many times with small changes. The share of runs above each total is a fair estimate of the odds.</span><span class="es">Seis centros de pronóstico corren su modelo muchas veces con pequeños cambios. La proporción de corridas que superan cada total es una estimación razonable de la probabilidad.</span></p>
+    </div>
+    <div class="odds" id="odds"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-models">
+    <div class="shead">
+      <h2 id="h-models"><span class="en">Every model, ranked</span><span class="es">Todos los modelos, en orden</span></h2>
+      <p class="bi"><span class="en">48-hour rain at each address. The models split on Simon's track: the wet group brings the rain shield over the bay, the dry group keeps it offshore.</span><span class="es">Lluvia de 48 horas en cada dirección. Los modelos difieren en la trayectoria de Simon: el grupo lluvioso trae la banda de lluvia sobre la bahía; el grupo seco la mantiene mar adentro.</span></p>
+    </div>
+    <div class="tblwrap"><table id="mtable"></table></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-nhc">
+    <div class="shead">
+      <h2 id="h-nhc"><span class="en">What the National Hurricane Center says</span><span class="es">Lo que dice el Centro Nacional de Huracanes</span></h2>
+      <p class="bi"><span class="en">Advisory 13, issued 9:00 am CST Saturday. The next full advisory is due at 3:00 pm.</span><span class="es">Aviso 13, emitido a las 9:00 h del sábado. El siguiente aviso completo sale a las 15:00 h.</span></p>
+    </div>
+    <div class="nhc">
+      <div class="card">
+        <span class="eyebrow"><span class="en">Puerto Vallarta: chance of sustained winds of at least</span><span class="es">Puerto Vallarta: probabilidad de vientos sostenidos de al menos</span></span>
+        <div class="probs">
+          <div><b>76%</b><small>63 km/h · 39 mph</small><small><span class="en">tropical-storm force</span><span class="es">fuerza de tormenta tropical</span></small></div>
+          <div><b>31%</b><small>93 km/h · 58 mph</small><small><span class="en">damaging</span><span class="es">dañinos</span></small></div>
+          <div><b>6%</b><small>119 km/h · 74 mph</small><small><span class="en">hurricane force</span><span class="es">fuerza de huracán</span></small></div>
+        </div>
+        <p class="bi"><span class="en">Tropical-storm winds most likely begin Sunday between 6 am and 6 pm. Rainfall: 250–500 mm (10–20 in) over parts of southwestern Mexico, locally 760 mm (30 in) in Michoacán, Colima and Jalisco through Sunday. Storm surge with large, destructive waves is expected near and east of where the center comes ashore.</span><span class="es">Lo más probable es que los vientos de tormenta tropical empiecen el domingo entre las 6:00 y las 18:00 h. Lluvia: 250–500 mm en partes del suroeste de México, hasta 760 mm en puntos de Michoacán, Colima y Jalisco hasta el domingo. Se espera marea de tormenta con oleaje grande y destructivo cerca y al este de donde el centro toque tierra.</span></p>
+      </div>
+      <div class="card">
+        <span class="eyebrow"><span class="en">Forecast track (Advisory 13)</span><span class="es">Trayectoria pronosticada (aviso 13)</span></span>
+        <div class="tblwrap" style="border:0"><table id="track" style="min-width:0"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block method" aria-labelledby="h-method">
+    <div class="shead"><h2 id="h-method"><span class="en">How this was made</span><span class="es">Cómo se hizo</span></h2></div>
+    <ul id="method"></ul>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="bi"><span class="en"><b>Not an official forecast.</b> Follow Protección Civil de Jalisco and Puerto Vallarta, SMN-CONAGUA and the NHC. In an emergency call 911.</span><span class="es"><b>No es un pronóstico oficial.</b> Siga a Protección Civil de Jalisco y de Puerto Vallarta, al SMN-CONAGUA y al NHC. En una emergencia llame al 911.</span></p>
+    <p id="foot-gen" class="mono"></p>
+  </div>
+</footer>
+
+<script type="application/json" id="fx-data">{"excluded":[{"m":"bom_access_global","label":"ACCESS-G","why":"nodata"},{"m":"gfs_graphcast025","label":"GraphCast","why":"nodata"},{"m":"kma_gdps","label":"KMA GDPS","why":"nodata"}],"generated":"2026-10-10T15:22Z","frames":["2026-10-10T12:00","2026-10-10T13:00","2026-10-10T14:00","2026-10-10T15:00","2026-10-10T16:00","2026-10-10T17:00","2026-10-10T18:00","2026-10-10T19:00","2026-10-10T20:00","2026-10-10T21:00","2026-10-10T22:00","2026-10-10T23:00","2026-10-11T00:00","2026-10-11T01:00","2026-10-11T02:00","2026-10-11T03:00","2026-10-11T04:00","2026-10-11T05:00","2026-10-11T06:00","2026-10-11T07:00","2026-10-11T08:00","2026-10-11T09:00","2026-10-11T10:00","2026-10-11T11:00","2026-10-11T12:00","2026-10-11T13:00","2026-10-11T14:00","2026-10-11T15:00","2026-10-11T16:00","2026-10-11T17:00","2026-10-11T18:00","2026-10-11T19:00","2026-10-11T20:00","2026-10-11T21:00","2026-10-11T22:00","2026-10-11T23:00","2026-10-12T00:00","2026-10-12T01:00","2026-10-12T02:00","2026-10-12T03:00","2026-10-12T04:00","2026-10-12T05:00","2026-10-12T06:00","2026-10-12T07:00","2026-10-12T08:00","2026-10-12T09:00","2026-10-12T10:00","2026-10-12T11:00","2026-10-12T12:00"],"models":{"cma_grapes_global":{"label":"CMA GRAPES","org":"CMA · CN","km":15,"kind":"global","step":3,"cycle":null},"ecmwf_aifs025_single":{"label":"ECMWF AIFS","org":"ECMWF · AI model","km":25,"kind":"ai","step":3,"cycle":null},"ecmwf_ifs":{"label":"ECMWF IFS","org":"ECMWF · EU","km":9,"kind":"global","step":1,"cycle":null},"gem_global":{"label":"GEM","org":"ECCC · CA","km":15,"kind":"global","step":1,"cycle":null},"gfs_global":{"label":"GFS","org":"NOAA · US","km":13,"kind":"global","step":1,"cycle":null},"icon_global":{"label":"ICON","org":"DWD · DE","km":13,"kind":"global","step":1,"cycle":null},"jma_gsm":{"label":"JMA GSM","org":"JMA · JP","km":55,"kind":"global","step":3,"cycle":null},"meteofrance_arpege_world":{"label":"ARPEGE","org":"Météo-France · FR","km":25,"kind":"global","step":1,"cycle":null},"ncep_aigfs025":{"label":"AI-GFS","org":"NOAA · AI model","km":25,"kind":"ai","step":3,"cycle":null},"ukmo_global_deterministic_10km":{"label":"UK Met Office","org":"Met Office · UK","km":10,"kind":"global","step":1,"cycle":null},"hfsa":{"label":"HAFS-A","org":"NOAA · hurricane model","km":6,"kind":"hurricane","step":3,"cycle":"06Z 10 Oct"},"hfsb":{"label":"HAFS-B","org":"NOAA · hurricane model","km":6,"kind":"hurricane","step":3,"cycle":"06Z 10 Oct"}},"locs":[{"id":"amapas","lat":20.5984,"lon":-105.2382,"n":12,"ranking":[{"m":"ukmo_global_deterministic_10km","total":216.4,"peak":48.1,"cell":[20.625,-105.188],"pmin":999.0,"wmax":null,"gustMax":63},{"m":"ecmwf_ifs","total":180.0,"peak":11.9,"cell":[20.562,-105.242],"pmin":1001.2,"wmax":null,"gustMax":63},{"m":"icon_global","total":176.1,"peak":27.8,"cell":[20.625,-105.25],"pmin":999.6,"wmax":null,"gustMax":103},{"m":"hfsa","total":168.9,"peak":29.0,"cell":[20.5984,-105.2382],"pmin":1002.8,"wmax":51.0,"gustMax":null},{"m":"ecmwf_aifs025_single","total":72.6,"peak":3.3,"cell":[20.5,-105.25],"pmin":1007.6,"wmax":null,"gustMax":null},{"m":"cma_grapes_global","total":36.3,"peak":3.2,"cell":[20.562,-105.25],"pmin":1005.5,"wmax":null,"gustMax":74},{"m":"ncep_aigfs025","total":22.2,"peak":1.9,"cell":[20.5,-105.25],"pmin":1006.0,"wmax":null,"gustMax":null},{"m":"gem_global","total":19.9,"peak":3.9,"cell":[20.55,-105.3],"pmin":1005.1,"wmax":null,"gustMax":24},{"m":"meteofrance_arpege_world","total":12.5,"peak":3.6,"cell":[20.5,-105.25],"pmin":1007.0,"wmax":null,"gustMax":21},{"m":"jma_gsm","total":9.6,"peak":0.7,"cell":[20.5,-105.0],"pmin":1004.3,"wmax":null,"gustMax":null},{"m":"hfsb","total":7.7,"peak":1.1,"cell":[20.5984,-105.2382],"pmin":1004.6,"wmax":20.0,"gustMax":null},{"m":"gfs_global","total":4.3,"peak":1.2,"cell":[20.56,-105.234],"pmin":1002.7,"wmax":null,"gustMax":9}],"worst":{"model":"ukmo_global_deterministic_10km","inc":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.1,0.0,0.2,0.0,0.0,0.3,0.3,0.1,0.0,1.5,1.1,1.8,1.9,13.9,10.4,9.2,29.2,42.4,48.1,12.2,6.2,4.4,2.7,3.9,2.8,6.5,9.6,1.9,1.9,1.9,0.5,0.5,0.5],"cum":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.3,0.4,0.4,0.5,0.5,0.7,0.7,0.7,1.0,1.3,1.4,1.4,2.9,4.0,5.8,7.7,21.6,32.0,41.2,70.4,112.8,160.9,173.1,179.3,183.7,186.4,190.3,193.1,199.6,209.2,211.1,213.0,214.9,215.4,215.9,216.4],"total":216.4,"peak":48.1,"peakAt":33,"max3":119.7,"max3At":31,"max6":153.2,"max6At":28,"max24":215.0,"max24At":24},"best":{"model":"gfs_global","inc":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.1,0.1,0.3,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.2,0.2,0.4,0.3,1.2,0.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"cum":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.2,0.3,0.4,0.7,0.9,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.2,1.3,1.5,1.7,2.1,2.4,3.6,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3],"total":4.3,"peak":1.2,"peakAt":29,"max3":2.2,"max3At":28,"max6":3.0,"max6At":25,"max24":4.3,"max24At":7},"avg":{"model":"mean","inc":[0.25,0.33,0.16,0.35,0.19,0.08,0.1,0.24,0.21,0.21,0.12,0.11,0.29,0.32,0.32,0.58,0.58,0.6,0.68,0.62,0.6,0.6,0.62,0.87,1.66,1.87,1.8,1.72,2.46,2.46,2.31,3.81,5.14,6.48,4.71,2.83,1.66,1.36,1.67,2.73,3.17,4.26,4.17,4.23,4.01,1.25,1.49,0.91],"cum":[0.0,0.3,0.6,0.7,1.1,1.3,1.4,1.5,1.7,1.9,2.1,2.3,2.4,2.6,3.0,3.3,3.9,4.4,5.1,5.7,6.4,7.0,7.6,8.2,9.0,10.7,12.6,14.4,16.1,18.6,21.0,23.3,27.1,32.3,38.8,43.5,46.3,48.0,49.3,51.0,53.7,56.9,61.2,65.3,69.6,73.6,74.8,76.3,77.2],"total":77.2,"peak":6.5,"peakAt":33,"max3":16.3,"max3At":32,"max6":25.3,"max6At":30,"max24":68.2,"max24At":24},"band":{"lo":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,1.0,1.5,1.7,2.1,2.4,3.6,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3],"hi":[0.0,2.7,6.3,7.4,10.4,12.0,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,14.6,17.2,19.1,20.5,23.2,26.1,29.4,37.1,45.2,50.4,58.6,65.0,74.7,85.6,94.5,112.8,160.9,173.1,179.3,183.7,186.4,190.3,193.1,199.6,209.2,211.1,213.0,214.9,215.4,215.9,216.4]},"hourMax":{"v":[2.7,3.6,1.1,3.0,1.6,0.4,0.7,1.4,1.7,1.2,0.6,0.6,1.1,1.1,1.1,1.6,2.9,3.1,3.2,3.2,3.2,2.7,2.9,3.4,7.7,8.1,5.2,8.2,13.9,10.4,10.9,29.2,42.4,48.1,27.8,16.3,8.2,7.0,10.1,18.6,18.6,18.6,29.0,29.0,29.0,6.8,9.5,4.5],"m":["meteofrance_arpege_world","meteofrance_arpege_world","meteofrance_arpege_world","meteofrance_arpege_world","meteofrance_arpege_world","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","cma_grapes_global","cma_grapes_global","hfsb","hfsb","hfsb","cma_grapes_global","ecmwf_ifs","ecmwf_ifs","cma_grapes_global","cma_grapes_global","cma_grapes_global","ecmwf_ifs","ecmwf_ifs","gem_global","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","ecmwf_ifs","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","icon_global","icon_global","icon_global","ecmwf_ifs","ecmwf_ifs","hfsa","hfsa","hfsa","hfsa","hfsa","hfsa","icon_global","icon_global","hfsa"]},"gust":{"n":7,"hi":[20,22,23,23,22,19,16,12,15,16,18,14,14,14,19,20,18,16,17,18,19,23,23,22,24,34,47,58,66,72,74,72,66,96,103,56,41,52,49,34,24,25,26,28,26,27,28,30,32],"avg":[11,13,13,13,11,10,8,8,9,8,7,8,7,8,9,9,9,8,9,9,10,11,12,12,13,18,24,28,30,31,37,33,33,33,35,28,23,21,19,18,15,16,15,15,12,12,13,15,16],"lo":[2,5,6,8,7,5,5,4,5,2,1,2,3,3,3,3,4,4,4,4,3,2,3,4,6,6,5,3,4,4,3,1,2,2,2,3,3,4,4,4,4,4,4,5,4,2,3,5,3]},"series":{"ukmo_global_deterministic_10km":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.1,0.0,0.2,0.0,0.0,0.3,0.3,0.1,0.0,1.5,1.1,1.8,1.9,13.9,10.4,9.2,29.2,42.4,48.1,12.2,6.2,4.4,2.7,3.9,2.8,6.5,9.6,1.9,1.9,1.9,0.5,0.5,0.5],"ecmwf_ifs":[0.0,0.0,0.0,0.1,0.2,0.4,0.7,1.4,1.7,1.2,0.3,0.0,0.1,0.4,0.6,1.5,2.9,3.1,2.6,1.9,1.4,2.7,2.9,3.3,7.7,8.1,5.2,8.2,6.4,9.7,10.9,8.9,7.9,10.4,11.9,6.9,4.3,7.0,10.1,4.6,5.2,3.8,4.0,2.2,1.8,1.9,2.1,1.4],"icon_global":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.0,0.6,1.3,0.6,1.0,0.4,0.6,0.6,5.4,14.7,27.8,16.3,8.2,3.5,3.0,4.4,5.4,16.7,13.9,16.4,14.1,6.8,9.5,3.3],"hfsa":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.05,0.05,0.05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.02,0.02,0.02,0.78,0.78,0.78,0.9,0.9,0.9,1.57,1.57,1.57,0.43,0.43,0.43,0.53,0.53,0.53,18.6,18.6,18.6,28.96,28.96,28.96,4.46,4.46,4.46],"ecmwf_aifs025_single":[0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.6,0.6,0.6,0.6,0.6,0.6,1.3,1.3,1.3,1.3,1.3,1.3,2.9,2.9,2.9,2.9,2.9,2.9,3.3,3.3,3.3,3.3,3.3,3.3,2.3,2.3,2.3,2.3,2.3,2.3,1.1,1.1,1.1,1.1,1.1,1.1],"cma_grapes_global":[0.0,0.0,0.0,0.1,0.1,0.1,0.0,0.0,0.0,0.6,0.6,0.6,0.5,0.5,0.5,1.6,1.6,1.6,3.2,3.2,3.2,1.1,1.1,1.1,2.8,2.8,2.8,1.2,1.2,1.2,0.5,0.5,0.5,0.3,0.3,0.3,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"ncep_aigfs025":[0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.7,0.7,0.7,0.7,0.7,0.7,0.5,0.5,0.5,0.5,0.5,0.5,1.9,1.9,1.9,1.9,1.9,1.9,0.3,0.3,0.3,0.3,0.3,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.2,0.2,0.2,0.2],"gem_global":[0.0,0.1,0.5,0.7,0.1,0.1,0.1,0.0,0.0,0.1,0.0,0.0,0.0,0.0,0.0,1.2,0.1,0.0,0.0,0.0,0.0,0.8,0.9,3.4,1.5,3.3,3.9,1.6,0.0,0.0,0.4,1.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"meteofrance_arpege_world":[2.7,3.6,1.1,3.0,1.6,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"jma_gsm":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.2,0.2,0.2,0.2,0.5,0.5,0.5,0.5,0.5,0.5,0.7,0.7,0.7,0.7,0.7,0.7,0.2,0.2,0.2,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"hfsb":[0.02,0.02,0.02,0.0,0.0,0.0,0.05,0.05,0.05,0.05,0.05,0.05,1.09,1.09,1.09,0.81,0.81,0.81,0.05,0.05,0.05,0.0,0.0,0.0,0.05,0.05,0.05,0.18,0.18,0.18,0.07,0.07,0.07,0.07,0.07,0.07,0.04,0.04,0.04,0.09,0.09,0.09,0.01,0.01,0.01,0.0,0.0,0.0],"gfs_global":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.1,0.1,0.3,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.2,0.2,0.4,0.3,1.2,0.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"ens":{"systems":{"ecmwf_aifs025":{"n":51,"p50":40,"p90":155,"max":316,"gt100":22,"gt200":10},"ecmwf_ifs025":{"n":51,"p50":143,"p90":273,"max":395,"gt100":67,"gt200":39},"gem_global":{"n":21,"p50":18,"p90":86,"max":125,"gt100":5,"gt200":0},"gfs025":{"n":31,"p50":19,"p90":49,"max":96,"gt100":0,"gt200":0},"icon_global_eps":{"n":40,"p50":42,"p90":113,"max":139,"gt100":18,"gt200":0},"ukmo_global_ensemble_20km":{"n":18,"p50":39,"p90":166,"max":277,"gt100":28,"gt200":6}},"n":212,"p10":8,"p50":44,"p90":214,"max":395,"gt50":48,"gt100":27,"gt200":12,"gt300":2}},{"id":"pitillal","lat":20.6477,"lon":-105.2087,"n":12,"ranking":[{"m":"ukmo_global_deterministic_10km","total":216.4,"peak":48.1,"cell":[20.625,-105.188],"pmin":999.0,"wmax":null,"gustMax":63},{"m":"icon_global","total":176.1,"peak":27.8,"cell":[20.625,-105.25],"pmin":999.6,"wmax":null,"gustMax":103},{"m":"hfsa","total":153.9,"peak":25.6,"cell":[20.6477,-105.2087],"pmin":1003.7,"wmax":32.0,"gustMax":null},{"m":"ecmwf_ifs","total":148.6,"peak":10.5,"cell":[20.633,-105.167],"pmin":1001.9,"wmax":null,"gustMax":71},{"m":"ecmwf_aifs025_single","total":40.2,"peak":2.0,"cell":[20.75,-105.25],"pmin":1005.3,"wmax":null,"gustMax":null},{"m":"cma_grapes_global","total":32.7,"peak":2.3,"cell":[20.688,-105.25],"pmin":1004.5,"wmax":null,"gustMax":32},{"m":"jma_gsm","total":9.6,"peak":0.7,"cell":[20.5,-105.0],"pmin":1004.3,"wmax":null,"gustMax":null},{"m":"ncep_aigfs025","total":8.4,"peak":1.0,"cell":[20.75,-105.25],"pmin":1004.3,"wmax":null,"gustMax":null},{"m":"gem_global","total":8.0,"peak":4.3,"cell":[20.7,-105.15],"pmin":1004.9,"wmax":null,"gustMax":16},{"m":"hfsb","total":7.0,"peak":1.1,"cell":[20.6477,-105.2087],"pmin":1004.4,"wmax":19.0,"gustMax":null},{"m":"gfs_global","total":3.8,"peak":1.5,"cell":[20.677,-105.234],"pmin":1002.7,"wmax":null,"gustMax":19},{"m":"meteofrance_arpege_world","total":3.7,"peak":1.2,"cell":[20.75,-105.25],"pmin":1005.1,"wmax":null,"gustMax":16}],"worst":{"model":"ukmo_global_deterministic_10km","inc":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.1,0.0,0.2,0.0,0.0,0.3,0.3,0.1,0.0,1.5,1.1,1.8,1.9,13.9,10.4,9.2,29.2,42.4,48.1,12.2,6.2,4.4,2.7,3.9,2.8,6.5,9.6,1.9,1.9,1.9,0.5,0.5,0.5],"cum":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.3,0.4,0.4,0.5,0.5,0.7,0.7,0.7,1.0,1.3,1.4,1.4,2.9,4.0,5.8,7.7,21.6,32.0,41.2,70.4,112.8,160.9,173.1,179.3,183.7,186.4,190.3,193.1,199.6,209.2,211.1,213.0,214.9,215.4,215.9,216.4],"total":216.4,"peak":48.1,"peakAt":33,"max3":119.7,"max3At":31,"max6":153.2,"max6At":28,"max24":215.0,"max24At":24},"best":{"model":"meteofrance_arpege_world","inc":[0.0,0.3,1.2,0.4,0.4,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.7,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"cum":[0.0,0.0,0.3,1.5,1.9,2.3,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,3.1,3.3,3.5,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7],"total":3.7,"peak":1.2,"peakAt":2,"max3":2.0,"max3At":2,"max6":2.4,"max6At":0,"max24":2.4,"max24At":0},"avg":{"model":"mean","inc":[0.01,0.07,0.12,0.06,0.04,0.03,0.04,0.15,0.16,0.15,0.06,0.07,0.22,0.22,0.21,0.27,0.37,0.42,0.39,0.44,0.41,0.45,0.43,0.46,0.78,0.8,1.09,1.59,2.33,2.17,2.05,3.5,4.75,6.37,4.4,2.76,1.53,1.14,1.48,2.71,3.36,4.34,3.99,3.91,3.72,1.14,1.38,0.82],"cum":[0.0,0.0,0.1,0.2,0.3,0.3,0.3,0.4,0.5,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.9,2.2,2.7,3.1,3.5,3.9,4.3,4.8,5.2,6.0,6.8,7.9,9.5,11.8,14.0,16.1,19.6,24.3,30.7,35.1,37.8,39.4,40.5,42.0,44.7,48.1,52.4,56.4,60.3,64.0,65.2,66.6,67.4],"total":67.4,"peak":6.4,"peakAt":33,"max3":15.5,"max3At":32,"max6":23.8,"max6At":30,"max24":62.1,"max24At":24},"band":{"lo":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.2,0.3,1.8,2.4,2.4,2.4,2.4,2.4,2.4,3.1,3.3,3.5,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7,3.7],"hi":[0.0,0.1,0.4,1.5,1.9,2.3,2.4,2.4,2.4,3.0,4.0,4.0,4.0,4.0,4.1,4.2,5.0,6.8,8.7,10.0,11.9,13.8,15.9,18.0,20.1,22.1,25.4,28.6,36.0,42.6,51.8,62.3,70.9,112.8,160.9,173.1,179.3,183.7,186.4,190.3,193.1,199.6,209.2,211.1,213.0,214.9,215.4,215.9,216.4]},"hourMax":{"v":[0.1,0.4,1.2,0.4,0.4,0.1,0.3,1.0,1.5,1.0,0.6,0.6,1.1,1.1,1.1,1.0,1.8,1.9,2.3,2.3,2.3,2.1,2.1,2.1,3.1,3.3,3.2,7.4,13.9,10.4,10.5,29.2,42.4,48.1,27.8,16.3,8.2,5.1,8.5,19.3,19.3,19.3,25.6,25.6,25.6,6.8,9.5,3.6],"m":["ecmwf_aifs025_single","ecmwf_ifs","meteofrance_arpege_world","meteofrance_arpege_world","meteofrance_arpege_world","ecmwf_ifs","ecmwf_ifs","icon_global","ecmwf_ifs","ecmwf_ifs","cma_grapes_global","cma_grapes_global","hfsb","hfsb","hfsb","cma_grapes_global","ecmwf_ifs","ecmwf_ifs","cma_grapes_global","cma_grapes_global","cma_grapes_global","cma_grapes_global","cma_grapes_global","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","ecmwf_ifs","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","ecmwf_ifs","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","icon_global","icon_global","icon_global","ecmwf_ifs","ecmwf_ifs","hfsa","hfsa","hfsa","hfsa","hfsa","hfsa","icon_global","icon_global","hfsa"]},"gust":{"n":7,"hi":[24,28,30,30,27,22,17,13,15,19,20,15,16,17,20,25,27,26,26,24,22,22,23,26,28,34,43,51,52,56,68,71,66,96,103,61,41,46,47,44,41,35,37,32,13,12,17,25,32],"avg":[11,13,14,13,12,10,8,7,9,10,10,9,10,11,13,13,13,12,12,11,11,12,12,13,15,17,22,24,24,26,30,26,27,28,33,26,18,16,14,15,12,12,13,12,8,8,10,11,13],"lo":[2,6,4,2,4,2,4,1,1,2,1,2,1,2,3,4,2,3,1,1,2,2,1,3,4,6,8,8,5,8,5,3,2,5,6,6,5,4,4,2,2,3,4,4,4,3,5,4,3]},"series":{"ukmo_global_deterministic_10km":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.1,0.0,0.2,0.0,0.0,0.3,0.3,0.1,0.0,1.5,1.1,1.8,1.9,13.9,10.4,9.2,29.2,42.4,48.1,12.2,6.2,4.4,2.7,3.9,2.8,6.5,9.6,1.9,1.9,1.9,0.5,0.5,0.5],"icon_global":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.0,0.6,1.3,0.6,1.0,0.4,0.6,0.6,5.4,14.7,27.8,16.3,8.2,3.5,3.0,4.4,5.4,16.7,13.9,16.4,14.1,6.8,9.5,3.3],"hfsa":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.03,0.03,0.03,0.0,0.0,0.0,0.0,0.0,0.0,0.01,0.01,0.01,0.01,0.01,0.01,0.29,0.29,0.29,0.51,0.51,0.51,0.86,0.86,0.86,0.63,0.63,0.63,0.46,0.46,0.46,19.3,19.3,19.3,25.63,25.63,25.63,3.59,3.59,3.59],"ecmwf_ifs":[0.0,0.4,0.0,0.0,0.0,0.1,0.3,0.7,1.5,1.0,0.0,0.0,0.0,0.1,0.1,0.8,1.8,1.9,1.3,1.9,1.2,2.0,1.8,2.1,3.1,3.3,3.2,7.4,6.6,9.2,10.5,8.6,5.6,9.0,8.1,5.2,3.3,5.1,8.5,4.5,7.6,5.0,5.6,2.2,2.2,2.0,2.2,1.6],"ecmwf_aifs025_single":[0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3,0.3,0.3,0.3,0.3,0.3,0.5,0.5,0.5,0.5,0.5,0.5,1.4,1.4,1.4,1.4,1.4,1.4,2.0,2.0,2.0,2.0,2.0,2.0,1.5,1.5,1.5,1.5,1.5,1.5,0.8,0.8,0.8,0.8,0.8,0.8],"cma_grapes_global":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.6,0.6,0.6,0.7,0.7,0.7,1.0,1.0,1.0,2.3,2.3,2.3,2.1,2.1,2.1,1.2,1.2,1.2,1.1,1.1,1.1,0.2,0.2,0.2,1.5,1.5,1.5,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"jma_gsm":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.2,0.2,0.2,0.2,0.5,0.5,0.5,0.5,0.5,0.5,0.7,0.7,0.7,0.7,0.7,0.7,0.2,0.2,0.2,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"ncep_aigfs025":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,0.3,0.3,0.3,0.3,0.3,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"gem_global":[0.0,0.0,0.1,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3,0.6,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,2.1,4.3,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"hfsb":[0.01,0.01,0.01,0.0,0.0,0.0,0.06,0.06,0.06,0.04,0.04,0.04,1.09,1.09,1.09,0.73,0.73,0.73,0.07,0.07,0.07,0.0,0.0,0.0,0.04,0.04,0.04,0.09,0.09,0.09,0.05,0.05,0.05,0.06,0.06,0.06,0.04,0.04,0.04,0.03,0.03,0.03,0.02,0.02,0.02,0.0,0.0,0.0],"gfs_global":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,1.5,1.3,0.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"meteofrance_arpege_world":[0.0,0.3,1.2,0.4,0.4,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.7,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"ens":{"systems":{"ecmwf_aifs025":{"n":51,"p50":23,"p90":109,"max":273,"gt100":12,"gt200":4},"ecmwf_ifs025":{"n":51,"p50":96,"p90":240,"max":532,"gt100":49,"gt200":31},"gem_global":{"n":21,"p50":18,"p90":86,"max":125,"gt100":5,"gt200":0},"gfs025":{"n":31,"p50":9,"p90":30,"max":69,"gt100":0,"gt200":0},"icon_global_eps":{"n":40,"p50":42,"p90":113,"max":139,"gt100":18,"gt200":0},"ukmo_global_ensemble_20km":{"n":18,"p50":39,"p90":166,"max":277,"gt100":28,"gt200":6}},"n":212,"p10":5,"p50":30,"p90":184,"max":532,"gt50":38,"gt100":21,"gt200":9,"gt300":1}},{"id":"frodriguez","lat":20.6012,"lon":-105.2358,"n":12,"ranking":[{"m":"ukmo_global_deterministic_10km","total":216.4,"peak":48.1,"cell":[20.625,-105.188],"pmin":999.0,"wmax":null,"gustMax":63},{"m":"icon_global","total":176.1,"peak":27.8,"cell":[20.625,-105.25],"pmin":999.6,"wmax":null,"gustMax":103},{"m":"hfsa","total":167.5,"peak":28.6,"cell":[20.6012,-105.2358],"pmin":1002.9,"wmax":50.0,"gustMax":null},{"m":"ecmwf_ifs","total":163.6,"peak":13.0,"cell":[20.633,-105.257],"pmin":1001.1,"wmax":null,"gustMax":68},{"m":"ecmwf_aifs025_single","total":72.6,"peak":3.3,"cell":[20.5,-105.25],"pmin":1007.6,"wmax":null,"gustMax":null},{"m":"cma_grapes_global","total":36.3,"peak":3.2,"cell":[20.562,-105.25],"pmin":1005.5,"wmax":null,"gustMax":74},{"m":"ncep_aigfs025","total":22.2,"peak":1.9,"cell":[20.5,-105.25],"pmin":1006.0,"wmax":null,"gustMax":null},{"m":"gem_global","total":19.9,"peak":3.9,"cell":[20.55,-105.3],"pmin":1005.1,"wmax":null,"gustMax":24},{"m":"meteofrance_arpege_world","total":12.5,"peak":3.6,"cell":[20.5,-105.25],"pmin":1007.0,"wmax":null,"gustMax":21},{"m":"jma_gsm","total":9.6,"peak":0.7,"cell":[20.5,-105.0],"pmin":1004.3,"wmax":null,"gustMax":null},{"m":"hfsb","total":7.7,"peak":1.1,"cell":[20.6012,-105.2358],"pmin":1004.6,"wmax":20.0,"gustMax":null},{"m":"gfs_global","total":4.3,"peak":1.2,"cell":[20.56,-105.234],"pmin":1002.7,"wmax":null,"gustMax":9}],"worst":{"model":"ukmo_global_deterministic_10km","inc":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.1,0.0,0.2,0.0,0.0,0.3,0.3,0.1,0.0,1.5,1.1,1.8,1.9,13.9,10.4,9.2,29.2,42.4,48.1,12.2,6.2,4.4,2.7,3.9,2.8,6.5,9.6,1.9,1.9,1.9,0.5,0.5,0.5],"cum":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.3,0.4,0.4,0.5,0.5,0.7,0.7,0.7,1.0,1.3,1.4,1.4,2.9,4.0,5.8,7.7,21.6,32.0,41.2,70.4,112.8,160.9,173.1,179.3,183.7,186.4,190.3,193.1,199.6,209.2,211.1,213.0,214.9,215.4,215.9,216.4],"total":216.4,"peak":48.1,"peakAt":33,"max3":119.7,"max3At":31,"max6":153.2,"max6At":28,"max24":215.0,"max24At":24},"best":{"model":"gfs_global","inc":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.1,0.1,0.3,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.2,0.2,0.4,0.3,1.2,0.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"cum":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.2,0.3,0.4,0.7,0.9,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.2,1.3,1.5,1.7,2.1,2.4,3.6,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3],"total":4.3,"peak":1.2,"peakAt":29,"max3":2.2,"max3At":28,"max6":3.0,"max6At":25,"max24":4.3,"max24At":7},"avg":{"model":"mean","inc":[0.25,0.33,0.16,0.34,0.18,0.05,0.06,0.16,0.16,0.2,0.1,0.11,0.28,0.31,0.28,0.5,0.48,0.53,0.58,0.6,0.56,0.53,0.53,0.77,1.33,1.48,1.62,1.6,2.38,2.49,2.17,3.75,4.92,6.52,4.8,2.84,1.6,1.43,1.78,2.97,3.47,4.26,4.22,4.26,4.06,1.28,1.5,0.91],"cum":[0.0,0.3,0.6,0.7,1.1,1.3,1.3,1.4,1.5,1.7,1.9,2.0,2.1,2.4,2.7,3.0,3.5,4.0,4.5,5.1,5.7,6.2,6.8,7.3,8.1,9.4,10.9,12.5,14.1,16.5,19.0,21.1,24.9,29.8,36.3,41.1,44.0,45.6,47.0,48.8,51.8,55.2,59.5,63.7,68.0,72.0,73.3,74.8,75.7],"total":75.7,"peak":6.5,"peakAt":33,"max3":16.2,"max3At":32,"max6":25.0,"max6At":30,"max24":67.7,"max24At":24},"band":{"lo":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.9,1.5,1.7,2.1,2.4,3.6,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3],"hi":[0.0,2.7,6.3,7.4,10.4,12.0,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,12.1,14.8,18.0,19.1,20.2,21.3,24.1,26.9,29.7,34.8,40.3,50.4,59.7,70.4,112.8,160.9,173.1,179.3,183.7,186.4,190.3,193.1,199.6,209.2,211.1,213.0,214.9,215.4,215.9,216.4]},"hourMax":{"v":[2.7,3.6,1.1,3.0,1.6,0.3,0.3,1.0,1.1,1.1,0.6,0.6,1.1,1.1,1.1,1.6,1.8,2.3,3.2,3.2,3.2,1.8,1.8,3.4,3.8,3.5,3.9,6.8,13.9,10.4,9.3,29.2,42.4,48.1,27.8,16.3,8.2,7.9,11.4,18.6,18.6,18.6,28.6,28.6,28.6,6.8,9.5,4.4],"m":["meteofrance_arpege_world","meteofrance_arpege_world","meteofrance_arpege_world","meteofrance_arpege_world","meteofrance_arpege_world","ecmwf_aifs025_single","ecmwf_aifs025_single","icon_global","ecmwf_ifs","ecmwf_ifs","cma_grapes_global","cma_grapes_global","hfsb","hfsb","hfsb","cma_grapes_global","ecmwf_ifs","ecmwf_ifs","cma_grapes_global","cma_grapes_global","cma_grapes_global","ecmwf_ifs","ecmwf_ifs","gem_global","ecmwf_ifs","ecmwf_ifs","gem_global","ecmwf_ifs","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","ecmwf_ifs","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","ukmo_global_deterministic_10km","icon_global","icon_global","icon_global","ecmwf_ifs","ecmwf_ifs","hfsa","hfsa","hfsa","hfsa","hfsa","hfsa","icon_global","icon_global","hfsa"]},"gust":{"n":7,"hi":[20,22,23,23,22,19,16,12,15,16,18,14,14,14,19,20,18,16,17,18,19,23,23,22,24,34,47,58,66,72,74,72,66,96,103,68,64,34,36,52,52,35,31,35,26,27,28,30,32],"avg":[10,12,12,13,11,10,9,8,9,8,8,8,8,8,9,9,9,9,9,10,11,11,11,12,13,16,22,26,28,30,34,33,33,34,36,31,26,16,17,21,19,17,16,16,13,12,14,15,17],"lo":[2,5,6,8,7,5,5,4,5,2,1,2,3,3,3,3,4,4,4,4,3,2,3,4,6,6,5,3,4,4,3,1,2,2,2,3,3,4,4,4,4,4,4,5,4,2,3,5,3]},"series":{"ukmo_global_deterministic_10km":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.1,0.0,0.2,0.0,0.0,0.3,0.3,0.1,0.0,1.5,1.1,1.8,1.9,13.9,10.4,9.2,29.2,42.4,48.1,12.2,6.2,4.4,2.7,3.9,2.8,6.5,9.6,1.9,1.9,1.9,0.5,0.5,0.5],"icon_global":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.0,0.6,1.3,0.6,1.0,0.4,0.6,0.6,5.4,14.7,27.8,16.3,8.2,3.5,3.0,4.4,5.4,16.7,13.9,16.4,14.1,6.8,9.5,3.3],"hfsa":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.05,0.05,0.05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.01,0.01,0.01,0.74,0.74,0.74,0.87,0.87,0.87,1.53,1.53,1.53,0.43,0.43,0.43,0.51,0.51,0.51,18.59,18.59,18.59,28.65,28.65,28.65,4.45,4.45,4.45],"ecmwf_ifs":[0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.1,1.1,0.1,0.0,0.0,0.2,0.1,0.6,1.8,2.3,1.4,1.6,0.9,1.8,1.8,2.1,3.8,3.5,3.1,6.8,5.5,10.1,9.3,8.2,5.4,10.8,13.0,7.0,3.6,7.9,11.4,7.5,8.8,3.9,4.9,2.8,2.7,2.3,2.3,1.4],"ecmwf_aifs025_single":[0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.6,0.6,0.6,0.6,0.6,0.6,1.3,1.3,1.3,1.3,1.3,1.3,2.9,2.9,2.9,2.9,2.9,2.9,3.3,3.3,3.3,3.3,3.3,3.3,2.3,2.3,2.3,2.3,2.3,2.3,1.1,1.1,1.1,1.1,1.1,1.1],"cma_grapes_global":[0.0,0.0,0.0,0.1,0.1,0.1,0.0,0.0,0.0,0.6,0.6,0.6,0.5,0.5,0.5,1.6,1.6,1.6,3.2,3.2,3.2,1.1,1.1,1.1,2.8,2.8,2.8,1.2,1.2,1.2,0.5,0.5,0.5,0.3,0.3,0.3,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"ncep_aigfs025":[0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.7,0.7,0.7,0.7,0.7,0.7,0.5,0.5,0.5,0.5,0.5,0.5,1.9,1.9,1.9,1.9,1.9,1.9,0.3,0.3,0.3,0.3,0.3,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.2,0.2,0.2,0.2],"gem_global":[0.0,0.1,0.5,0.7,0.1,0.1,0.1,0.0,0.0,0.1,0.0,0.0,0.0,0.0,0.0,1.2,0.1,0.0,0.0,0.0,0.0,0.8,0.9,3.4,1.5,3.3,3.9,1.6,0.0,0.0,0.4,1.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"meteofrance_arpege_world":[2.7,3.6,1.1,3.0,1.6,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"jma_gsm":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,0.2,0.2,0.2,0.2,0.5,0.5,0.5,0.5,0.5,0.5,0.7,0.7,0.7,0.7,0.7,0.7,0.2,0.2,0.2,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"hfsb":[0.01,0.01,0.01,0.0,0.0,0.0,0.05,0.05,0.05,0.05,0.05,0.05,1.1,1.1,1.1,0.81,0.81,0.81,0.05,0.05,0.05,0.0,0.0,0.0,0.05,0.05,0.05,0.17,0.17,0.17,0.07,0.07,0.07,0.07,0.07,0.07,0.04,0.04,0.04,0.09,0.09,0.09,0.02,0.02,0.02,0.0,0.0,0.0],"gfs_global":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.1,0.1,0.3,0.2,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.2,0.2,0.4,0.3,1.2,0.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"ens":{"systems":{"ecmwf_aifs025":{"n":51,"p50":40,"p90":155,"max":316,"gt100":22,"gt200":10},"ecmwf_ifs025":{"n":51,"p50":143,"p90":273,"max":395,"gt100":67,"gt200":39},"gem_global":{"n":21,"p50":18,"p90":86,"max":125,"gt100":5,"gt200":0},"gfs025":{"n":31,"p50":19,"p90":49,"max":96,"gt100":0,"gt200":0},"icon_global_eps":{"n":40,"p50":42,"p90":113,"max":139,"gt100":18,"gt200":0},"ukmo_global_ensemble_20km":{"n":18,"p50":39,"p90":166,"max":277,"gt100":28,"gt200":6}},"n":212,"p10":8,"p50":44,"p90":214,"max":395,"gt50":48,"gt100":27,"gt200":12,"gt300":2}}]}</script>
+<script>
+(function(){
+"use strict";
+var D = JSON.parse(document.getElementById('fx-data').textContent);
+var NH = D.frames.length - 1;              // 48 hourly steps
+var root = document.documentElement;
+var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function L(en, es){ return '<span class="en">' + en + '</span><span class="es">' + es + '</span>'; }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function mm(v){ return v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(0) : v.toFixed(1); }
+function inch(v){ var i = v / 25.4; return (i >= 10 ? i.toFixed(1) : i >= 1 ? i.toFixed(1) : i.toFixed(2)) + ' in'; }
+
+/* ---------- places ---------- */
+var PLACE = {
+  amapas: {
+    name: L('Amapas at Cafeto &amp; Olas Altas', 'Amapas esq. Cafeto y Olas Altas'), short: 'Amapas · Olas Altas',
+    place: 'Zona Romántica · Col. Emiliano Zapata', elev: 13,
+    facts: [L('90 m from Playa Los Muertos', 'a 90 m de Playa Los Muertos')],
+    hazard: L('Beachfront. Simon’s forecast track passes west of the bay, which puts this shore on the side where the NHC expects surge and destructive waves. Runoff also pours down the Amapas hillside.',
+              'Frente al mar. La trayectoria pronosticada pasa al oeste de la bahía, lo que deja esta costa del lado donde el NHC espera marea de tormenta y oleaje destructivo. Además, el agua baja con fuerza por la ladera de Amapas.')
+  },
+  pitillal: {
+    name: L('Cinco de Mayo &amp; Calle España, El Pitillal', 'Cinco de Mayo y Calle España, El Pitillal'), short: 'Pitillal · 5 de Mayo',
+    place: 'El Pitillal', elev: 19,
+    facts: [L('160 m from the Río Pitillal', 'a 160 m del Río Pitillal')],
+    hazard: L('The Río Pitillal runs 160 m away. Rain that falls upstream in the sierra reaches this stretch hours later, so the river can keep rising after the rain here eases.',
+              'El Río Pitillal corre a 160 m. La lluvia que cae río arriba en la sierra llega a este tramo horas después, así que el río puede seguir subiendo aunque aquí ya llueva menos.')
+  },
+  frodriguez: {
+    name: L('Francisco Rodríguez 336, C.P. 48380', 'Francisco Rodríguez 336, C.P. 48380'), short: 'F. Rodríguez 336',
+    place: L('Zona Romántica · OpenStreetMap spells it Francisca Rodríguez', 'Zona Romántica · OpenStreetMap la registra como Francisca Rodríguez'), elev: 21,
+    facts: [L('about 300 m from the beach', 'a unos 300 m de la playa')],
+    hazard: L('The street drops toward the Los Muertos pier and turns into a channel in a downpour. Position is approximate: the map has no house numbers on this block.',
+              'La calle baja hacia el muelle de Los Muertos y se vuelve cauce durante un aguacero. La posición es aproximada: el mapa no tiene numeración en esta cuadra.')
+  }
+};
+var SC = {
+  worst: { name: L('Worst case', 'Peor escenario'), color: 'var(--alert)', line: 'var(--s-worst)',
+           desc: function(n){ return L('Wettest of ' + n + ' models at each address', 'El más lluvioso de ' + n + ' modelos en cada dirección'); },
+           gust: L('highest of the models', 'el más alto de los modelos') },
+  avg:   { name: L('Model average', 'Promedio de modelos'), color: 'var(--rain)', line: 'var(--s-avg)',
+           desc: function(n){ return L('Hour-by-hour mean of all ' + n + ' models', 'Media hora por hora de los ' + n + ' modelos'); },
+           gust: L('mean of the models', 'media de los modelos') },
+  best:  { name: L('Best case', 'Mejor escenario'), color: 'var(--s-best)', line: 'var(--s-best)',
+           desc: function(n){ return L('Driest of ' + n + ' models at each address', 'El más seco de ' + n + ' modelos en cada dirección'); },
+           gust: L('lowest of the models', 'el más bajo de los modelos') }
+};
+var SKEYS = ['worst', 'avg', 'best'];
+var LOCS = D.locs;
+var NMOD = LOCS[0].n;
+document.querySelectorAll('.nmod').forEach(function(e){ e.textContent = NMOD; });
+function modelName(m){ return m === 'mean' ? L('mean', 'media') : esc(D.models[m].label); }
+
+/* ---------- time ---------- */
+var DAY_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], DAY_ES = ['dom','lun','mar','mié','jue','vie','sáb'];
+function fdate(i){ var s = D.frames[i]; return new Date(Date.UTC(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10), +s.slice(11,13))); }
+function h12(h){ var a = h < 12 ? 'am' : 'pm', x = h % 12 || 12; return x + ' ' + a; }
+function tlabel(i, withDay){
+  var d = fdate(i), h = d.getUTCHours(), dd = d.getUTCDate();
+  var en = (withDay ? DAY_EN[d.getUTCDay()] + ' ' + dd + ' Oct, ' : '') + h12(h);
+  var es = (withDay ? DAY_ES[d.getUTCDay()] + ' ' + dd + ' oct, ' : '') + String(h).padStart(2,'0') + ':00';
+  return L(en, es);
+}
+function span(i0, i1){  // label for hours i0..i1 as clock range
+  var a = fdate(i0), b = fdate(i1);
+  return L(DAY_EN[a.getUTCDay()] + ' ' + h12(a.getUTCHours()) + '–' + h12(b.getUTCHours()),
+           DAY_ES[a.getUTCDay()] + ' ' + String(a.getUTCHours()).padStart(2,'0') + '–' + String(b.getUTCHours()).padStart(2,'0') + ' h');
+}
+var NIGHTS = [[6 + 40/60, 18 + 54/60], [30 + 40/60, 42 + 54/60]];
+function isNight(i){ return NIGHTS.some(function(n){ return i > n[0] && i < n[1]; }); }
+
+/* ---------- NHC forecast track, Advisory 13 (UTC) ---------- */
+var TRACK = [
+  { t: Date.UTC(2026,9,10,15), lat: 17.4, lon: -104.8, kt: 130 },
+  { t: Date.UTC(2026,9,11, 0), lat: 18.1, lon: -105.0, kt: 135 },
+  { t: Date.UTC(2026,9,11,12), lat: 19.1, lon: -105.2, kt: 125 },
+  { t: Date.UTC(2026,9,12, 0), lat: 20.4, lon: -105.4, kt: 80, inland: true },
+  { t: Date.UTC(2026,9,12,12), lat: 21.7, lon: -105.4, kt: 55, inland: true },
+  { t: Date.UTC(2026,9,13, 0), lat: 23.0, lon: -105.5, kt: 30, inland: true }
+];
+var PV = { lat: 20.6125, lon: -105.2306 };
+function stormAt(i){
+  var t = fdate(i).getTime() + 6 * 3600e3;    // CST -> UTC
+  for (var k = 0; k < TRACK.length - 1; k++){
+    var a = TRACK[k], b = TRACK[k+1];
+    if (t >= a.t && t <= b.t){ var f = (t - a.t) / (b.t - a.t);
+      return { lat: a.lat + f*(b.lat-a.lat), lon: a.lon + f*(b.lon-a.lon), kt: a.kt + f*(b.kt-a.kt) }; }
+  }
+  return null;
+}
+function distBear(p){
+  var R = 6371, toR = Math.PI/180, la1 = PV.lat*toR, la2 = p.lat*toR, dl = (p.lon-PV.lon)*toR;
+  var d = 2*R*Math.asin(Math.sqrt(Math.pow(Math.sin((la2-la1)/2),2) + Math.cos(la1)*Math.cos(la2)*Math.pow(Math.sin(dl/2),2)));
+  var y = Math.sin(dl)*Math.cos(la2), x = Math.cos(la1)*Math.sin(la2) - Math.sin(la1)*Math.cos(la2)*Math.cos(dl);
+  var br = (Math.atan2(y, x)/toR + 360) % 360;
+  return { km: d, br: br };
+}
+var C16EN = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+var C16ES = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+function compass(br){ var k = Math.round(br / 22.5) % 16; return L(C16EN[k], C16ES[k]); }
+function cat(kt){
+  if (kt >= 137) return L('Cat 5 hurricane', 'Huracán cat. 5');
+  if (kt >= 113) return L('Cat 4 hurricane', 'Huracán cat. 4');
+  if (kt >= 96)  return L('Cat 3 hurricane', 'Huracán cat. 3');
+  if (kt >= 83)  return L('Cat 2 hurricane', 'Huracán cat. 2');
+  if (kt >= 64)  return L('Cat 1 hurricane', 'Huracán cat. 1');
+  if (kt >= 34)  return L('Tropical storm', 'Tormenta tropical');
+  return L('Depression', 'Depresión');
+}
+var closest = (function(){ var best = null; for (var i = 0; i <= NH; i++){ var s = stormAt(i); if (!s) continue; var d = distBear(s); if (!best || d.km < best.km) best = { i: i, km: d.km, br: d.br, kt: s.kt }; } return best; })();
+
+/* ---------- rain categories ---------- */
+function rateLv(v){ return v < 0.1 ? 0 : v < 2.5 ? 1 : v < 7.6 ? 2 : v < 25 ? 3 : v < 50 ? 4 : 5; }
+var RATE_TXT = [L('dry', 'seco'), L('light', 'ligera'), L('moderate', 'moderada'), L('heavy', 'fuerte'), L('very heavy', 'muy fuerte'), L('violent', 'violenta')];
+function smn24(v){  // SMN-CONAGUA 24-hour categories
+  if (v > 150) return L('torrential', 'torrenciales');
+  if (v > 75) return L('intense', 'intensas');
+  if (v > 50) return L('very heavy', 'muy fuertes');
+  if (v > 25) return L('heavy', 'fuertes');
+  if (v > 5) return L('showers', 'chubascos');
+  return L('light', 'ligeras');
+}
+
+/* ---------- scales shared by every pane ---------- */
+var TUBE_MAX = Math.ceil(Math.max.apply(null, LOCS.map(function(l){ return l.worst.total; })) / 50) * 50;
+var BAR_MAX = Math.ceil(Math.max.apply(null, LOCS.map(function(l){ return l.worst.peak; })) / 10) * 10;
+
+/* ---------- key line ---------- */
+(function(){
+  var w = Math.max.apply(null, LOCS.map(function(l){ return l.worst.total; }));
+  var wl = LOCS.filter(function(l){ return l.worst.total === w; })[0];
+  var avs = LOCS.map(function(l){ return l.avg.total; }), bs = LOCS.map(function(l){ return l.best.total; });
+  var avLo = Math.min.apply(null, avs), avHi = Math.max.apply(null, avs);
+  var bHi = Math.max.apply(null, bs);
+  var pk = wl.worst;
+  document.getElementById('keyline').innerHTML =
+    '<div class="k-worst"><b>' + mm(w) + ' mm</b><span class="lab">' + L('worst case', 'peor escenario') + ' · ' + inch(w) + '</span></div>' +
+    '<div><b>' + mm(avLo) + '–' + mm(avHi) + ' mm</b><span class="lab">' + L('model average', 'promedio de modelos') + '</span></div>' +
+    '<div><b>' + mm(bHi) + ' mm</b><span class="lab">' + L('best case', 'mejor escenario') + '</span></div>' +
+    '<div><b>' + mm(pk.peak) + ' mm/h</b><span class="lab">' + L('fastest hour, worst case', 'hora más intensa, peor escenario') + ' · ' + span(pk.peakAt, pk.peakAt + 1) + '</span></div>' +
+    '<div><b>' + span(pk.max6At, pk.max6At + 6) + '</b><span class="lab">' + L('wettest 6 hours, worst case', 'las 6 horas más lluviosas, peor escenario') + '</span></div>';
+  var g = D.generated.replace('T', ' ').replace('Z', ' UTC');
+  document.getElementById('asof').innerHTML = L('Models as of ' + g + ' · NHC Advisory 13', 'Modelos al ' + g + ' · Aviso 13 del NHC');
+  document.getElementById('foot-gen').innerHTML = L('Built ' + g + ' from model runs available at that time. HAFS run: 06 UTC 10 Oct.', 'Generado ' + g + ' con las corridas disponibles a esa hora. Corrida de HAFS: 06 UTC 10 oct.');
+})();
+
+/* ---------- panes ---------- */
+var mode = 'scen', frame = NH, playing = false, speed = 1, autoTimer = null;
+function userAct(){ if (autoTimer){ clearTimeout(autoTimer); autoTimer = null; } }
+var rowsEls = [];   // {loc, sk, els}
+function scenOf(l, sk){ return l[sk]; }
+function gustOf(l, sk, i){ var g = l.gust; return sk === 'worst' ? g.hi[i] : sk === 'best' ? g.lo[i] : g.avg[i]; }
+
+function barsSVG(inc, sk){
+  var W = 480, H = 58, n = inc.length, bw = W / n, out = '';
+  [10, 25, 50].forEach(function(v){ if (v <= BAR_MAX){ var y = H - v / BAR_MAX * H; out += '<line x1="0" x2="' + W + '" y1="' + y + '" y2="' + y + '" stroke="var(--grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>'; } });
+  for (var i = 0; i < n; i++){
+    var h = Math.max(inc[i] / BAR_MAX * H, inc[i] > 0.05 ? 1 : 0);
+    out += '<rect x="' + (i*bw + 0.6).toFixed(1) + '" y="' + (H - h).toFixed(2) + '" width="' + (bw - 1.2).toFixed(1) + '" height="' + h.toFixed(2) + '" fill="var(--rain-fut)"><title>' + D.frames[i].slice(5).replace('T', ' ') + '–' + D.frames[i+1].slice(11) + ' · ' + inc[i].toFixed(1) + ' mm</title></rect>';
+  }
+  out += '<line class="ph" x1="0" x2="0" y1="0" y2="' + H + '" stroke="var(--ink)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';
+  return '<svg class="bars" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Hourly rain bars">' + out + '</svg>';
+}
+
+function buildPanes(){
+  var host = document.getElementById('panes'); host.innerHTML = ''; rowsEls = [];
+  var paneKeys = mode === 'scen' ? SKEYS : LOCS.map(function(l){ return l.id; });
+  paneKeys.forEach(function(pk){
+    var pane = document.createElement('article'); pane.className = 'pane';
+    var head;
+    if (mode === 'scen'){
+      var s = SC[pk];
+      var top = LOCS.reduce(function(a, l){ return l[pk].peak > a[pk].peak ? l : a; }, LOCS[0]);
+      pane.style.setProperty('--pc', s.color);
+      head = '<div class="phead"><h3>' + s.name + '</h3><span class="d">' + s.desc(NMOD) + '</span>' +
+        '<span class="threat">' + L('Fastest hour', 'Hora más intensa') + ': <b>' + mm(top[pk].peak) + ' mm/h</b> · ' + span(top[pk].peakAt, top[pk].peakAt + 1) + '</span></div>';
+    } else {
+      var l = LOCS.filter(function(x){ return x.id === pk; })[0], p = PLACE[pk];
+      pane.style.setProperty('--pc', 'var(--rain)');
+      head = '<div class="phead"><h3>' + p.name + '</h3><span class="d">' + p.place + ' · ' + p.elev + ' m</span>' +
+        '<span class="threat">' + L('Worst-case total', 'Total en el peor escenario') + ': <b>' + mm(l.worst.total) + ' mm</b> · ' + inch(l.worst.total) + '</span></div>';
+    }
+    pane.innerHTML = head + '<div class="rows"></div>';
+    var rows = pane.querySelector('.rows');
+    var rowKeys = mode === 'scen' ? LOCS.map(function(l){ return l.id; }) : SKEYS;
+    rowKeys.forEach(function(rk, ri){
+      var loc = LOCS.filter(function(x){ return x.id === (mode === 'scen' ? rk : pk); })[0];
+      var sk = mode === 'scen' ? pk : rk;
+      var sc = scenOf(loc, sk);
+      var title = mode === 'scen' ? '<span class="nm">' + PLACE[loc.id].short + '</span>' : '<span class="nm">' + SC[sk].name + '</span>';
+      var div = document.createElement('div'); div.className = 'row';
+      var ticks = ''; for (var t = 50; t < TUBE_MAX; t += 50) ticks += '<span class="tk" style="left:' + (t / TUBE_MAX * 100) + '%"></span>';
+      div.innerHTML = '<div class="rhead">' + title + '<span class="src">' + modelName(sc.model) + '</span></div>' +
+        '<div class="nums"><span class="big">0</span><span class="u">mm</span><span class="inch"></span><span class="lab">' + L('since Sat noon', 'desde el sáb. a mediodía') + '</span></div>' +
+        '<div class="tube" role="img"><i></i>' + ticks + '</div>' +
+        (ri === rowKeys.length - 1 ? '<div class="tscale"><span>0</span><span>' + (TUBE_MAX/2) + '</span><span>' + TUBE_MAX + ' mm</span></div>' : '') +
+        '<div class="rate"><span class="inc"></span><span class="chip rl"></span><span class="gst"></span></div>' +
+        barsSVG(sc.inc, sk) +
+        (ri === rowKeys.length - 1 ? '<div class="bars-ax"><span>' + L('Sat 12', 'sáb 12') + '</span><span>' + L('bar top = ' + BAR_MAX + ' mm/h', 'tope = ' + BAR_MAX + ' mm/h') + '</span><span>' + L('Mon 12', 'lun 12') + '</span></div>' : '');
+      rows.appendChild(div);
+      rowsEls.push({ loc: loc, sk: sk, sc: sc, big: div.querySelector('.big'), inch: div.querySelector('.inch'), fill: div.querySelector('.tube i'), tube: div.querySelector('.tube'),
+        inc: div.querySelector('.inc'), rl: div.querySelector('.rl'), gst: div.querySelector('.gst'), rects: div.querySelectorAll('rect'), ph: div.querySelector('.ph') });
+    });
+    host.appendChild(pane);
+  });
+  draw();
+}
+
+/* ---------- timeline strip ---------- */
+function buildTimeline(){
+  var W = 960, H = 44, x = function(i){ return i / NH * W; }, out = '';
+  NIGHTS.forEach(function(n){ out += '<rect x="' + x(n[0]) + '" y="0" width="' + (x(n[1]) - x(n[0])) + '" height="' + H + '" fill="var(--night)"/>'; });
+  // average-of-all-addresses mean rain per hour as a faint profile
+  var prof = []; for (var i = 0; i < NH; i++){ prof.push(LOCS.reduce(function(a, l){ return a + l.avg.inc[i]; }, 0) / LOCS.length); }
+  var pm = Math.max.apply(null, prof) || 1, pts = '0,' + H;
+  prof.forEach(function(v, i){ pts += ' ' + x(i + 0.5).toFixed(1) + ',' + (H - 4 - v / pm * (H - 16)).toFixed(1); });
+  pts += ' ' + W + ',' + H;
+  out += '<polygon points="' + pts + '" fill="var(--rain-band)" stroke="none"/>';
+  [12, 24, 36].forEach(function(i){ out += '<line x1="' + x(i) + '" x2="' + x(i) + '" y1="0" y2="' + H + '" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>'; });
+  if (closest) out += '<line x1="' + x(closest.i) + '" x2="' + x(closest.i) + '" y1="0" y2="' + H + '" stroke="var(--alert)" stroke-width="3" vector-effect="non-scaling-stroke"/>';
+  out += '<line id="tl-ph" x1="0" x2="0" y1="0" y2="' + H + '" stroke="var(--ink)" stroke-width="2" vector-effect="non-scaling-stroke"/>';
+  document.getElementById('tl').innerHTML = out;
+}
+
+/* ---------- per-frame draw ---------- */
+function draw(){
+  var i = frame;
+  document.getElementById('clock-t').innerHTML = tlabel(i, true);
+  document.getElementById('clock-h').innerHTML = i === 0 ? L('Start of window · hour 0 of 48', 'Inicio de la ventana · hora 0 de 48')
+    : L('Hour ' + i + ' of 48', 'Hora ' + i + ' de 48') + ' · ' + L('last hour', 'última hora') + ' ' + span(i - 1, i);
+  var s = stormAt(i), st = '';
+  if (s){
+    var db = distBear(s), kmh = Math.round(s.kt * 1.852 / 5) * 5;
+    st = '<span class="eyebrow">' + L('Simon’s center, NHC track', 'Centro de Simon, trayectoria NHC') + '</span>' +
+      '<span class="dist">' + Math.round(db.km) + ' km ' + compass(db.br) + '</span>' +
+      '<span>' + L('of downtown', 'del centro') + '</span>' +
+      '<span class="pill cat">' + cat(s.kt) + ' · ' + kmh + ' km/h</span>' +
+      (isNight(i) ? '<span class="pill night">' + L('night', 'noche') + '</span>' : '');
+  }
+  document.getElementById('storm').innerHTML = st;
+  rowsEls.forEach(function(r){
+    var c = r.sc.cum[i], inc = i > 0 ? r.sc.inc[i-1] : 0, lv = rateLv(inc);
+    r.big.textContent = mm(c);
+    r.inch.textContent = inch(c);
+    r.fill.style.width = Math.min(100, c / TUBE_MAX * 100) + '%';
+    r.tube.setAttribute('aria-label', mm(c) + ' mm');
+    r.inc.textContent = i > 0 ? '+' + inc.toFixed(1) + ' mm' : '—';
+    r.rl.innerHTML = i > 0 ? RATE_TXT[lv] : L('start', 'inicio');
+    r.rl.setAttribute('data-lv', i > 0 ? lv : 0);
+    var g = gustOf(r.loc, r.sk, i);
+    r.gst.innerHTML = L('gusts', 'ráfagas') + ' <b class="num">' + g + '</b> km/h' + (g >= 119 ? ' <span class="chip g2">' + L('hurricane force', 'fuerza de huracán') + '</span>' : g >= 63 ? ' <span class="chip g1">' + L('storm force', 'fuerza de tormenta') + '</span>' : '');
+    for (var k = 0; k < r.rects.length; k++){
+      r.rects[k].setAttribute('fill', k < i - 1 ? 'var(--rain)' : k === i - 1 ? 'var(--ink)' : 'var(--rain-fut)');
+    }
+    var px = i / NH * 480; r.ph.setAttribute('x1', px); r.ph.setAttribute('x2', px);
+  });
+  var ph = document.getElementById('tl-ph'); if (ph){ var x = i / NH * 960; ph.setAttribute('x1', x); ph.setAttribute('x2', x); }
+  document.getElementById('scrub').value = i;
+  document.querySelectorAll('.ov-ph').forEach(function(l){ var x = l.getAttribute('data-x0') * 1 + i / NH * l.getAttribute('data-w'); l.setAttribute('x1', x); l.setAttribute('x2', x); });
+}
+
+/* ---------- playback ---------- */
+var last = 0, acc = 0, hold = 0, raf = null;
+function setPlay(p){
+  playing = p;
+  document.getElementById('b-play').innerHTML = p ? L('❚❚ Pause', '❚❚ Pausa') : L('▶ Play', '▶ Reproducir');
+  if (p){ if (frame >= NH) frame = 0; last = performance.now(); acc = 0; hold = 0; draw(); raf = requestAnimationFrame(tick); }
+  else if (raf) cancelAnimationFrame(raf);
+}
+function tick(now){
+  if (!playing) return;
+  var dt = now - last; last = now;
+  if (frame >= NH){ hold += dt; if (hold > 2500){ frame = 0; hold = 0; draw(); } }
+  else { acc += dt; var step = 650 / speed; while (acc >= step && frame < NH){ acc -= step; frame++; } draw(); }
+  raf = requestAnimationFrame(tick);
+}
+document.getElementById('b-play').addEventListener('click', function(){ userAct(); setPlay(!playing); });
+document.getElementById('b-prev').addEventListener('click', function(){ userAct(); setPlay(false); frame = Math.max(0, frame - 1); draw(); });
+document.getElementById('b-next').addEventListener('click', function(){ userAct(); setPlay(false); frame = Math.min(NH, frame + 1); draw(); });
+document.getElementById('scrub').addEventListener('input', function(e){ userAct(); setPlay(false); frame = +e.target.value; draw(); });
+document.querySelectorAll('[data-sp]').forEach(function(b){ b.addEventListener('click', function(){
+  speed = +b.getAttribute('data-sp'); document.querySelectorAll('[data-sp]').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); }); });
+document.querySelectorAll('[data-mode]').forEach(function(b){ b.addEventListener('click', function(){
+  mode = b.getAttribute('data-mode'); document.querySelectorAll('[data-mode]').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); buildPanes(); }); });
+document.addEventListener('keydown', function(e){
+  var tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'ArrowLeft') userAct();
+  if (e.key === ' ' && tag !== 'BUTTON'){ e.preventDefault(); setPlay(!playing); }
+  else if (e.key === 'ArrowRight'){ setPlay(false); frame = Math.min(NH, frame + 1); draw(); }
+  else if (e.key === 'ArrowLeft'){ setPlay(false); frame = Math.max(0, frame - 1); draw(); }
+});
+
+/* ---------- language ---------- */
+function setLang(v){
+  root.setAttribute('data-lang', v);
+  document.querySelectorAll('[data-lang]').forEach(function(b){ if (b.tagName === 'BUTTON') b.setAttribute('aria-pressed', b.getAttribute('data-lang') === v); });
+  root.setAttribute('lang', v === 'es' ? 'es' : 'en');
+  try { localStorage.setItem('simon-lang', v); } catch (e) {}
+}
+document.querySelectorAll('.lang button').forEach(function(b){ b.addEventListener('click', function(){ setLang(b.getAttribute('data-lang')); }); });
+var saved = null; try { saved = localStorage.getItem('simon-lang'); } catch (e) {}
+setLang(saved === 'en' || saved === 'es' || saved === 'both' ? saved : 'both');
+
+/* ---------- summary cards with overview charts ---------- */
+function overview(l, idx){
+  var W = 340, H = 170, m = { l: 34, r: 58, t: 10, b: 22 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  var x = function(i){ return m.l + i / NH * iw; }, y = function(v){ return m.t + ih - v / TUBE_MAX * ih; };
+  var out = '';
+  NIGHTS.forEach(function(n){ out += '<rect x="' + x(n[0]).toFixed(1) + '" y="' + m.t + '" width="' + (x(n[1]) - x(n[0])).toFixed(1) + '" height="' + ih + '" fill="var(--night)"/>'; });
+  for (var v = 0; v <= TUBE_MAX; v += 50){
+    out += '<line x1="' + m.l + '" x2="' + (m.l + iw) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + (v ? 'var(--grid)' : 'var(--line)') + '" stroke-width="1"/>';
+    out += '<text x="' + (m.l - 6) + '" y="' + (y(v) + 3.5) + '" text-anchor="end" font-size="10" font-family="var(--mono)" fill="var(--muted)">' + v + '</text>';
+  }
+  [[0, 'sáb/Sat 12'], [12, '00'], [24, '12'], [36, '00'], [48, 'lun/Mon 12']].forEach(function(t, k){
+    out += '<text x="' + x(t[0]) + '" y="' + (H - 6) + '" text-anchor="' + (k === 0 ? 'start' : k === 4 ? 'end' : 'middle') + '" font-size="10" font-family="var(--mono)" fill="var(--muted)">' + t[1] + '</text>';
+  });
+  var band = l.band.hi.map(function(v, i){ return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ') + ' ' +
+             l.band.lo.map(function(v, i){ return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).reverse().join(' ');
+  out += '<polygon points="' + band + '" fill="var(--rain-band)"/>';
+  var ends = [];
+  SKEYS.forEach(function(sk){
+    var c = l[sk].cum;
+    out += '<polyline points="' + c.map(function(v, i){ return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ') + '" fill="none" stroke="' + SC[sk].line + '" stroke-width="2" stroke-linejoin="round"/>';
+    ends.push({ sk: sk, y: y(c[NH]), v: c[NH] });
+  });
+  // end labels, nudged apart
+  ends.sort(function(a, b){ return a.y - b.y; });
+  for (var k = 1; k < ends.length; k++){ if (ends[k].y - ends[k-1].y < 12) ends[k].y = ends[k-1].y + 12; }
+  ends.forEach(function(e){
+    out += '<circle cx="' + x(NH) + '" cy="' + y(e.v) + '" r="3" fill="' + SC[e.sk].line + '" stroke="var(--card)" stroke-width="1.5"/>';
+    out += '<text x="' + (x(NH) + 6) + '" y="' + (e.y + 3.5) + '" font-size="10.5" font-family="var(--mono)" fill="var(--ink2)">' + mm(e.v) + ' mm</text>';
+  });
+  out += '<line class="ov-ph" data-x0="' + m.l + '" data-w="' + iw + '" x1="' + x(frame) + '" x2="' + x(frame) + '" y1="' + m.t + '" y2="' + (m.t + ih) + '" stroke="var(--ink)" stroke-width="1" opacity=".55"/>';
+  out += '<line class="ov-x" x1="0" x2="0" y1="' + m.t + '" y2="' + (m.t + ih) + '" stroke="var(--ink)" stroke-width="1" visibility="hidden"/>';
+  out += '<rect class="ov-hit" x="' + m.l + '" y="' + m.t + '" width="' + iw + '" height="' + ih + '" fill="transparent"/>';
+  return { svg: '<svg class="ovc" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Accumulated rain, worst case, average and best case">' + out + '</svg>', m: m, iw: iw, W: W };
+}
+
+(function(){
+  var host = document.getElementById('cards');
+  LOCS.forEach(function(l, idx){
+    var p = PLACE[l.id], w = l.worst, a = l.avg, b = l.best, ov = overview(l, idx);
+    var card = document.createElement('article'); card.className = 'card';
+    card.innerHTML = '<div><h3>' + p.name + '</h3><span class="place">' + p.place + '</span></div>' +
+      '<div class="facts"><span class="pill">' + p.elev + ' m ' + L('above sea level', 'sobre el nivel del mar') + '</span>' + p.facts.map(function(f){ return '<span class="pill">' + f + '</span>'; }).join('') +
+      '<span class="pill">' + l.lat.toFixed(4) + ', ' + l.lon.toFixed(4) + '</span></div>' +
+      '<div class="trio">' +
+        '<div class="w"><span class="lab">' + L('Worst', 'Peor') + '</span><b>' + mm(w.total) + ' mm</b><small>' + inch(w.total) + ' · ' + modelName(w.model) + '</small></div>' +
+        '<div><span class="lab">' + L('Average', 'Promedio') + '</span><b>' + mm(a.total) + ' mm</b><small>' + inch(a.total) + ' · ' + NMOD + ' ' + L('models', 'modelos') + '</small></div>' +
+        '<div><span class="lab">' + L('Best', 'Mejor') + '</span><b>' + mm(b.total) + ' mm</b><small>' + inch(b.total) + ' · ' + modelName(b.model) + '</small></div>' +
+      '</div>' +
+      '<ul class="threats">' +
+        '<li><span class="ic">1 h</span><span>' + L('Fastest hour', 'Hora más intensa') + ': <b>' + mm(w.peak) + ' mm/h</b> ' + L('worst', 'peor') + ' (' + span(w.peakAt, w.peakAt + 1) + '), <b>' + a.peak.toFixed(1) + ' mm/h</b> ' + L('average', 'promedio') + ' (' + span(a.peakAt, a.peakAt + 1) + ')</span></li>' +
+        '<li><span class="ic">6 h</span><span>' + L('Wettest 6 hours', 'Las 6 horas más lluviosas') + ': <b>' + mm(w.max6) + ' mm</b> ' + L('worst', 'peor') + ' (' + span(w.max6At, w.max6At + 6) + '), <b>' + mm(a.max6) + ' mm</b> ' + L('average', 'promedio') + '</span></li>' +
+        '<li><span class="ic">24 h</span><span>' + L('Wettest 24 hours', 'Las 24 horas más lluviosas') + ': <b>' + mm(w.max24) + ' mm</b> (' + L('SMN', 'SMN') + ': ' + smn24(w.max24) + ') ' + L('worst', 'peor') + ', <b>' + mm(a.max24) + ' mm</b> (' + smn24(a.max24) + ') ' + L('average', 'promedio') + '</span></li>' +
+        '<li><span class="ic">' + L('wind', 'viento') + '</span><span>' + L('Strongest gust in any model', 'Ráfaga más fuerte en cualquier modelo') + ': <b>' + Math.max.apply(null, l.gust.hi) + ' km/h</b></span></li>' +
+      '</ul>' +
+      '<p class="hz bi">' + p.hazard + '</p>' +
+      '<div class="ov">' + ov.svg + '<div class="tip" hidden></div></div>' +
+      '<div class="legend"><span><i style="background:var(--s-worst)"></i>' + L('worst', 'peor') + '</span><span><i style="background:var(--s-avg)"></i>' + L('average', 'promedio') + '</span><span><i style="background:var(--s-best)"></i>' + L('best', 'mejor') + '</span><span><i class="band"></i>' + L('all models', 'todos los modelos') + '</span><span class="mono" style="font-size:11px">mm</span></div>';
+    host.appendChild(card);
+    // hover crosshair
+    var svg = card.querySelector('svg.ovc'), hit = svg.querySelector('.ov-hit'), xl = svg.querySelector('.ov-x'), tip = card.querySelector('.tip');
+    function show(evt){
+      var r = svg.getBoundingClientRect(), sx = (evt.clientX - r.left) / r.width * ov.W;
+      var i = Math.max(0, Math.min(NH, Math.round((sx - ov.m.l) / ov.iw * NH)));
+      var px = ov.m.l + i / NH * ov.iw; xl.setAttribute('x1', px); xl.setAttribute('x2', px); xl.setAttribute('visibility', 'visible');
+      tip.hidden = false; tip.style.left = (px / ov.W * r.width) + 'px'; tip.style.top = '6px';
+      tip.innerHTML = tlabel(i, true) + '<br>' + L('worst', 'peor') + ' ' + mm(w.cum[i]) + ' · ' + L('avg', 'prom.') + ' ' + mm(a.cum[i]) + ' · ' + L('best', 'mejor') + ' ' + mm(b.cum[i]) + ' mm';
+    }
+    hit.addEventListener('pointermove', show);
+    hit.addEventListener('pointerleave', function(){ xl.setAttribute('visibility', 'hidden'); tip.hidden = true; });
+  });
+})();
+
+/* ---------- ensemble odds ---------- */
+(function(){
+  var host = document.getElementById('odds');
+  LOCS.forEach(function(l){
+    var e = l.ens, rows = [[50, e.gt50], [100, e.gt100], [200, e.gt200], [300, e.gt300]];
+    var sys = Object.keys(e.systems).map(function(k){ var s = e.systems[k];
+      var nm = { ecmwf_ifs025: 'ECMWF', ecmwf_aifs025: 'ECMWF AIFS', icon_global_eps: 'ICON', gfs025: 'GFS', gem_global: 'GEM', ukmo_global_ensemble_20km: 'UK Met Office' }[k] || k;
+      return '<tr><td>' + nm + '</td><td class="n">' + s.n + '</td><td class="n">' + s.p50 + '</td><td class="n">' + s.p90 + '</td><td class="n">' + s.gt100 + '%</td></tr>'; }).join('');
+    var c = document.createElement('article'); c.className = 'card';
+    c.innerHTML = '<h3>' + PLACE[l.id].short + '</h3>' +
+      rows.map(function(r){ return '<div class="meter"><span>&gt; ' + r[0] + ' mm</span><span class="trk"><i style="width:' + r[1] + '%"></i></span><span class="p">' + r[1] + '%</span></div>'; }).join('') +
+      '<p class="hz">' + L('Middle run: <b>' + e.p50 + ' mm</b>. One run in ten tops <b>' + e.p90 + ' mm</b>. Wettest run: ' + e.max + ' mm.',
+                           'Corrida intermedia: <b>' + e.p50 + ' mm</b>. Una de cada diez supera <b>' + e.p90 + ' mm</b>. La más lluviosa: ' + e.max + ' mm.') + '</p>' +
+      '<details><summary>' + L('By forecast center', 'Por centro de pronóstico') + '</summary><div class="tblwrap" style="margin-top:8px"><table style="min-width:0"><thead><tr><th>' + L('System', 'Sistema') + '</th><th>' + L('runs', 'corridas') + '</th><th>' + L('middle', 'mediana') + '</th><th>' + L('1 in 10', '1 de 10') + '</th><th>&gt;100</th></tr></thead><tbody>' + sys + '</tbody></table></div></details>';
+    host.appendChild(c);
+  });
+})();
+
+/* ---------- model table ---------- */
+(function(){
+  var order = LOCS[0].ranking.map(function(r){ return r.m; });
+  var kind = { global: L('global', 'global'), ai: L('AI', 'IA'), hurricane: L('hurricane', 'huracán') };
+  var head = '<thead><tr><th>' + L('Model', 'Modelo') + '</th><th>' + L('Grid', 'Malla') + '</th>' +
+    LOCS.map(function(l){ return '<th style="text-align:right">' + PLACE[l.id].short + '</th>'; }).join('') +
+    '<th style="text-align:right">' + L('Fastest hour', 'Hora más intensa') + '</th><th style="text-align:right">' + L('Lowest pressure', 'Presión mínima') + '</th></tr></thead>';
+  var body = order.map(function(m){
+    var md = D.models[m];
+    var cells = LOCS.map(function(l){
+      var r = l.ranking.filter(function(x){ return x.m === m; })[0];
+      var badge = l.worst.model === m ? '<span class="badge w">' + L('worst', 'peor') + '</span>' : l.best.model === m ? '<span class="badge b">' + L('best', 'mejor') + '</span>' : '';
+      return '<td class="n">' + mm(r.total) + badge + '<span class="mb" style="width:' + Math.max(1, r.total / TUBE_MAX * 60).toFixed(0) + 'px"></span></td>';
+    }).join('');
+    var r0 = LOCS[0].ranking.filter(function(x){ return x.m === m; })[0];
+    return '<tr><td><b>' + esc(md.label) + '</b><span class="org">' + esc(md.org) + (md.cycle ? ' · ' + md.cycle : '') + '</span></td>' +
+      '<td>' + md.km + ' km · ' + kind[md.kind] + (md.step === 3 ? ' · ' + L('3-hourly', 'cada 3 h') : '') + '</td>' + cells +
+      '<td class="n">' + r0.peak.toFixed(1) + ' mm/h</td><td class="n">' + (r0.pmin ? Math.round(r0.pmin) + ' hPa' : '—') + '</td></tr>';
+  }).join('');
+  document.getElementById('mtable').innerHTML = head + '<tbody>' + body + '</tbody>';
+})();
+
+/* ---------- NHC track table ---------- */
+(function(){
+  var rows = TRACK.map(function(p){
+    var d = new Date(p.t - 6 * 3600e3), db = distBear(p);
+    var en = DAY_EN[d.getUTCDay()] + ' ' + h12(d.getUTCHours()), es = DAY_ES[d.getUTCDay()] + ' ' + String(d.getUTCHours()).padStart(2, '0') + ':00';
+    return '<tr><td>' + L(en, es) + '</td><td class="n">' + p.lat.toFixed(1) + '°N ' + (-p.lon).toFixed(1) + '°W</td><td class="n">' + Math.round(p.kt * 1.852 / 5) * 5 + ' km/h</td><td class="n">' + Math.round(db.km) + ' km ' + compass(db.br) + '</td></tr>';
+  }).join('');
+  var cl = closest ? '<tr><td colspan="4" style="color:var(--alert)"><b>' + L('Closest approach', 'Máximo acercamiento') + ':</b> ' + L('about ', 'unos ') + Math.round(closest.km) + ' km ' + compass(closest.br) + ', ' + tlabel(closest.i, true) + ' (' + L('interpolated', 'interpolado') + ')</td></tr>' : '';
+  document.getElementById('track').innerHTML = '<thead><tr><th>' + L('Time (CST)', 'Hora (centro)') + '</th><th>' + L('Center', 'Centro') + '</th><th>' + L('Wind', 'Viento') + '</th><th>' + L('From downtown PV', 'Desde el centro de PV') + '</th></tr></thead><tbody>' + rows + cl + '</tbody>';
+})();
+
+/* ---------- method ---------- */
+function exclText(){
+  var ex = D.excluded || [];
+  var nd = ex.filter(function(e){ return e.why === 'nodata'; }).map(function(e){ return esc(e.label); });
+  var bl = ex.filter(function(e){ return e.why === 'blocked'; }).map(function(e){ return esc(e.label); });
+  var en = [], es = [];
+  if (nd.length){ en.push(nd.join(', ') + ' (no data for this area and window)'); es.push(nd.join(', ') + ' (sin datos para esta zona y ventana)'); }
+  if (bl.length){ en.push(bl.join(', ') + ' (download refused by the data provider’s daily limit)'); es.push(bl.join(', ') + ' (descarga rechazada por el límite diario del proveedor)'); }
+  return en.length ? L('<b>Not used:</b> ' + en.join('; ') + '.', '<b>No usados:</b> ' + es.join('; ') + '.') : '';
+}
+(function(){
+  var gm = Object.keys(D.models).filter(function(m){ return D.models[m].kind !== 'hurricane'; }).map(function(m){ return D.models[m].label; }).join(', ');
+  var items = [
+    L('<b>Window.</b> 48 hours, Saturday 10 Oct 12:00 to Monday 12 Oct 12:00, Central time (UTC−6, no daylight saving). Each bar is the rain that falls in that hour.',
+      '<b>Ventana.</b> 48 horas, del sábado 10 oct 12:00 al lunes 12 oct 12:00, hora del centro (UTC−6, sin horario de verano). Cada barra es la lluvia que cae en esa hora.'),
+    L('<b>Global models</b> (' + gm + ') come from Open-Meteo at the grid cell nearest each address. Their grids are 9 to 55 km wide, so the two Zona Romántica addresses often share a cell.',
+      '<b>Modelos globales</b> (' + gm + ') vía Open-Meteo, en la celda de malla más cercana a cada dirección. Sus mallas miden de 9 a 55 km, así que las dos direcciones de la Zona Romántica a menudo comparten celda.'),
+    L('<b>Hurricane models.</b> HAFS-A and HAFS-B are NOAA’s hurricane models (06 UTC run), read from NOAA’s open-data bucket on their fixed 6 km grid. Their 2 km storm-following grid stores rain relative to the moving storm, which gives wrong totals at a fixed address, so it is not used.',
+      '<b>Modelos de huracanes.</b> HAFS-A y HAFS-B son los modelos de huracanes de la NOAA (corrida de 06 UTC), leídos de su repositorio de datos abiertos en su malla fija de 6 km. Su malla de 2 km que sigue a la tormenta guarda la lluvia relativa al ciclón en movimiento, lo que da totales erróneos en una dirección fija; por eso no se usa.'),
+    L('<b>Scenarios.</b> Worst case is the one model with the most rain over 48 hours at that address, shown hour by hour; best case is the one with the least. The average is the mean of all ' + NMOD + ' models for each hour. Gusts: the worst-case pane shows the highest gust any model gives for that hour, the best-case pane the lowest, the average pane the mean (HAFS and the AI models do not report gusts).',
+      '<b>Escenarios.</b> El peor escenario es el modelo con más lluvia en 48 horas en esa dirección, mostrado hora por hora; el mejor, el que tiene menos. El promedio es la media de los ' + NMOD + ' modelos en cada hora. Ráfagas: el panel del peor escenario muestra la ráfaga más alta de cualquier modelo en esa hora, el del mejor la más baja y el del promedio la media (HAFS y los modelos de IA no reportan ráfagas).'),
+    L('<b>3-hourly models</b> (HAFS, JMA, ECMWF AIFS, AI-GFS) are spread evenly over each three hours, which smooths their peaks.',
+      '<b>Modelos cada 3 horas</b> (HAFS, JMA, ECMWF AIFS, AI-GFS): su lluvia se reparte por igual entre las tres horas, lo que suaviza sus picos.'),
+    L('<b>Limits.</b> Simon’s hurricane-force winds reach only 30 km from its center, too small for most of these grids to resolve. No model here brings the core over town the way the NHC track does, so treat the worst case as plausible rather than extreme. NHC expects 250–500 mm across parts of southwestern Mexico.',
+      '<b>Límites.</b> Los vientos de huracán de Simon llegan solo a 30 km de su centro, demasiado poco para que la mayoría de estas mallas lo resuelva. Ningún modelo aquí trae el núcleo sobre la ciudad como lo hace la trayectoria del NHC, así que el peor escenario es plausible, no extremo. El NHC espera 250–500 mm en partes del suroeste de México.'),
+    exclText() + ' ' + L('Rain-rate words follow common hourly bands (light under 2.5 mm/h, moderate to 7.6, heavy to 25, very heavy to 50, violent above). 24-hour words follow SMN-CONAGUA (heavy 25–50 mm, very heavy 50–75, intense 75–150, torrential above 150).',
+      'Las palabras de intensidad horaria siguen rangos comunes (ligera bajo 2.5 mm/h, moderada hasta 7.6, fuerte hasta 25, muy fuerte hasta 50, violenta arriba). Las de 24 horas siguen al SMN-CONAGUA (fuertes 25–50 mm, muy fuertes 50–75, intensas 75–150, torrenciales arriba de 150).'),
+    L('<b>Sources:</b> <a href="https://www.nhc.noaa.gov/graphics_ep5.shtml" target="_blank" rel="noopener">NHC Simon advisories</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://noaa-nws-hafs-pds.s3.amazonaws.com/index.html" target="_blank" rel="noopener">NOAA HAFS open data</a> · <a href="https://smn.conagua.gob.mx/" target="_blank" rel="noopener">SMN-CONAGUA</a> · addresses from <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap</a>.',
+      '<b>Fuentes:</b> <a href="https://www.nhc.noaa.gov/graphics_ep5.shtml" target="_blank" rel="noopener">avisos del NHC sobre Simon</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://noaa-nws-hafs-pds.s3.amazonaws.com/index.html" target="_blank" rel="noopener">datos abiertos HAFS de la NOAA</a> · <a href="https://smn.conagua.gob.mx/" target="_blank" rel="noopener">SMN-CONAGUA</a> · direcciones de <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap</a>.')
+  ];
+  document.getElementById('method').innerHTML = items.map(function(t){ return '<li class="bi">' + t + '</li>'; }).join('');
+})();
+
+/* ---------- go ---------- */
+buildTimeline();
+buildPanes();
+setPlay(false);
+if (!reduce){ autoTimer = setTimeout(function(){ autoTimer = null; frame = 0; setPlay(true); }, 1400); }
+})();
+</script>
+
+</body>
+</html>
