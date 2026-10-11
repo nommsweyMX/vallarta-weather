@@ -1,0 +1,888 @@
+<title>Simon Over Vallarta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;900&family=Red+Hat+Mono:wght@400;500;700&family=Red+Hat+Text:wght@400;500;700&display=swap">
+<style>
+/* Layout: observed satellite loop beside a street-level map of Vallarta, one shared timeline, then a threat timeline per building. */
+:root{
+  --bg:#f1f2f4; --card:#ffffff; --ink:#151515; --ink2:#3c3f42; --muted:#5e6268; --line:#dcdfe3; --grid:#e9ebee;
+  --bar:#151515; --bar-ink:#ffffff; --brand:#ee0000;
+  --accent:#1769d6; --obs:#0b7a53; --ext:#151515; --nhc:#c2410c;
+  --alert-fill:#c9190b; --alert-bg:#fdeceb; --alert-ink:#7d1007;
+  --t0:#e9ebee; --t1:#e9c75a; --t2:#e5a823; --t3:#dd6a17; --t4:#c9190b;
+  --gust:#5b45d1; --rainbar:#1769d6; --focus:#0066cc; --night:rgba(39,57,92,.08);
+  --display:"Red Hat Display", "Segoe UI", system-ui, sans-serif;
+  --text:"Red Hat Text", "Segoe UI", system-ui, sans-serif;
+  --mono:"Red Hat Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1015; --card:#161a21; --ink:#eef1f5; --ink2:#c7cdd5; --muted:#9aa2ad; --line:#2b323c; --grid:#222831;
+    --bar:#07090c; --bar-ink:#ffffff; --brand:#ff3b30;
+    --accent:#4c9bff; --obs:#3ccf95; --ext:#eef1f5; --nhc:#ff8a4c;
+    --alert-fill:#b3170b; --alert-bg:#341311; --alert-ink:#ffc9c3;
+    --t0:#222831; --t1:#5c4c18; --t2:#8f6d12; --t3:#e27a2e; --t4:#ff8a75;
+    --gust:#a99ff5; --rainbar:#4c9bff; --focus:#7fb5ff; --night:rgba(150,180,230,.07);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1015; --card:#161a21; --ink:#eef1f5; --ink2:#c7cdd5; --muted:#9aa2ad; --line:#2b323c; --grid:#222831;
+  --bar:#07090c; --bar-ink:#ffffff; --brand:#ff3b30;
+  --accent:#4c9bff; --obs:#3ccf95; --ext:#eef1f5; --nhc:#ff8a4c;
+  --alert-fill:#b3170b; --alert-bg:#341311; --alert-ink:#ffc9c3;
+  --t0:#222831; --t1:#5c4c18; --t2:#8f6d12; --t3:#e27a2e; --t4:#ff8a75;
+  --gust:#a99ff5; --rainbar:#4c9bff; --focus:#7fb5ff; --night:rgba(150,180,230,.07);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--text);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:clamp(16px,3vw,32px)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+[data-lang="en"] .es{display:none}
+[data-lang="es"] .en{display:none}
+[data-lang="both"] .es{font-style:italic}
+[data-lang="both"] .en + .es::before{content:" / ";font-style:normal}
+[data-lang="both"] .bi > .es{display:block}
+[data-lang="both"] .bi > .en + .es::before{content:none}
+[data-lang="both"] h1 .es, [data-lang="both"] h2 .es, [data-lang="both"] h3 .es{font-weight:500;font-style:normal;color:var(--muted)}
+[data-lang="both"] .mono .es, [data-lang="both"] .eyebrow .es, [data-lang="both"] .chip .es, [data-lang="both"] .seg .es, [data-lang="both"] .tag .es, [data-lang="both"] .val .es, [data-lang="both"] .when .es{font-style:normal}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bar);color:var(--bar-ink);border-bottom:3px solid var(--brand)}
+.bar .wrap{display:flex;align-items:center;gap:12px;padding-block:9px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:900;letter-spacing:.01em;font-size:15px;color:var(--bar-ink);text-decoration:none}
+.brand small{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.08em;opacity:.75;margin-left:8px;text-transform:uppercase}
+.lang{margin-left:auto;display:flex;border:1px solid #ffffff40;border-radius:8px;overflow:hidden}
+.lang button{all:unset;cursor:pointer;font-family:var(--mono);font-size:12px;padding:6px 10px;color:#ffffffc8;text-align:center;line-height:1.25}
+.lang button small{display:block;font-size:10px;opacity:.8}
+.lang button[aria-pressed="true"]{background:#ffffff;color:#151515}
+.lang button:focus-visible{outline:2px solid #7fb5ff;outline-offset:-3px}
+.lang button[aria-pressed="true"]:focus-visible{outline-color:#0066cc}
+
+.alert{background:var(--alert-bg);border-bottom:1px solid var(--line)}
+.alert .wrap{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;padding-block:14px;align-items:start}
+.alert .tag{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--alert-fill);padding:5px 9px;border-radius:5px;white-space:nowrap}
+.alert p{margin:0;color:var(--alert-ink);max-width:100ch}
+@media (max-width:640px){.alert .wrap{grid-template-columns:1fr}.alert .tag{justify-self:start;white-space:normal}}
+
+.hero{padding-block:24px 8px}
+.hero h1{font-size:clamp(28px,4.6vw,46px);line-height:1.06;font-weight:900;letter-spacing:-.01em}
+.hero .lede{max-width:78ch;color:var(--ink2);margin:12px 0 0}
+.now{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+@media (max-width:900px){.now{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.card h3{font-size:17px;font-weight:700;margin:2px 0 6px}
+.card p{margin:6px 0 0;color:var(--ink2)}
+.big{font-family:var(--display);font-weight:900;font-size:clamp(20px,2.4vw,26px);line-height:1.15}
+.sw{display:inline-block;width:22px;height:0;border-top:3px solid var(--ext);vertical-align:middle;margin-right:6px}
+.sw.nhc{border-top:3px dashed var(--nhc)}
+.sw.obs{border-top:3px dotted var(--obs)}
+
+section.block{padding-block:26px}
+section.block > .wrap > h2{font-size:clamp(21px,2.6vw,28px);font-weight:900}
+.sub{color:var(--muted);margin:6px 0 0;max-width:90ch}
+
+/* player */
+.ctl{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card)}
+.seg button{all:unset;cursor:pointer;padding:7px 11px;font-size:13px;font-weight:500;color:var(--ink2);line-height:1.25;text-align:center}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--focus);outline-offset:-3px}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:13px;color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.clock{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:14px}
+.clock .when{font-family:var(--display);font-weight:900;font-size:clamp(22px,3vw,30px);line-height:1.1;min-width:9ch}
+.badge{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:5px;color:#fff;background:var(--obs)}
+.badge.fut{background:var(--ink);color:var(--bg)}
+.clock .rel{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.scrub{position:relative;margin-top:10px}
+.scrub input{width:100%;margin:0;accent-color:var(--accent);height:28px}
+.scrubbar{position:relative;height:16px;margin-top:-4px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.scrubbar > span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.panels{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:14px;margin-top:12px;align-items:start}
+@media (max-width:900px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0}
+.panel .ph{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;margin:2px 2px 8px}
+.panel .ph h3{font-size:15px;font-weight:700}
+.stage{position:relative;width:100%;border-radius:8px;overflow:hidden;background:#0e1a27;touch-action:pan-y}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:8px;font-size:12px;color:var(--ink2)}
+.ramp{display:inline-flex;flex-wrap:wrap;max-width:100%;align-items:center;gap:0;border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.legend > span{max-width:100%}
+.ramp i{display:inline-block;font-style:normal;font-family:var(--mono);font-size:10.5px;padding:1px 5px;color:#fff;white-space:nowrap}
+.layers{display:flex;flex-wrap:wrap;gap:6px}
+.chip{all:unset;cursor:pointer;font-size:12px;font-weight:500;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);background:var(--card)}
+.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);background:var(--grid)}
+.chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.read{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:760px){.read{grid-template-columns:1fr}}
+.ro{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.ro .nm{font-weight:700;font-size:14px}
+.ro .st{font-size:12px;color:var(--muted)}
+.ro .vals{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin-top:6px;font-size:13.5px}
+.ro .vals .k{color:var(--muted)}
+.ro .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500}
+.lv{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;margin:3px 4px 0 0;background:var(--tc,var(--t0));color:var(--ink)}
+[data-lv="0"]{--tc:var(--t0)} [data-lv="1"]{--tc:var(--t1)} [data-lv="2"]{--tc:var(--t2)} [data-lv="3"]{--tc:var(--t3)} [data-lv="4"]{--tc:var(--t4)}
+.lv[data-lv="3"], .lv[data-lv="4"]{color:#fff}
+:root[data-theme="dark"] .lv[data-lv="4"]{color:#151515}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lv[data-lv="4"]{color:#151515}}
+
+/* building threat cards */
+.bcards{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.bhead{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.bhead h3{font-size:20px;font-weight:900}
+.bhead .st{color:var(--muted)}
+.bgrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;margin-top:10px}
+@media (max-width:900px){.bgrid{grid-template-columns:1fr}}
+.keys{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.keys li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;align-items:start}
+.keys .when{font-family:var(--mono);font-weight:700;font-size:13px;white-space:nowrap;padding-top:1px}
+.keys .what{color:var(--ink2);font-size:14px}
+.keys .what b{color:var(--ink)}
+.tl svg{width:100%;height:auto;display:block}
+.tl text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.tl .rl{font-family:var(--text);font-size:11px;fill:var(--ink2)}
+.todo{margin:12px 0 0;padding:10px 12px;border-left:3px solid var(--alert-fill);background:var(--alert-bg);border-radius:0 8px 8px 0;color:var(--alert-ink);font-size:14px}
+.todo ul{margin:4px 0 0;padding-left:18px}
+
+.method{columns:2 360px;column-gap:28px;color:var(--ink2);font-size:14px}
+.method p{margin:0 0 10px;break-inside:avoid}
+footer{padding-block:22px 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+<header class="bar"><div class="wrap">
+  <a class="brand" href="#top">SIMON <small><span class="en" lang="en">over Vallarta</span><span class="es" lang="es">sobre Vallarta</span></small></a>
+  <div class="lang" role="group" aria-label="Language and units / Idioma y unidades">
+    <button type="button" data-lang="en" aria-pressed="false">English<small>mph · in</small></button>
+    <button type="button" data-lang="es" aria-pressed="false">Español<small>km/h · mm</small></button>
+    <button type="button" data-lang="both" aria-pressed="true">Both<small>ambos</small></button>
+  </div>
+</div></header>
+
+<div class="alert"><div class="wrap">
+  <span class="tag" id="alert-tag"></span>
+  <p id="alert-text"></p>
+</div></div>
+
+<main id="top">
+<section class="hero"><div class="wrap">
+  <div class="eyebrow" id="asof"></div>
+  <h1 id="h1"></h1>
+  <p class="lede" id="lede"></p>
+  <div class="now" id="now"></div>
+</div></section>
+
+<section class="block" id="player" aria-label="Animated map / Mapa animado"><div class="wrap">
+  <h2 id="ph2"></h2>
+  <p class="sub" id="psub"></p>
+  <div class="ctl">
+    <div class="seg" role="group" id="scen-seg"></div>
+    <button class="btn" type="button" id="play" aria-pressed="false"></button>
+    <div class="seg" role="group" id="speed-seg"></div>
+    <div class="seg" role="group" id="loop-seg"></div>
+  </div>
+  <div class="clock" aria-live="polite"><span class="when" id="when"></span><span class="badge" id="badge"></span><span class="rel" id="rel"></span></div>
+  <div class="scrub"><input type="range" id="scrub" min="0" max="1" step="1" value="0" aria-label="Time / Hora"><div class="scrubbar" id="scrubbar"></div></div>
+  <div class="panels">
+    <div class="panel">
+      <div class="ph"><h3 id="sat-h"></h3><span class="eyebrow" id="sat-tag"></span></div>
+      <div class="stage" id="sat-stage" style="aspect-ratio:1/1"><canvas id="sat-cv"></canvas></div>
+      <div class="legend" id="sat-legend"></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="seg" role="group" id="view-seg"></div><div class="layers" id="layer-chips"></div></div>
+      <div class="stage" id="map-stage"><canvas id="map-cv"></canvas><canvas id="wind-cv"></canvas></div>
+      <div class="legend" id="map-legend"></div>
+    </div>
+  </div>
+  <div class="read" id="read"></div>
+</div></section>
+
+<section class="block" id="threats"><div class="wrap">
+  <h2 id="th2"></h2>
+  <p class="sub" id="tsub"></p>
+  <div class="bcards" id="bcards"></div>
+</div></section>
+
+<section class="block" id="how"><div class="wrap">
+  <h2 id="mh2"></h2>
+  <div class="method" id="method" style="margin-top:12px"></div>
+</div></section>
+</main>
+<footer><div class="wrap" id="foot"></div></footer>
+
+<script type="application/json" id="map-data">__MAP_JSON__</script>
+<script type="application/json" id="layers-data">__LAYERS_JSON__</script>
+<script type="application/json" id="img-data">__IMG_JSON__</script>
+<script>
+(function(){
+'use strict';
+var D = JSON.parse(document.getElementById('map-data').textContent);
+var LY = JSON.parse(document.getElementById('layers-data').textContent);
+var IM = JSON.parse(document.getElementById('img-data').textContent);
+var root = document.documentElement;
+var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- language and units ----------
+function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+function L(en, es){ return en === es ? en : '<span class="en" lang="en">' + en + '</span><span class="es" lang="es">' + es + '</span>'; }
+function LB(en, es){ return '<span class="bi">' + L(en, es) + '</span>'; }
+function lang(){ return root.getAttribute('data-lang') || 'both'; }
+function T(en, es){ var l = lang(); return l === 'es' ? es : l === 'en' ? en : en + ' / ' + es; }
+var fmt = function(x, d){ return Number(x).toLocaleString('en-US', {minimumFractionDigits: d || 0, maximumFractionDigits: d || 0}); };
+var fmtE = function(x, d){ return Number(x).toLocaleString('es-MX', {minimumFractionDigits: d || 0, maximumFractionDigits: d || 0}); };
+var U = {
+  wind: function(k){ return L(fmt(k / 1.609) + ' mph', fmtE(k) + ' km/h'); },
+  windN: function(k){ return [fmt(k / 1.609), fmtE(k)]; },
+  rate: function(mm){ return L((mm / 25.4 < 0.095 && mm > 0 ? (mm / 25.4).toFixed(2) : (mm / 25.4).toFixed(1)) + ' in/h', fmtE(mm, mm < 10 && mm > 0 ? 1 : 0) + ' mm/h'); },
+  depth: function(mm){ return L(fmt(mm / 25.4, mm < 254 ? 1 : 0) + ' in', fmtE(mm) + ' mm'); },
+  dist: function(km){ return L(fmt(km / 1.609, km < 16 ? 1 : 0) + ' mi', fmtE(km, km < 10 ? 1 : 0) + ' km'); },
+  elev: function(m){ return L(fmt(m * 3.281) + ' ft', fmtE(m) + ' m'); },
+  kt: function(kt){ return U.wind(kt * 1.852); }
+};
+var DAY_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], DAY_ES = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+var DAYL_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], DAYL_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+function ms(iso){ return Date.parse(iso.replace('Z', ':00Z')); }
+function cst(iso){ return new Date(ms(iso) - 6 * 3600e3); }
+function h12(h, m){ var ap = h < 12 ? 'am' : 'pm', hh = h % 12 || 12; return hh + (m ? ':' + String(m).padStart(2, '0') : '') + ' ' + ap; }
+function tParts(iso, long){
+  var d = cst(iso), h = d.getUTCHours(), m = d.getUTCMinutes(), w = d.getUTCDay();
+  var en = (long ? DAYL_EN : DAY_EN)[w] + ' ' + (h === 12 && m === 0 ? 'noon' : h === 0 && m === 0 ? 'midnight' : h12(h, m));
+  var es = (long ? DAYL_ES : DAY_ES)[w] + ' ' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+  return [en, es];
+}
+function tL(iso, long){ var p = tParts(iso, long); return L(p[0], p[1]); }
+function tT(iso){ var p = tParts(iso); return T(p[0], p[1]); }
+function round10(iso){ return iso; }
+var COMP_EN = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+var COMP_ES = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'];
+function comp(d){ var k = Math.round(((d % 360) + 360) % 360 / 22.5) % 16; return L(COMP_EN[k], COMP_ES[k]); }
+function compT(d){ var k = Math.round(((d % 360) + 360) % 360 / 22.5) % 16; return T(COMP_EN[k], COMP_ES[k]); }
+function cat(kt){ return kt >= 137 ? 5 : kt >= 113 ? 4 : kt >= 96 ? 3 : kt >= 83 ? 2 : kt >= 64 ? 1 : 0; }
+function catL(kt){ var c = cat(kt); return c ? L('Category ' + c + ' hurricane', 'huracán categoría ' + c) : kt >= 34 ? L('tropical storm', 'tormenta tropical') : L('tropical depression', 'depresión tropical'); }
+var LVE = ['none', 'low', 'moderate', 'high', 'extreme'], LVS = ['ninguna', 'baja', 'moderada', 'alta', 'extrema'];
+
+// ---------- geometry and the storm model (same as tools/build_map.py) ----------
+var TIMES = D.times, N = TIMES.length, NOBS = D.n_obs, NOW = NOBS - 1;
+function geo(la1, lo1, la2, lo2){
+  var r = Math.PI / 180, p1 = la1 * r, p2 = la2 * r, dl = (lo2 - lo1) * r;
+  var d = 2 * 6371 * Math.asin(Math.sqrt(Math.pow(Math.sin((p2 - p1) / 2), 2) + Math.cos(p1) * Math.cos(p2) * Math.pow(Math.sin(dl / 2), 2)));
+  var b = Math.atan2(Math.sin(dl) * Math.cos(p2), Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl)) / r;
+  return [d, (b + 360) % 360];
+}
+function ctr(k, i){ var t = D.scen[k].track[i]; return {lat: t[0], lon: t[1], v: t[2], g: t[3], r34: t.slice(4, 8), r50: t.slice(8, 12), r64: t.slice(12, 16)}; }
+function wind(c, la, lo, land){
+  var gb = geo(c.lat, c.lon, la, lo), km = gb[0], brg = gb[1], r = km / 1.852;
+  var x = ((brg - 45 + 360) % 360) / 90, i = Math.floor(x) % 4, w = x - Math.floor(x);
+  function tw(q){ return q[i] * (1 - w) + q[(i + 1) % 4] * w; }
+  var r64 = tw(c.r64), r50 = tw(c.r50), r34 = tw(c.r34), vmax = c.v;
+  var rmw = r64 > 0 ? Math.max(8, 0.5 * r64) : 10, kn = [[rmw, vmax]];
+  [[r64, 64], [r50, 50], [r34, 34]].forEach(function(p){ if (vmax > p[1] && p[0] > kn[kn.length - 1][0]) kn.push(p); });
+  var v;
+  if (r <= rmw) v = vmax * r / rmw;
+  else if (r >= kn[kn.length - 1][0]) v = kn[kn.length - 1][1] * kn[kn.length - 1][0] / r;
+  else for (var j = 0; j < kn.length - 1; j++){ if (kn[j][0] <= r && r <= kn[j + 1][0]){ v = kn[j][1] + (kn[j + 1][1] - kn[j][1]) * (r - kn[j][0]) / (kn[j + 1][0] - kn[j][0]); break; } }
+  var toward = brg - 90 - (land ? 35 : 20);
+  return {v: v, g: v * (c.v ? c.g / c.v : 1.25), toward: toward, from: (toward + 180 + 720) % 360, km: km, brg: brg};
+}
+var RQ = (function(){ var b = atob(D.rain.q), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; })();
+var RK0 = D.rain.km0, RDK = D.rain.dkm, RN = D.rain.n, RS = D.rain.scale;
+function tm(v){ return 3.96 + 2.45 * (1 + (v - 35) / 33); }
+function rscale(c, i){ return i < NOBS ? 1 : tm(c.v) / tm(D.V0); }
+function rain(c, la, lo, sc){
+  var dy = (la - c.lat) * 111.2, dx = (lo - c.lon) * 111.2 * Math.cos(c.lat * Math.PI / 180);
+  var fi = (dx - RK0) / RDK, fj = (-dy - RK0) / RDK;
+  if (!(fi >= 0 && fi < RN - 1 && fj >= 0 && fj < RN - 1)) return 0;
+  var i = Math.floor(fi), j = Math.floor(fj), a = fi - i, b = fj - j, q = function(jj, ii){ return RQ[jj * RN + ii] / RS; };
+  return (q(j, i) * (1 - a) * (1 - b) + q(j, i + 1) * a * (1 - b) + q(j + 1, i) * (1 - a) * b + q(j + 1, i + 1) * a * b) * sc;
+}
+
+// ---------- state ----------
+var S = {i: NOW, scen: 'ext', view: 'city', playing: false, speed: 1, loop: 'all', layers: {rain: true, wind: true, slide: true, river: true}};
+var PV = [20.6100, -105.2345];                    // Malecón, downtown Puerto Vallarta
+var B = D.bldg;
+var ADDR = {amapas: 'Cafeto & Olas Altas', ezapata: 'Francisca Rodríguez 336', pitillal: '5 de Mayo & España'};
+
+// ---------- headline text ----------
+var COAST = [['Barra de Navidad', 19.20, -104.68], ['Tenacatita', 19.29, -104.86], ['Careyes', 19.44, -105.03], ['Chamela', 19.55, -105.08], ['Punta Pérula', 19.59, -105.13],
+             ['Chalacatepec', 19.70, -105.25], ['Cruz de Loreto', 19.85, -105.33], ['Mayto', 20.08, -105.46], ['Ipala', 20.23, -105.58], ['Boca de Tomatlán', 20.51, -105.31], ['Puerto Vallarta', 20.61, -105.235]];
+function nearCoast(la, lo){ var b = null, bd = 1e9; COAST.forEach(function(c){ var d = geo(la, lo, c[1], c[2])[0]; if (d < bd){ bd = d; b = c[0]; } }); return b; }
+function closest(k, la, lo){
+  var best = {km: 1e9}; for (var i = NOBS; i < N; i++){ var c = ctr(k, i), g = geo(la, lo, c.lat, c.lon); if (g[0] < best.km) best = {km: g[0], brg: g[1], i: i, c: c}; } return best;
+}
+function landfall(k){ var t = D.scen[k].landfall; if (!t) return null; var i = TIMES.indexOf(t); var c = ctr(k, i); return {i: i, c: c, place: nearCoast(c.lat, c.lon)}; }
+
+function issued(A){                  // "600 PM CST Sat Oct 10" -> ["6:00 pm", "18:00"]
+  var m = /^(\d{1,2})(\d{2}) ([AP])M/.exec(A.issued || ''); if (!m) return [A.issued, A.issued];
+  var h = +m[1] % 12 + (m[3] === 'P' ? 12 : 0); return [h12(h, +m[2]), String(h).padStart(2, '0') + ':' + m[2]];
+}
+function locLL(s){ var m = /([\d.]+)N ([\d.]+)W/.exec(s || ''); return m ? [+m[1], -m[2]] : null; }
+function buildHead(){
+  var fx = D.fixes[D.fixes.length - 1], g = geo(PV[0], PV[1], fx.lat, fx.lon), M = D.motion, A = D.advisory, ti = issued(A);
+  document.getElementById('alert-tag').innerHTML = L('HURRICANE WARNING', 'AVISO DE HURACÁN');
+  document.getElementById('alert-text').innerHTML = L('Simon is a ' + 'Category ' + cat(A.kt) + ' hurricane with ' + fmt(A.wind_kmh / 1.609, 0) + ' mph winds (NHC advisory ' + A.num + ', ' + ti[0] + ' CST). This page tracks the eye on satellite and carries today’s storm forward to show when wind, rain, floods and landslides reach three buildings. It is not an official forecast: follow Protección Civil Jalisco and the NHC.',
+    'Simon es un huracán categoría ' + cat(A.kt) + ' con vientos de ' + fmtE(A.wind_kmh) + ' km/h (boletín ' + A.num + ' del NHC, ' + ti[1] + ' hora del centro). Esta página sigue el ojo en el satélite y proyecta la tormenta de hoy para mostrar cuándo llegan el viento, la lluvia, las inundaciones y los deslaves a tres edificios. No es un pronóstico oficial: sigue a Protección Civil Jalisco y al NHC.');
+  var fp = tParts(fx.t);
+  document.getElementById('asof').innerHTML = L('GOES-18 latest image ' + fp[0] + ' CST · NHC advisory ' + A.num + ', ' + ti[0], 'GOES-18 última imagen ' + fp[1] + ' (hora del centro) · boletín ' + A.num + ' del NHC, ' + ti[1]);
+  document.getElementById('h1').innerHTML = L('Simon over Vallarta, street by street', 'Simon sobre Vallarta, calle por calle');
+  var e = closest('ext', PV[0], PV[1]), n = closest('nhc', PV[0], PV[1]), le = landfall('ext'), ln = landfall('nhc');
+  document.getElementById('lede').innerHTML = L('No model averages here. The eye was tracked on GOES-18 every 10 minutes for six hours. The forecast below comes from extending that observed motion, carrying the storm’s current satellite rain pattern with it. The NHC’s official track is shown alongside for comparison. Units here are miles, mph and inches; switch to Español for metric.',
+    'Aquí no hay promedios de modelos. Seguimos el ojo en GOES-18 cada 10 minutos durante seis horas. El pronóstico de abajo extiende ese movimiento observado y lleva consigo el patrón de lluvia que hoy mide el satélite. La trayectoria oficial del NHC aparece al lado para comparar. Aquí las unidades son kilómetros, km/h y milímetros; en English, sistema imperial.');
+  var html = '';
+  html += '<div class="card"><div class="eyebrow">' + L('Observed now', 'Observado ahora') + ' · ' + tL(fx.t) + '</div><div class="big">' + L('Eye ' + fmt(g[0] / 1.609) + ' mi ' + COMP_EN[Math.round(g[1] / 22.5) % 16] + ' of Vallarta', 'Ojo a ' + fmtE(g[0]) + ' km al ' + COMP_ES[Math.round(g[1] / 22.5) % 16] + ' de Vallarta') + '</div>'
+    + '<p>' + L('Moving ' + COMP_EN[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) at ' + fmt(M.kmh / 1.609) + ' mph, measured from ' + (Math.round(M.hours * 6) + 1) + ' satellite fixes over ' + fmt(M.hours, 0) + ' hours. ', 'Avanza hacia el ' + COMP_ES[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) a ' + fmtE(M.kmh) + ' km/h, medido con ' + (Math.round(M.hours * 6) + 1) + ' posiciones de satélite en ' + fmtE(M.hours, 0) + ' horas. ')
+    + nhcMotion(A, ti) + '</p></div>';
+  function nhcMotion(A, ti){
+    var mv = L('The NHC’s ' + ti[0] + ' advisory gives ' + A.move + ' at ' + fmt(A.move_kmh / 1.609) + ' mph', 'El boletín de las ' + ti[1] + ' del NHC da ' + (A.move === 'N' ? 'norte' : A.move) + ' a ' + fmtE(A.move_kmh) + ' km/h');
+    var a = locLL(A.location), e = A.earlier_fix;
+    if (!a || !e) return mv + '.';
+    var adv = ti[1].split(':');      // advisory time, CST -> UTC (same calendar day as the earlier fix in CST)
+    var tA = Date.UTC(+e.t.slice(0, 4), +e.t.slice(5, 7) - 1, cst(e.t).getUTCDate(), +adv[0] + 6, +adv[1]), dh = (tA - ms(e.t)) / 3600e3;
+    if (!(dh > 0)) return mv + '.';
+    var km = geo(e.lat, e.lon, a[0], a[1])[0];
+    return mv + L('; its own positions (' + e.lat.toFixed(1) + '°N at ' + tParts(e.t)[0] + ', ' + a[0].toFixed(1) + '°N at ' + ti[0] + ') work out to ' + fmt(km / dh / 1.609) + ' mph.', '; sus propias posiciones (' + fmtE(e.lat, 1) + '° N a las ' + tParts(e.t)[1].split(' ')[1] + ', ' + fmtE(a[0], 1) + '° N a las ' + ti[1] + ') equivalen a ' + fmtE(km / dh) + ' km/h.');
+  }
+  function sc(k, ttl, sw, c, lf){
+    var v = c.c.v, km = c.km;
+    return '<div class="card"><div class="eyebrow"><span class="sw ' + sw + '"></span>' + ttl + '</div><div class="big">' + L('Center ' + (km < 3 ? 'over' : fmt(km / 1.609) + ' mi from') + ' downtown ' + tParts(TIMES[c.i])[0], 'Centro ' + (km < 3 ? 'sobre' : 'a ' + fmtE(km) + ' km de') + ' el centro ' + tParts(TIMES[c.i])[1]) + '</div>'
+      + '<p>' + (lf ? L('Landfall near ' + lf.place + ' ' + tParts(TIMES[lf.i])[0] + '. ', 'Toca tierra cerca de ' + lf.place + ' el ' + tParts(TIMES[lf.i])[1] + '. ') : '')
+      + L('Reaches Vallarta as a ', 'Llega a Vallarta como ') + catL(v) + ' (' + U.kt(v) + ').</p></div>';
+  }
+  html += sc('ext', L('Satellite extrapolation', 'Extrapolación de satélite'), '', e, le);
+  html += sc('nhc', L('NHC forecast track', 'Trayectoria del NHC'), 'nhc', n, ln);
+  document.getElementById('now').innerHTML = html;
+}
+
+// ---------- controls ----------
+function seg(id, items, key, cb){
+  var el = document.getElementById(id);
+  el.innerHTML = items.map(function(it){ return '<button type="button" data-v="' + it[0] + '" aria-pressed="' + (S[key] === it[0]) + '">' + it[1] + '</button>'; }).join('');
+  el.onclick = function(e){ var b = e.target.closest('button'); if (!b) return; var v = b.getAttribute('data-v'); S[key] = isNaN(+v) || key === 'scen' || key === 'view' || key === 'loop' ? v : +v; el.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); cb(); };
+}
+function chips(){
+  var el = document.getElementById('layer-chips');
+  var items = [['rain', L('Rain', 'Lluvia')], ['wind', L('Wind', 'Viento')], ['slide', L('Landslide slopes', 'Laderas con deslave')], ['river', L('Rivers', 'Ríos')]];
+  el.innerHTML = items.map(function(it){ return '<button type="button" class="chip" data-k="' + it[0] + '" aria-pressed="' + S.layers[it[0]] + '">' + it[1] + '</button>'; }).join('');
+  el.onclick = function(e){ var b = e.target.closest('button'); if (!b) return; var k = b.getAttribute('data-k'); S.layers[k] = !S.layers[k]; b.setAttribute('aria-pressed', S.layers[k]); drawMap(); if (k === 'wind') resetParticles(); };
+}
+function buildControls(){
+  seg('scen-seg', [['ext', '<span class="sw"></span>' + L('Satellite extrapolation', 'Extrapolación de satélite')], ['nhc', '<span class="sw nhc"></span>' + L('NHC track', 'Trayectoria NHC')]], 'scen', function(){ invalidate(); renderCards(); frame(); });
+  seg('speed-seg', [['1', '1×'], ['2', '2×'], ['4', '4×']], 'speed', function(){});
+  seg('loop-seg', [['all', L('Whole loop', 'Todo')], ['obs', L('Satellite only', 'Solo satélite')]], 'loop', function(){ if (S.loop === 'obs' && S.i > NOW) setI(0); });
+  seg('view-seg', [['city', L('Greater Vallarta', 'Gran Vallarta')], ['zr', L('Amapas & E. Zapata', 'Amapas y E. Zapata')], ['pit', 'El Pitillal']], 'view', function(){ sizeMap(); resetParticles(); frame(); });
+  chips();
+  var pb = document.getElementById('play');
+  pb.innerHTML = S.playing ? L('❚❚ Pause', '❚❚ Pausa') : L('▶ Play', '▶ Reproducir');
+  pb.setAttribute('aria-pressed', S.playing);
+}
+
+// ---------- timeline ----------
+var scrub = document.getElementById('scrub');
+scrub.max = N - 1;
+function scrubLabels(){
+  // tick labels, dropping any that would collide with one already placed
+  var bar = document.getElementById('scrubbar');
+  var lab = [[NOW / (N - 1), L('now', 'ahora'), 3]];
+  for (var i = NOBS; i < N; i++){ var d = cst(TIMES[i]); if (d.getUTCMinutes() === 0 && d.getUTCHours() === 0) lab.push([i / (N - 1), L(DAY_EN[d.getUTCDay()], DAY_ES[d.getUTCDay()]), 2]); }
+  lab.push([1, L('Mon noon', 'lun 12:00'), 3]); lab.push([0, '−4 h', 1]);
+  lab.sort(function(a, b){ return b[2] - a[2]; });
+  bar.innerHTML = lab.map(function(l){ return '<span style="' + (l[0] === 1 ? 'right:0;left:auto;transform:none' : l[0] === 0 ? 'left:0;transform:none' : 'left:' + (l[0] * 100).toFixed(2) + '%') + '">' + l[1] + '</span>'; }).join('');
+  var kept = [];                        // drop lower-priority labels that collide with ones already kept
+  Array.prototype.slice.call(bar.children).forEach(function(el){
+    var r = el.getBoundingClientRect();
+    if (kept.some(function(k){ return r.left < k.right + 6 && k.left < r.right + 6; })) el.remove(); else kept.push(r);
+  });
+}
+function setI(i){ S.i = Math.max(0, Math.min(N - 1, i)); scrub.value = S.i; frame(); }
+scrub.addEventListener('input', function(){ stop(); S.i = +scrub.value; frame(); });
+
+var timer = null, last = 0;
+function tick(ts){
+  if (!S.playing) return;
+  var stepMs = (S.i < NOBS ? 260 : 140) / S.speed;
+  if (ts - last >= stepMs){
+    last = ts; var ni = S.i + 1;
+    if (S.loop === 'obs'){ if (ni > NOW) ni = 0; }
+    else if (ni >= N) ni = 0;
+    S.i = ni; scrub.value = ni; frame();
+  }
+  timer = requestAnimationFrame(tick);
+}
+function play(){ S.playing = true; last = 0; buildPlay(); timer = requestAnimationFrame(tick); }
+function stop(){ S.playing = false; if (timer) cancelAnimationFrame(timer); buildPlay(); }
+function buildPlay(){ var pb = document.getElementById('play'); pb.innerHTML = S.playing ? L('❚❚ Pause', '❚❚ Pausa') : L('▶ Play', '▶ Reproducir'); pb.setAttribute('aria-pressed', S.playing); }
+document.getElementById('play').addEventListener('click', function(){ S.playing ? stop() : play(); });
+
+// ---------- images ----------
+var imgs = {};
+function img(key){ if (!imgs[key]){ var im = new Image(); im.onload = function(){ frame(); }; im.src = IM[key]; imgs[key] = im; } return imgs[key]; }
+function ready(im){ return im && im.complete && im.naturalWidth > 0; }
+function dark(){ var t = root.getAttribute('data-theme'); return t ? t === 'dark' : window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches; }
+
+// ---------- satellite panel ----------
+var satCv = document.getElementById('sat-cv'), satCtx = satCv.getContext('2d');
+var R = LY.reg, RB = R.bbox;          // [lat0, lat1, lon0, lon1], 480 px
+function rpx(la, lo){ return [(lo - RB[2]) / (RB[3] - RB[2]) * R.w, (RB[0] - la) / (RB[0] - RB[1]) * R.h]; }
+var IRF = D.ir.frames.map(function(f){ return f; });
+function irIndex(i){                  // satellite frame for an observed step
+  var t = TIMES[Math.min(i, NOW)].replace(/[-:TZ]/g, '').slice(0, 12), k = IRF.indexOf('ir_' + t + '.webp');
+  return k >= 0 ? k : IRF.length - 1;
+}
+function sizeSat(){ var r = satCv.parentNode.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2); satCv.width = Math.round(r.width * dpr); satCv.height = Math.round(r.width * dpr); }
+function drawSat(){
+  var c = satCtx, W = satCv.width, s = W / R.w; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, W);
+  var base = img('reg_base'); if (ready(base)) c.drawImage(base, 0, 0, W, W);
+  var i = S.i, obs = i <= NOW, k = obs ? irIndex(i) : IRF.length - 1, fr = img(IRF[k]);
+  c.save();
+  var fh = W;
+  if (!obs){
+    var c0 = ctr(S.scen, NOW), c1 = ctr(S.scen, i), p0 = rpx(c0.lat, c0.lon), p1 = rpx(c1.lat, c1.lon); c.translate((p1[0] - p0[0]) * s, (p1[1] - p0[1]) * s); c.globalAlpha = 0.92;
+    if (D.ir.ext && ready(img(D.ir.ext.file))){ fr = img(D.ir.ext.file); fh = W * D.ir.ext.ny / R.h; }
+  }
+  if (ready(fr)) c.drawImage(fr, 0, 0, W, fh);
+  c.restore();
+  c.setTransform(s, 0, 0, s, 0, 0);
+  // coastline above the clouds
+  c.fillStyle = 'rgba(255,214,120,.55)'; R.coast.forEach(function(p){ c.fillRect(p[0], p[1], 0.9, 0.9); });
+  // tracks
+  function line(k, dash, col){
+    c.save(); c.setLineDash(dash); c.strokeStyle = col; c.lineWidth = 1.6; c.beginPath();
+    for (var j = NOW; j < N; j += 3){ var t = ctr(k, j), p = rpx(t.lat, t.lon); j === NOW ? c.moveTo(p[0], p[1]) : c.lineTo(p[0], p[1]); }
+    c.stroke(); c.restore();
+  }
+  line('nhc', [5, 4], '#ff9d5c'); line('ext', [], '#ffffff');
+  // observed fixes
+  c.fillStyle = '#5ff0b4'; D.fixes.forEach(function(f){ var p = rpx(f.lat, f.lon); c.fillRect(p[0] - 0.8, p[1] - 0.8, 1.6, 1.6); });
+  // wind rings and centre
+  var cc = ctr(S.scen, i), cp = rpx(cc.lat, cc.lon), kmpx = R.w / ((RB[3] - RB[2]) * 111.2 * Math.cos(cc.lat * Math.PI / 180));
+  function ring(q, col){ var r = (q[0] + q[1] + q[2] + q[3]) / 4 * 1.852 * kmpx; if (r <= 0) return; c.strokeStyle = col; c.lineWidth = 1.2; c.beginPath(); c.arc(cp[0], cp[1], r, 0, 7); c.stroke(); }
+  ring(cc.r34, 'rgba(255,230,120,.9)'); ring(cc.r64, 'rgba(255,90,90,.95)');
+  c.fillStyle = '#fff'; c.strokeStyle = '#000'; c.lineWidth = 1; c.beginPath(); c.arc(cp[0], cp[1], 4, 0, 7); c.fill(); c.stroke();
+  // Vallarta and the map extent
+  var v = LY.views.city.bbox, a = rpx(v[0], v[2]), b = rpx(v[1], v[3]);
+  c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1; c.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1]);
+  var pv = rpx(PV[0], PV[1]); c.font = '600 12px "Red Hat Text", system-ui, sans-serif'; c.fillStyle = '#fff'; c.strokeStyle = 'rgba(0,0,0,.8)'; c.lineWidth = 3;
+  c.strokeText('Puerto Vallarta', pv[0] + 10, pv[1] - 8); c.fillText('Puerto Vallarta', pv[0] + 10, pv[1] - 8);
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  document.getElementById('sat-tag').innerHTML = obs ? L('observed', 'observado') : L('extrapolated', 'extrapolado');
+}
+
+// ---------- city map ----------
+var mapCv = document.getElementById('map-cv'), mapCtx = mapCv.getContext('2d'), windCv = document.getElementById('wind-cv'), windCtx = windCv.getContext('2d');
+var statics = {};
+function V(){ return LY.views[S.view]; }
+function mpx(v, la, lo){ return [(lo - v.bbox[2]) / (v.bbox[3] - v.bbox[2]) * v.w, (v.bbox[0] - la) / (v.bbox[0] - v.bbox[1]) * v.h]; }
+function mll(v, x, y){ return [v.bbox[0] - y / v.h * (v.bbox[0] - v.bbox[1]), v.bbox[2] + x / v.w * (v.bbox[3] - v.bbox[2])]; }
+function sizeMap(){
+  var v = V(), st = document.getElementById('map-stage'); st.style.aspectRatio = v.w + '/' + v.h;
+  var r = st.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  mapCv.width = windCv.width = Math.round(r.width * dpr); mapCv.height = windCv.height = Math.round(r.width * v.h / v.w * dpr);
+  statics = {};
+}
+function path(c, a){ c.moveTo(a[0], a[1]); for (var j = 2; j < a.length; j += 2) c.lineTo(a[j], a[j + 1]); }
+function staticLayer(){
+  var key = S.view + (dark() ? 'd' : 'l') + mapCv.width + lang(); if (statics[key]) return statics[key];
+  var v = V(), cv = document.createElement('canvas'); cv.width = mapCv.width; cv.height = mapCv.height;
+  var c = cv.getContext('2d'), s = cv.width / v.w, dk = dark(), base = img('base_' + S.view + '_' + (dk ? 'dark' : 'light'));
+  if (!ready(base)) return null;
+  c.drawImage(base, 0, 0, cv.width, cv.height); c.setTransform(s, 0, 0, s, 0, 0); c.lineJoin = c.lineCap = 'round';
+  var ly = v.layers, city = S.view === 'city';
+  c.fillStyle = dk ? '#16304a' : '#bcd8ec'; ly.water.forEach(function(a){ if (a.length > 6){ c.beginPath(); path(c, a); c.closePath(); c.fill(); } });
+  c.strokeStyle = dk ? '#2e5a80' : '#7fb0d6'; c.lineWidth = city ? 0.8 : 1.2; ly.streams.forEach(function(a){ c.beginPath(); path(c, a); c.stroke(); });
+  if (ly.drain){ ly.drain.forEach(function(d){ c.strokeStyle = dk ? '#2e5a80' : '#86b6da'; c.lineWidth = [0.7, 1.2, 2][d[0]] / Math.max(s, 0.8); c.beginPath(); path(c, d[2]); c.stroke(); }); }
+  c.strokeStyle = dk ? '#3d77a8' : '#5b9bd0'; c.lineWidth = city ? 1.6 : 5; ly.rivers.forEach(function(a){ c.beginPath(); path(c, a); c.stroke(); });
+  if (ly.bldg.length){
+    ly.bldg.forEach(function(b){ var lv = b[0], a = b.slice(1); c.fillStyle = lv >= 6 ? (dk ? '#6b7280' : '#7b8089') : lv >= 3 ? (dk ? '#4b525c' : '#a9adb3') : (dk ? '#363c45' : '#c9ccd0'); c.beginPath(); path(c, a); c.closePath(); c.fill(); });
+  }
+  var rc = dk ? ['#e3c26a', '#c8b07a', '#9aa3ad', '#59616b', '#59616b', '#4a5059'] : ['#ffffff', '#ffffff', '#ffffff', '#ffffff', '#f2f2f2', '#eeeeee'];
+  var cs = dk ? ['#1b1f25', '#1b1f25', '#1b1f25', '#1b1f25', '#1b1f25', '#1b1f25'] : ['#8a6a1d', '#9a8a68', '#a2a7ad', '#b9bdc2', '#c4c7cb', '#c9cccf'];
+  var wd = city ? [2.6, 2, 1.4, 0.55, 0.5, 0.4] : [7, 6, 5, 3.6, 2.2, 1.4];
+  for (var pass = 0; pass < 2; pass++){
+    for (var k = 5; k >= 0; k--){
+      ly.roads[k].forEach(function(a){ c.beginPath(); path(c, a); c.strokeStyle = pass ? rc[k] : cs[k]; c.lineWidth = (wd[k] + (pass ? 0 : city ? 0.9 : 1.6)) / (city ? 1 : 1); if (pass === 0 && city && k >= 3) return; c.stroke(); });
+    }
+  }
+  c.strokeStyle = dk ? '#4f87b8' : '#4b86b8'; c.lineWidth = city ? 1 : 2; ly.coast.forEach(function(a){ c.beginPath(); path(c, a); c.stroke(); });
+  // labels
+  function lab(t, x, y, size, wt, col, ang){
+    c.save(); c.translate(x, y); if (ang) c.rotate(ang * Math.PI / 180);
+    c.font = wt + ' ' + size + 'px "Red Hat Text", system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.lineWidth = size / 3.2; c.strokeStyle = dk ? 'rgba(13,16,21,.85)' : 'rgba(255,255,255,.9)'; c.strokeText(t, 0, 0); c.fillStyle = col; c.fillText(t, 0, 0); c.restore();
+  }
+  var ink = dk ? '#e8ecf1' : '#1d2126', ink2 = dk ? '#b8c0ca' : '#40464d', sea = dk ? '#7fb0dc' : '#2f6a9a';
+  var fs = 1 / s;
+  if (city){
+    (ly.peaks || []).forEach(function(p){ c.fillStyle = ink2; c.beginPath(); c.moveTo(p[0], p[1] - 5 * fs); c.lineTo(p[0] - 4.5 * fs, p[1] + 3 * fs); c.lineTo(p[0] + 4.5 * fs, p[1] + 3 * fs); c.closePath(); c.fill();
+      var t = T(fmt(p[2] * 3.281) + ' ft', fmtE(p[2]) + ' m'); c.font = '500 ' + 11 * fs + 'px "Red Hat Text", system-ui, sans-serif'; var hw = c.measureText(t).width / 2 + 3 * fs;
+      lab(t, Math.max(hw, Math.min(v.w - hw, p[0])), Math.min(v.h - 7 * fs, p[1] + 11 * fs), 11 * fs, 500, ink2); });
+    PLACES.forEach(function(p){ var q = mpx(v, p[1], p[2]); lab(p[0], q[0], q[1], (p[3] || 12) * fs, p[4] || 600, p[5] === 'sea' ? sea : p[5] === 'mtn' ? ink2 : ink, p[6] || 0); });
+  } else {
+    ly.streets.forEach(function(t){ lab(t[0], t[1], t[2] - 0, 12 * fs, 500, ink2, t[3]); });
+    (FOCUS_LABELS[S.view] || []).forEach(function(p){ var q = mpx(v, p[1], p[2]); lab(p[0], q[0], q[1], (p[3] || 14) * fs, p[4] || 700, p[5] === 'sea' ? sea : p[5] === 'river' ? sea : ink, p[6] || 0); });
+  }
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  statics[key] = cv; return cv;
+}
+var PLACES = [
+  ['Bahía de Banderas', 20.66, -105.335, 15, 600, 'sea'], ['Centro', 20.6175, -105.222, 11, 600],
+  ['Marina Vallarta', 20.661, -105.265, 11, 600], ['Nuevo Vallarta', 20.698, -105.282, 11, 600], ['Bucerías', 20.757, -105.33, 11, 600],
+  ['Ixtapa', 20.708, -105.207, 11, 600], ['Las Juntas', 20.693, -105.236, 11, 500],
+  ['Mismaloya', 20.531, -105.287, 11, 600], ['Boca de Tomatlán', 20.512, -105.31, 11, 500],
+  ['Aeropuerto PVR', 20.680, -105.254, 10, 500], ['Río Ameca', 20.668, -105.235, 10, 500, 'sea', 0], ['Río Pitillal', 20.640, -105.18, 10, 500, 'sea', 0], ['Río Cuale', 20.588, -105.20, 10, 500, 'sea', 0],
+  ['Sierra Madre', 20.55, -105.13, 15, 700, 'mtn'], ['Sierra de Vallejo', 20.785, -105.21, 12, 600, 'mtn']
+];
+var FOCUS_LABELS = {
+  zr: [['Playa Los Muertos', 20.6000, -105.2410, 13, 600, 'sea', -78], ['Río Cuale', 20.6066, -105.2320, 13, 600, 'river', -8], ['AMAPAS', 20.5935, -105.2350, 15, 800], ['EMILIANO ZAPATA', 20.6038, -105.2290, 15, 800], ['Conchas Chinas', 20.5925, -105.2440, 12, 600]],
+  pit: [['EL PITILLAL', 20.6540, -105.2050, 16, 800], ['Río Pitillal', 20.6440, -105.2165, 13, 600, 'river', 0]]
+};
+
+// rain colours (mm/h)
+var RAIN_ST = [[0.5, [150, 210, 240, 0.26]], [2.5, [90, 170, 235, 0.36]], [7.6, [50, 110, 220, 0.42]], [25, [96, 62, 204, 0.47]], [50, [160, 44, 186, 0.53]], [75, [214, 40, 150, 0.58]]];
+function rainCol(r){
+  if (r < RAIN_ST[0][0]) return null;
+  for (var k = RAIN_ST.length - 1; k >= 0; k--) if (r >= RAIN_ST[k][0]){
+    if (k === RAIN_ST.length - 1) return RAIN_ST[k][1];
+    var a = RAIN_ST[k], b = RAIN_ST[k + 1], f = (r - a[0]) / (b[0] - a[0]); return a[1].map(function(x, j){ return x + (b[1][j] - x) * f; });
+  }
+}
+var LVCOL = [null, [233, 199, 90], [229, 168, 35], [221, 106, 23], [201, 25, 11]];
+var SLIDECOL = [null, null, [190, 120, 30], [175, 70, 20], [150, 20, 20]];
+
+// per-cell rain history (for the landslide check on steep slopes), recomputed when the view or scenario changes
+var CELLS = null;
+function invalidate(){ CELLS = null; statics = statics; }
+var CAINE_D = [1, 3, 6, 12, 24, 36];
+function cells(){
+  var key = S.view + S.scen; if (CELLS && CELLS.key === key) return CELLS;
+  var v = V(), nx = S.view === 'city' ? 36 : 6, ny = Math.max(2, Math.round(nx * v.h / v.w)), lat = [], lon = [], cum = [];
+  for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++){ var ll = mll(v, (i + 0.5) / nx * v.w, (j + 0.5) / ny * v.h); lat.push(ll[0]); lon.push(ll[1]); }
+  for (var q = 0; q < lat.length; q++){
+    var a = new Float32Array(N + 1);
+    for (var t = 0; t < N; t++){ var c = ctr(S.scen, t), r = t < NOBS ? 0 : rain(c, lat[q], lon[q], rscale(c, t)); a[t + 1] = a[t] + r / 6; }
+    cum.push(a);
+  }
+  CELLS = {key: key, nx: nx, ny: ny, lat: lat, lon: lon, cum: cum}; return CELLS;
+}
+function caineLv(a, t){
+  var best = 0;
+  CAINE_D.forEach(function(D_){ var n = D_ * 6, s = a[t + 1] - a[Math.max(0, t + 1 - n)], th = 14.82 * Math.pow(D_, -0.39); best = Math.max(best, s / D_ / th); });
+  return best >= 3 ? 4 : best >= 2 ? 3 : best >= 1 ? 2 : best >= 0.5 ? 1 : 0;
+}
+function basinLevel(b, t){ var bl = B.filter(function(x){ return x.basin === b; })[0]; return bl ? bl.scen[S.scen].lv.river[t] : 0; }
+function inBasin(b, la, lo){
+  var m = D.basins[b].mask, r = Math.round((la - m.lat0) / m.dlat), c = Math.round((lo - m.lon0) / m.dlon);
+  return r >= 0 && r < m.rows.length && m.rows[r].indexOf(c) >= 0;
+}
+var DRAIN_BASIN = {};
+function drainBasins(){
+  if (DRAIN_BASIN.done) return; var v = LY.views.city;
+  (v.layers.drain || []).forEach(function(d, k){ var a = d[2], ll = mll(v, a[a.length - 2], a[a.length - 1]), ll0 = mll(v, a[0], a[1]);
+    DRAIN_BASIN[k] = inBasin('pitillal', ll0[0], ll0[1]) ? 'pitillal' : inBasin('cuale', ll0[0], ll0[1]) ? 'cuale' : null; });
+  DRAIN_BASIN.done = true;
+}
+
+var overlay = document.createElement('canvas'), ovCtx = overlay.getContext('2d');
+function drawMap(){
+  var c = mapCtx, W = mapCv.width, H = mapCv.height, v = V(), s = W / v.w, dk = dark();
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, H);
+  var st = staticLayer(); if (!st) return; c.drawImage(st, 0, 0);
+  var i = S.i, cc = ctr(S.scen, i), sc = rscale(cc, i);
+  // rain
+  if (S.layers.rain){
+    var nx = S.view === 'city' ? 72 : 24, ny = Math.round(nx * v.h / v.w);
+    overlay.width = nx; overlay.height = ny; var id = ovCtx.createImageData(nx, ny);
+    for (var y = 0; y < ny; y++) for (var x = 0; x < nx; x++){
+      var ll = mll(v, (x + 0.5) / nx * v.w, (y + 0.5) / ny * v.h), r = rain(cc, ll[0], ll[1], sc), col = rainCol(r), o = (y * nx + x) * 4;
+      if (col){ id.data[o] = col[0]; id.data[o + 1] = col[1]; id.data[o + 2] = col[2]; id.data[o + 3] = col[3] * 255; }
+    }
+    ovCtx.putImageData(id, 0, 0); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(overlay, 0, 0, W, H);
+  }
+  // landslide-prone slopes, coloured by how far the rain has gone past the landslide threshold
+  if (S.layers.slide){
+    var m = img('slope_' + S.view);
+    if (ready(m)){
+      var C = cells(), t = Math.max(i, 0), lc = document.createElement('canvas'); lc.width = C.nx; lc.height = C.ny; var lx = lc.getContext('2d'), li = lx.createImageData(C.nx, C.ny);
+      for (var q = 0; q < C.lat.length; q++){ var lv = i < NOBS ? 0 : caineLv(C.cum[q], t), col2 = lv >= 2 ? SLIDECOL[lv] : (dk ? [170, 160, 150] : [120, 95, 70]), o2 = q * 4; li.data[o2] = col2[0]; li.data[o2 + 1] = col2[1]; li.data[o2 + 2] = col2[2]; li.data[o2 + 3] = lv >= 2 ? 40 + lv * 18 : 34; }
+      lx.putImageData(li, 0, 0);
+      var tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H; var tx = tmp.getContext('2d'); tx.imageSmoothingEnabled = false; tx.drawImage(lc, 0, 0, W, H);
+      tx.globalCompositeOperation = 'destination-in'; tx.imageSmoothingEnabled = true; tx.drawImage(m, 0, 0, W, H); c.drawImage(tmp, 0, 0);
+    }
+  }
+  c.setTransform(s, 0, 0, s, 0, 0); c.lineCap = c.lineJoin = 'round';
+  // rivers coloured by the river threat of their catchment
+  if (S.layers.river){
+    var ly = v.layers, fs = 1 / s;
+    if (S.view === 'city'){ drainBasins(); (ly.drain || []).forEach(function(d, k){ var b = DRAIN_BASIN[k]; if (!b) return; var lv = i < NOBS ? 0 : basinLevel(b, i); if (!lv) return; c.strokeStyle = 'rgb(' + LVCOL[lv] + ')'; c.lineWidth = ([1.2, 2, 3.2][d[0]] + lv * 0.5) * fs; c.beginPath(); path(c, d[2]); c.stroke(); }); }
+    else { var bkey = S.view === 'zr' ? 'cuale' : 'pitillal', lv2 = i < NOBS ? 0 : basinLevel(bkey, i); if (lv2){ c.strokeStyle = 'rgb(' + LVCOL[lv2] + ')'; c.lineWidth = 6 + lv2 * 2; ly.rivers.forEach(function(a){ c.beginPath(); path(c, a); c.stroke(); }); } }
+  }
+  // track and centre
+  var fs2 = 1 / s;
+  c.save(); c.setLineDash([6 * fs2, 5 * fs2]); c.strokeStyle = dk ? '#ff9d5c' : '#c2410c'; c.lineWidth = 2 * fs2; c.beginPath();
+  for (var j = NOW; j < N; j++){ var t2 = ctr('nhc', j), p = mpx(v, t2.lat, t2.lon); j === NOW ? c.moveTo(p[0], p[1]) : c.lineTo(p[0], p[1]); } c.stroke(); c.restore();
+  c.strokeStyle = dk ? '#ffffff' : '#151515'; c.lineWidth = 2 * fs2; c.beginPath();
+  for (var j2 = NOW; j2 < N; j2++){ var t3 = ctr('ext', j2), p2 = mpx(v, t3.lat, t3.lon); j2 === NOW ? c.moveTo(p2[0], p2[1]) : c.lineTo(p2[0], p2[1]); } c.stroke();
+  var cp = mpx(v, cc.lat, cc.lon);
+  if (cp[0] > -200 * fs2 && cp[0] < v.w + 200 * fs2 && cp[1] > -200 * fs2 && cp[1] < v.h + 200 * fs2){
+    var kmpx = v.w / ((v.bbox[3] - v.bbox[2]) * 111.2 * Math.cos(cc.lat * Math.PI / 180)), rmw = (cc.r64.reduce(function(a, b){ return a + b; }, 0) > 0 ? Math.max(8, 0.5 * cc.r64.reduce(function(a, b){ return Math.max(a, b); }, 0)) : 10) * 1.852 * kmpx;
+    c.setLineDash([]); c.lineWidth = 3 * fs2; c.strokeStyle = 'rgba(201,25,11,.95)'; c.fillStyle = dk ? 'rgba(13,16,21,.65)' : 'rgba(255,255,255,.7)';
+    c.beginPath(); c.arc(cp[0], cp[1], 9 * fs2, 0, 7); c.fill(); c.stroke();
+    c.beginPath(); c.arc(cp[0], cp[1], 3 * fs2, 0, 7); c.fillStyle = 'rgba(201,25,11,.95)'; c.fill();
+    c.font = '800 ' + 13 * fs2 + 'px "Red Hat Text", system-ui, sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.lineWidth = 3.5 * fs2; c.strokeStyle = dk ? 'rgba(13,16,21,.9)' : 'rgba(255,255,255,.95)';
+    var et = T('Eye', 'Ojo'); c.strokeText(et, cp[0] + 13 * fs2, cp[1]); c.fillStyle = '#c9190b'; c.fillText(et, cp[0] + 13 * fs2, cp[1]);
+  }
+  // static wind arrows for reduced motion
+  if (reduce && S.layers.wind){
+    var ax = S.view === 'city' ? 9 : 5, ay = Math.round(ax * v.h / v.w), cc2 = cc;
+    for (var yy = 0; yy < ay; yy++) for (var xx = 0; xx < ax; xx++){
+      var px0 = (xx + 0.5) / ax * v.w, py0 = (yy + 0.5) / ay * v.h, ll2 = mll(v, px0, py0), wd = wind(cc2, ll2[0], ll2[1], true), kmh = wd.v * 1.852, an = wd.toward * Math.PI / 180, ln = Math.min(40, 8 + kmh / 5) * fs2;
+      c.strokeStyle = windCol(kmh, dk); c.fillStyle = c.strokeStyle; c.lineWidth = 2 * fs2;
+      var x2 = px0 + Math.sin(an) * ln / 2, y2 = py0 - Math.cos(an) * ln / 2, x1 = px0 - Math.sin(an) * ln / 2, y1 = py0 + Math.cos(an) * ln / 2;
+      c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+      c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - Math.sin(an - 0.5) * 6 * fs2, y2 + Math.cos(an - 0.5) * 6 * fs2); c.lineTo(x2 - Math.sin(an + 0.5) * 6 * fs2, y2 + Math.cos(an + 0.5) * 6 * fs2); c.closePath(); c.fill();
+    }
+  }
+  // buildings
+  B.forEach(function(b){
+    var p = mpx(v, b.lat, b.lon), sd = b.scen[S.scen], k = S.i;
+    var ang = (sd.frm[k] + 180) * Math.PI / 180, len = Math.min(46, 8 + sd.gb[k] / 4) * fs2;
+    c.strokeStyle = dk ? '#ffffff' : '#151515'; c.lineWidth = 2.4 * fs2; c.beginPath(); c.moveTo(p[0], p[1]); var ex = p[0] + Math.sin(ang) * len, ey = p[1] - Math.cos(ang) * len; c.lineTo(ex, ey); c.stroke();
+    c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex - Math.sin(ang - 0.5) * 7 * fs2, ey + Math.cos(ang - 0.5) * 7 * fs2); c.lineTo(ex - Math.sin(ang + 0.5) * 7 * fs2, ey + Math.cos(ang + 0.5) * 7 * fs2); c.closePath(); c.fillStyle = c.strokeStyle; c.fill();
+    var wl = sd.lv.wind[k]; c.fillStyle = wl >= 2 ? 'rgb(' + LVCOL[wl] + ')' : (dk ? '#2b323c' : '#ffffff'); c.strokeStyle = dk ? '#fff' : '#151515'; c.lineWidth = 2 * fs2;
+    c.beginPath(); c.arc(p[0], p[1], 7 * fs2, 0, 7); c.fill(); c.stroke();
+    c.font = '700 ' + 12.5 * fs2 + 'px "Red Hat Text", system-ui, sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.lineWidth = 3.5 * fs2; c.strokeStyle = dk ? 'rgba(13,16,21,.9)' : 'rgba(255,255,255,.95)';
+    var nm = S.view === 'city' ? b.hood[0] : ADDR[b.id], left = b.id === 'amapas';
+    if (!left && p[0] + 12 * fs2 + c.measureText(nm).width > v.w - 4 * fs2) left = true;
+    if (left && p[0] - 12 * fs2 - c.measureText(nm).width < 4 * fs2) left = false;
+    c.textAlign = left ? 'right' : 'left';
+    var lx2 = p[0] + (left ? -12 : 12) * fs2, ly2 = p[1] + (b.id === 'ezapata' ? -12 : b.id === 'amapas' ? 12 : 0) * fs2; c.strokeText(nm, lx2, ly2); c.fillStyle = dk ? '#fff' : '#151515'; c.fillText(nm, lx2, ly2);
+  });
+  c.setTransform(1, 0, 0, 1, 0, 0);
+  // scale bar
+  var kmw = (v.bbox[3] - v.bbox[2]) * 111.2 * Math.cos(20.6 * Math.PI / 180), en = lang() !== 'es';
+  var unit = en ? 1.609 : 1, nice = S.view === 'city' ? 5 : 0.5, lenpx = nice * unit / kmw * W;
+  c.fillStyle = dk ? 'rgba(13,16,21,.75)' : 'rgba(255,255,255,.85)'; c.fillRect(8, H - 30, lenpx + 64, 22);
+  c.fillStyle = dk ? '#fff' : '#151515'; c.fillRect(14, H - 17, lenpx, 3);
+  c.font = '500 ' + 11 * (W / mapCv.getBoundingClientRect().width) + 'px "Red Hat Mono", monospace'; c.textBaseline = 'middle'; c.textAlign = 'left'; c.fillText(nice + (en ? ' mi' : ' km'), 20 + lenpx, H - 16);
+}
+
+// ---------- wind particles ----------
+var P = [], FIELD = null, PN = 0;
+function field(){
+  var v = V(), cc = ctr(S.scen, S.i), nx = 24, ny = Math.round(24 * v.h / v.w), u = new Float32Array(nx * ny), w = new Float32Array(nx * ny), sp = new Float32Array(nx * ny);
+  for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++){
+    var ll = mll(v, (i + 0.5) / nx * v.w, (j + 0.5) / ny * v.h), wd = wind(cc, ll[0], ll[1], true), kmh = wd.v * 1.852, a = wd.toward * Math.PI / 180;
+    u[j * nx + i] = Math.sin(a) * kmh; w[j * nx + i] = -Math.cos(a) * kmh; sp[j * nx + i] = kmh;
+  }
+  FIELD = {nx: nx, ny: ny, u: u, w: w, sp: sp, i: S.i, scen: S.scen, view: S.view};
+}
+function samp(x, y){
+  var F = FIELD, fx = Math.max(0, Math.min(F.nx - 1.001, x / windCv.width * F.nx - 0.5)), fy = Math.max(0, Math.min(F.ny - 1.001, y / windCv.height * F.ny - 0.5));
+  var i = Math.floor(fx), j = Math.floor(fy), a = fx - i, b = fy - j, k = j * F.nx + i;
+  function L2(arr){ return arr[k] * (1 - a) * (1 - b) + arr[k + 1] * a * (1 - b) + arr[k + F.nx] * (1 - a) * b + arr[k + F.nx + 1] * a * b; }
+  return [L2(F.u), L2(F.w), L2(F.sp)];
+}
+function resetParticles(){ P = []; PN = Math.round(windCv.width * windCv.height / (reduce ? 4000 : 1500)); windCtx.clearRect(0, 0, windCv.width, windCv.height); for (var k = 0; k < PN; k++) P.push(spawn()); }
+function spawn(){ return {x: Math.random() * windCv.width, y: Math.random() * windCv.height, a: Math.floor(Math.random() * 60)}; }
+function windCol(kmh, dk){ return kmh >= 119 ? (dk ? '#ff6b6b' : '#c0151b') : kmh >= 93 ? (dk ? '#ff9a4d' : '#d4560f') : kmh >= 63 ? (dk ? '#ffd34d' : '#a87400') : (dk ? 'rgba(235,240,246,.8)' : 'rgba(25,30,36,.75)'); }
+var lastP = 0;
+function animP(ts){
+  requestAnimationFrame(animP);
+  if (!S.layers.wind){ if (P.length){ windCtx.clearRect(0, 0, windCv.width, windCv.height); P = []; } return; }
+  if (!P.length) resetParticles();
+  if (!FIELD || FIELD.i !== S.i || FIELD.scen !== S.scen || FIELD.view !== S.view) field();
+  var dt = Math.min(0.05, (ts - lastP) / 1000 || 0.016); lastP = ts;
+  if (reduce && !S.playing) dt = 0;
+  var c = windCtx, dk = dark(), k = windCv.width / 600 * 0.9;
+  c.globalCompositeOperation = 'destination-out'; c.fillStyle = 'rgba(0,0,0,.10)'; c.fillRect(0, 0, windCv.width, windCv.height); c.globalCompositeOperation = 'source-over';
+  c.lineWidth = Math.max(1, windCv.width / 600 * 1.3); c.lineCap = 'round';
+  for (var n = 0; n < P.length; n++){
+    var p = P[n], s = samp(p.x, p.y), nx = p.x + s[0] * k * dt * 1.2, ny = p.y + s[1] * k * dt * 1.2;
+    if (s[2] < 3 || nx < 0 || ny < 0 || nx > windCv.width || ny > windCv.height || ++p.a > 90){ P[n] = spawn(); continue; }
+    c.strokeStyle = windCol(s[2], dk); c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(nx, ny); c.stroke(); p.x = nx; p.y = ny;
+  }
+}
+
+// ---------- readouts ----------
+function lvChip(name, lv){ return '<span class="lv" data-lv="' + lv + '">' + name + ': ' + L(LVE[lv], LVS[lv]) + '</span>'; }
+var TNAME = {wind: ['Wind', 'Viento'], windows: ['North windows', 'Ventanas al norte'], rate: ['Rain', 'Lluvia'], runoff: ['Street runoff', 'Escurrimiento'], river: ['River', 'Río'], slide: ['Landslide', 'Deslave']};
+function readouts(){
+  var i = S.i, h = '';
+  B.forEach(function(b){
+    var sd = b.scen[S.scen], cum = sd.cum[i], chips = '';
+    Object.keys(sd.lv).forEach(function(k){ var lv = sd.lv[k][i]; if (lv > 0) chips += lvChip(L(TNAME[k][0], TNAME[k][1]), lv); });
+    h += '<div class="ro"><div class="nm">' + L(b.hood[0], b.hood[1]) + ' · ' + L(b.name[0], b.name[1]) + '</div><div class="st">' + L(b.story[0], b.story[1]) + '</div><div class="vals">'
+      + '<span class="k">' + L('Wind here', 'Viento aquí') + '</span><span class="val">' + U.wind(sd.vb[i]) + ' · ' + L('gusts ', 'ráfagas ') + U.wind(sd.gb[i]) + ' · ' + L('from ', 'del ') + comp(sd.frm[i]) + '</span>'
+      + '<span class="k">' + L('Rain', 'Lluvia') + '</span><span class="val">' + U.rate(sd.rate[i]) + '</span>'
+      + '<span class="k">' + L('Since now', 'Desde ahora') + '</span><span class="val">' + (i < NOBS ? '—' : U.depth(cum)) + '</span>'
+      + '<span class="k">' + L('Center', 'Centro') + '</span><span class="val">' + U.dist(sd.km[i]) + '</span>'
+      + '</div><div>' + (chips || '<span class="lv" data-lv="0">' + L('no threat yet', 'sin amenaza aún') + '</span>') + '</div></div>';
+  });
+  document.getElementById('read').innerHTML = h;
+}
+
+// ---------- legends ----------
+function legends(){
+  var en = lang() !== 'es';
+  var rs = [[0.5, '0.02', '0.5'], [2.5, '0.1', '2.5'], [7.6, '0.3', '7.6'], [25, '1', '25'], [50, '2', '50'], [75, '3', '75']];
+  var ramp = '<span class="ramp">' + rs.map(function(r){ var c = rainCol(r[0] + 0.01); return '<i style="background:rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',1)">' + L(r[1], r[2]) + '</i>'; }).join('') + '</span>';
+  var wr = '<span class="ramp"><i style="background:#3a4048">' + L('&lt;39', '&lt;63') + '</i><i style="background:#a87400">' + L('39', '63') + '</i><i style="background:#d4560f">' + L('58', '93') + '</i><i style="background:#c0151b">' + L('74+', '119+') + '</i></span>';
+  document.getElementById('map-legend').innerHTML = '<span>' + L('Rain, in/h', 'Lluvia, mm/h') + ' ' + ramp + '</span><span>' + L('Wind streaks, mph', 'Viento, km/h') + ' ' + wr + '</span>'
+    + '<span><span class="sw"></span>' + L('extrapolated track', 'trayectoria extrapolada') + '</span><span><span class="sw nhc"></span>' + L('NHC track', 'trayectoria NHC') + '</span>'
+    + '<span>' + L('Shaded slopes: steeper than 22°, coloured once rain passes the landslide threshold', 'Laderas sombreadas: más de 22°, se colorean cuando la lluvia pasa el umbral de deslave') + '</span>';
+  document.getElementById('sat-legend').innerHTML = '<span>' + L('Infrared cloud-top temperature', 'Temperatura de topes de nube (infrarrojo)') + ' <span class="ramp"><i style="background:#6e7884">' + L('-22°F', '-30°C') + '</i><i style="background:#286ed2">' + L('-58°F', '-50°C') + '</i><i style="background:#3cb050">' + L('-72°F', '-58°C') + '</i><i style="background:#f4d63c;color:#151515">' + L('-83°F', '-64°C') + '</i><i style="background:#d62828">' + L('-105°F', '-76°C') + '</i><i style="background:#c45cdc">' + L('-116°F', '-82°C') + '</i></span></span>'
+    + '<span><span class="sw obs"></span>' + L('eye, observed every 10 min', 'ojo, observado cada 10 min') + '</span><span style="color:#b38f00">◯ ' + L('39 mph winds', 'vientos de 63 km/h') + '</span><span style="color:#c9190b">◯ ' + L('74 mph (hurricane)', '119 km/h (huracán)') + '</span>';
+}
+
+// ---------- frame ----------
+function frame(){
+  var i = S.i, obs = i <= NOW;
+  document.getElementById('when').innerHTML = tL(TIMES[i]);
+  var b = document.getElementById('badge'); b.className = 'badge' + (obs ? '' : ' fut'); b.innerHTML = obs ? L('observed', 'observado') : L('extrapolated', 'extrapolado');
+  var dh = (ms(TIMES[i]) - ms(TIMES[NOW])) / 3600e3;
+  document.getElementById('rel').innerHTML = i === NOW ? L('latest satellite image', 'última imagen de satélite') : (dh < 0 ? '−' : '+') + fmt(Math.abs(dh), Math.abs(dh) < 10 ? 1 : 0) + ' h';
+  drawSat(); drawMap(); readouts(); cursor();
+}
+
+// ---------- building threat cards ----------
+function firstAt(o, th){ return o.first[th] ? o.first[th] : null; }
+function rangeL(a){ return a ? L(tParts(a[0])[0] + ' – ' + tParts(a[1])[0], tParts(a[0])[1] + ' – ' + tParts(a[1])[1]) : ''; }
+function keyItems(b){
+  var sd = b.scen[S.scen], O = sd.onsets, items = [];
+  function push(t, html){ if (t) items.push([t, html]); }
+  var w2 = firstAt(O.wind, '2'), w3 = firstAt(O.wind, '3'), w4 = firstAt(O.wind, '4');
+  push(w2 && w2[0], L('<b>Tropical-storm-force wind at your level</b> begins (sustained 39 mph or gusts over 50).', '<b>Viento de tormenta tropical a tu altura</b> comienza (63 km/h sostenidos o ráfagas de más de 80).'));
+  var pk = sd.peak_gb_t, pi = TIMES.indexOf(pk);
+  push(pk, L('<b>Strongest gusts at your level, ' + U.windN(sd.peak_gb)[0] + ' mph</b>, from the ' + COMP_EN[Math.round(sd.frm[pi] / 22.5) % 16] + (b.id === 'amapas' && windowsHit(sd.frm[pi]) ? ', straight onto north windows' : '') + '.',
+                '<b>Ráfagas más fuertes a tu altura, ' + U.windN(sd.peak_gb)[1] + ' km/h</b>, del ' + COMP_ES[Math.round(sd.frm[pi] / 22.5) % 16] + (b.id === 'amapas' && windowsHit(sd.frm[pi]) ? ', de frente a las ventanas del norte' : '') + '.'));
+  if (O.windows){ var wn = firstAt(O.windows, '3') || firstAt(O.windows, '2'); push(wn && wn[0], L('<b>North windows take the wind head-on</b> until ' + tParts(wn[1])[0] + '.', '<b>Las ventanas del norte reciben el viento de frente</b> hasta el ' + tParts(wn[1])[1] + '.')); }
+  var r3 = firstAt(O.rate, '3'); push(r3 && r3[0], L('<b>Torrential rain</b> (1 in/h or more) begins.', '<b>Lluvia torrencial</b> (25 mm/h o más) comienza.'));
+  push(sd.peak_rate_t, L('<b>Heaviest rain, ' + (sd.peak_rate / 25.4).toFixed(1) + ' in/h</b>.', '<b>Lluvia más intensa, ' + fmtE(sd.peak_rate, 0) + ' mm/h</b>.'));
+  var ru = firstAt(O.runoff, '3'); push(ru && ru[0], L('<b>Streets turn into streams</b> (more than 2.4 in in 3 h).', '<b>Las calles se vuelven arroyos</b> (más de 60 mm en 3 h).'));
+  if (O.river){ var rv = firstAt(O.river, '3'); push(rv && rv[0], b.basin === 'cuale' ? L('<b>Río Cuale dangerous</b>: the sierra has had more than 2.8 in in 6 h.', '<b>Río Cuale peligroso</b>: la sierra lleva más de 70 mm en 6 h.') : L('<b>Río Pitillal dangerous</b>: the sierra has had more than 2.8 in in 6 h.', '<b>Río Pitillal peligroso</b>: la sierra lleva más de 70 mm en 6 h.')); }
+  if (O.slide){ var sl = firstAt(O.slide, '2'); push(sl && sl[0], L('<b>Landslide threshold passed</b> on the steep slopes around you.', '<b>Se rebasa el umbral de deslaves</b> en las laderas empinadas a tu alrededor.')); }
+  push(TIMES[sd.closest ? TIMES.indexOf(sd.closest.t) : 0] && sd.closest.t, L('<b>Center passes ' + (sd.closest.km < 3 ? 'overhead' : fmt(sd.closest.km / 1.609, 1) + ' mi away') + '</b>; winds swing around.', '<b>El centro pasa ' + (sd.closest.km < 3 ? 'encima' : 'a ' + fmtE(sd.closest.km, 1) + ' km') + '</b>; el viento cambia de dirección.'));
+  items.sort(function(a, b){ return ms(a[0]) - ms(b[0]); });
+  items.push([TIMES[N - 1], L('<b>Total since now: ' + fmt(sd.total / 25.4, 0) + ' in</b>.', '<b>Total desde ahora: ' + fmtE(sd.total) + ' mm</b>.')]);
+  return items;
+}
+function windowsHit(frm){ var d = Math.min(Math.abs(frm), 360 - Math.abs(frm)); return d <= 67.5; }
+var ADVICE = {
+  amapas: ['On the 8th floor you get the full wind with nothing to block it, and north-facing glass takes it head-on while the wind blows from the NW, N or NE. During those hours stay in an inner room or hallway away from the north windows, with the doors closed. Expect power and water pumps to fail, so don’t rely on the elevator. Landslides on the Amapas slopes and runoff down Amapas street can cut the road for hours.',
+           'En el 8.º piso recibes todo el viento sin nada que lo frene, y los vidrios que dan al norte lo reciben de frente cuando sopla del NO, N o NE. En esas horas quédate en un cuarto o pasillo interior lejos de las ventanas del norte, con las puertas cerradas. Es probable que fallen la luz y las bombas de agua: no dependas del elevador. Los deslaves en las laderas de Amapas y el agua que baja por la calle pueden cortar el paso por horas.'],
+  ezapata: ['The 8-story buildings around you block the steady wind but make it gusty and swirling, strongest where the wind lines up with Francisca Rodríguez (east–west). The bigger danger is from above: water tanks, solar heaters, signs, glass and roofing sheets torn off the taller buildings. Don’t go out, even in a lull: the eye passes close by and the wind returns from the other side. Being up the slope keeps floodwater away from your door, but the streets below carry runoff and the Río Cuale rises fast.',
+            'Los edificios de 8 pisos a tu alrededor frenan el viento sostenido, pero lo vuelven racheado y arremolinado, más fuerte cuando se alinea con Francisca Rodríguez (oriente–poniente). El peligro mayor viene de arriba: tinacos, calentadores solares, letreros, vidrios y láminas que se desprenden de los edificios altos. No salgas aunque haya calma: el ojo pasa cerca y el viento regresa del otro lado. Estar en alto aleja la inundación de tu puerta, pero las calles de abajo bajan con agua y el Río Cuale crece rápido.'],
+  pitillal: ['At street level the danger is water. The Río Pitillal is 525 ft away and drains about {PIT_MI} sq mi of sierra; its crest comes about 3 hours after the heaviest rain up there, so it can keep rising after the rain eases in town. Move documents, medicine and valuables upstairs now. If water starts coming in, cut the power at the breaker and go to the second floor. Never walk or drive through moving water.',
+             'A nivel de calle el peligro es el agua. El Río Pitillal está a 160 m y recoge unos {PIT_KM} km² de sierra; su creciente llega unas 3 horas después de la lluvia más fuerte allá arriba, así que puede seguir subiendo aunque en el pueblo ya llueva menos. Sube ahora documentos, medicinas y objetos de valor. Si el agua empieza a entrar, baja el interruptor general y sube al segundo piso. Nunca cruces a pie ni en auto el agua en movimiento.']
+};
+function advice(id, k){ var a = D.basins.pitillal.area_km2; return ADVICE[id][k].replace('{PIT_MI}', fmt(a / 2.59)).replace('{PIT_KM}', fmtE(a)); }
+var TROWS = [['wind', 'Wind at your level', 'Viento a tu altura'], ['windows', 'North windows', 'Ventanas al norte'], ['rate', 'Rain intensity', 'Intensidad de lluvia'], ['runoff', 'Street runoff', 'Escurrimiento en calles'], ['river', 'River', 'Río'], ['slide', 'Landslide', 'Deslave']];
+function tlSVG(b){
+  var sd = b.scen[S.scen], rows = TROWS.filter(function(r){ return sd.lv[r[0]]; }), en = lang() !== 'es';
+  var W = 640, x0 = 112, x1 = W - 8, top = 8, gh = 70, rh = 13, H = top + gh + 14 + rows.length * (rh + 3) + 18;
+  var X = function(i){ return x0 + (x1 - x0) * i / (N - 1); }, o = '';
+  // night shading (6 pm – 6 am CST)
+  for (var i = 0; i < N; i++){ var d = cst(TIMES[i]), hr = d.getUTCHours() + d.getUTCMinutes() / 60; if (hr >= 18 || hr < 6) o += '<rect x="' + X(i).toFixed(1) + '" y="' + top + '" width="' + ((x1 - x0) / (N - 1) + 0.3).toFixed(1) + '" height="' + (H - top - 18) + '" fill="var(--night)"/>'; }
+  var gmax = Math.max.apply(null, sd.gb.slice(NOBS)), rmax = Math.max.apply(null, sd.rate.slice(NOBS));
+  var gtop = Math.max(80, Math.ceil(gmax / 40) * 40), rtop = Math.max(10, Math.ceil(rmax / 10) * 10);
+  for (var i2 = NOBS; i2 < N; i2++){ var hgt = sd.rate[i2] / rtop * gh; if (hgt > 0.2) o += '<rect x="' + X(i2).toFixed(1) + '" y="' + (top + gh - hgt).toFixed(1) + '" width="' + ((x1 - x0) / (N - 1) + 0.2).toFixed(1) + '" height="' + hgt.toFixed(1) + '" fill="var(--rainbar)" opacity=".55"/>'; }
+  var pts = []; for (var i3 = 0; i3 < N; i3++) pts.push(X(i3).toFixed(1) + ',' + (top + gh - sd.gb[i3] / gtop * gh).toFixed(1));
+  o += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="var(--gust)" stroke-width="2"/>';
+  o += '<text x="' + (x0 - 6) + '" y="' + (top + 9) + '" text-anchor="end">' + (en ? Math.round(gtop / 1.609) + ' mph' : gtop + ' km/h') + '</text>';
+  o += '<text x="' + (x0 - 6) + '" y="' + (top + 21) + '" text-anchor="end" style="fill:var(--rainbar)">' + (en ? (rtop / 25.4).toFixed(1) + ' in/h' : rtop + ' mm/h') + '</text>';
+  o += '<text class="rl" x="' + (x0 - 6) + '" y="' + (top + gh - 2) + '" text-anchor="end" style="fill:var(--gust)">' + (en ? 'gusts' : 'ráfagas') + '</text>';
+  o += '<line x1="' + x0 + '" x2="' + x1 + '" y1="' + (top + gh) + '" y2="' + (top + gh) + '" stroke="var(--line)"/>';
+  rows.forEach(function(r, k){
+    var y = top + gh + 14 + k * (rh + 3), a = sd.lv[r[0]];
+    o += '<text class="rl" x="' + (x0 - 6) + '" y="' + (y + 10) + '" text-anchor="end">' + (en ? r[1] : r[2]) + '</text>';
+    o += '<rect x="' + x0 + '" y="' + y + '" width="' + (x1 - x0) + '" height="' + rh + '" fill="var(--t0)"/>';
+    var s0 = null;
+    for (var i4 = 0; i4 <= N; i4++){
+      var lv = i4 < N ? a[i4] : -1;
+      if (s0 === null || lv !== a[s0]){ if (s0 !== null && a[s0] > 0) o += '<rect x="' + X(s0).toFixed(1) + '" y="' + y + '" width="' + (X(i4) - X(s0)).toFixed(1) + '" height="' + rh + '" fill="var(--t' + a[s0] + ')"/>'; s0 = i4; }
+    }
+  });
+  var yb = H - 4;
+  for (var i5 = 0; i5 < N; i5++){ var d5 = cst(TIMES[i5]); if (d5.getUTCMinutes() === 0 && d5.getUTCHours() % 6 === 0) o += '<text x="' + X(i5).toFixed(1) + '" y="' + yb + '" text-anchor="middle">' + (d5.getUTCHours() === 0 ? (en ? DAY_EN : DAY_ES)[d5.getUTCDay()] : en ? h12(d5.getUTCHours()).replace(' ', '') : d5.getUTCHours() + 'h') + '</text>'; }
+  o += '<line class="cur" x1="' + X(S.i) + '" x2="' + X(S.i) + '" y1="' + top + '" y2="' + (H - 16) + '" stroke="var(--ink)" stroke-width="1.5"/>';
+  o += '<line x1="' + X(NOW) + '" x2="' + X(NOW) + '" y1="' + top + '" y2="' + (H - 16) + '" stroke="var(--obs)" stroke-dasharray="3 3"/>';
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + T('Threat timeline', 'Línea de tiempo de amenazas') + '" data-x0="' + x0 + '" data-x1="' + x1 + '">' + o + '</svg>';
+}
+function cursor(){
+  document.querySelectorAll('.tl svg').forEach(function(sv){ var x0 = +sv.getAttribute('data-x0'), x1 = +sv.getAttribute('data-x1'), x = x0 + (x1 - x0) * S.i / (N - 1), l = sv.querySelector('.cur'); if (l){ l.setAttribute('x1', x); l.setAttribute('x2', x); } });
+}
+function renderCards(){
+  var h = '';
+  B.forEach(function(b){
+    var sd = b.scen[S.scen];
+    h += '<article class="bcard"><div class="bhead"><h3>' + L(b.hood[0], b.hood[1]) + '</h3><span class="st">' + L(b.name[0], b.name[1]) + ' · ' + L(b.story[0], b.story[1]) + ' · ' + L('ground ~', 'terreno ~') + U.elev(b.elev_m) + ', ' + L('slope ', 'pendiente ') + Math.round(b.slope_deg) + '°</span></div>'
+      + '<div class="bgrid"><ul class="keys">' + keyItems(b).map(function(it){ return '<li><span class="when">' + tL(it[0]) + '</span><span class="what">' + it[1] + '</span></li>'; }).join('') + '</ul>'
+      + '<div><div class="tl">' + tlSVG(b) + '</div><div class="todo"><b>' + L('What this means here', 'Qué significa aquí') + '</b><br>' + L(advice(b.id, 0), advice(b.id, 1)) + '</div></div></div></article>';
+  });
+  document.getElementById('bcards').innerHTML = h;
+}
+
+// ---------- static text ----------
+function texts(){
+  document.getElementById('ph2').innerHTML = L('Satellite loop and street map', 'Satélite y mapa de calles');
+  document.getElementById('psub').innerHTML = L('Left: the last four hours of GOES-18 infrared images, then the newest image carried along the track. Right: wind and rain over Vallarta at the same moment. Pick a neighborhood to zoom in to street level. Arrows on the buildings show where the wind is blowing.',
+    'Izquierda: las últimas cuatro horas de imágenes infrarrojas de GOES-18; después, la imagen más reciente se desplaza sobre la trayectoria. Derecha: viento y lluvia sobre Vallarta en el mismo momento. Elige una colonia para ver las calles. Las flechas en los edificios indican hacia dónde sopla el viento.');
+  document.getElementById('sat-h').innerHTML = L('GOES-18 infrared', 'GOES-18 infrarrojo');
+  document.getElementById('th2').innerHTML = L('When the threats arrive at each building', 'Cuándo llegan las amenazas a cada edificio');
+  document.getElementById('tsub').innerHTML = L('Times are Vallarta time (CST). The bars show threat level (low, moderate, high, extreme), the purple line shows gusts at your floor and the blue bars show rain. Switch tracks above to compare.',
+    'Horas del centro (Vallarta). Las barras muestran el nivel de amenaza (baja, moderada, alta, extrema), la línea morada las ráfagas a la altura de tu piso y las barras azules la lluvia. Cambia de trayectoria arriba para comparar.');
+  document.getElementById('mh2').innerHTML = L('How this was made', 'Cómo se hizo');
+  var M = D.motion;
+  var P1 = L('<b>The eye.</b> Every GOES-18 band-13 infrared image (one-minute mesoscale sector, one image every 10 minutes) was searched for the eye: the warm spot inside the cold eyewall. Its position was corrected for parallax, since from the satellite’s angle a 9-mile-high cloud top appears about 8 miles out of place. A straight line through the last ' + fmt(M.hours, 1) + ' hours of fixes gives the heading and speed (scatter about ' + fmt(M.resid_km / 1.609, 1) + ' mi).',
+    '<b>El ojo.</b> En cada imagen infrarroja (banda 13) de GOES-18, del sector de mesoescala de un minuto, una cada 10 minutos, se buscó el ojo: el punto cálido dentro de la pared fría. La posición se corrigió por paralaje, porque desde el ángulo del satélite un tope de nube a 14 km de altura aparece desplazado unos 13 km. Una recta por las posiciones de las últimas ' + fmtE(M.hours, 1) + ' horas da el rumbo y la velocidad (dispersión de unos ' + fmtE(M.resid_km, 1) + ' km).');
+  var P2 = L('<b>The extrapolation.</b> The eye is carried forward on that line at that speed, with no turns, which is what “if it keeps doing what it’s doing” means. Its strength stays the same over water. Over land it fades at the standard inland-decay rate (Kaplan & DeMaria), which is likely too slow over mountains this steep. The NHC track is the official forecast as issued and is not an average.',
+    '<b>La extrapolación.</b> El ojo se lleva hacia adelante sobre esa recta a esa velocidad, sin giros: eso significa “si sigue como va”. Sobre el mar conserva su fuerza; sobre tierra se debilita al ritmo estándar de decaimiento (Kaplan y DeMaria), que en montañas tan abruptas probablemente se queda corto. La trayectoria del NHC es el pronóstico oficial tal como se publicó; no es un promedio.');
+  var P3 = L('<b>Rain.</b> GOES-18 rain-rate estimates from the last 2 hours (' + D.rain.scans.length + ' scans) were stacked around the eye and carried along each track. This is the method of NOAA’s tropical rainfall potential (TRaP). Rates are scaled down as the storm weakens, following the intensity relation in NOAA’s R-CLIPER model. Satellite rain estimates can run high in intense cores, and mountains wring out extra rain this method cannot see. For comparison, the NHC calls for 10–20 in, locally 30 in.',
+    '<b>Lluvia.</b> Las estimaciones de intensidad de lluvia de GOES-18 de las últimas 2 horas (' + D.rain.scans.length + ' barridos) se apilaron alrededor del ojo y se llevan sobre cada trayectoria. Es el método del potencial de lluvia tropical de NOAA (TRaP). La intensidad baja conforme la tormenta se debilita, según la relación del modelo R-CLIPER de NOAA. El satélite puede sobrestimar en núcleos intensos, y las montañas exprimen lluvia adicional que este método no ve. Para comparar, el NHC pronostica 250–500 mm, y hasta 760 mm en puntos aislados.');
+  var P4 = L('<b>Wind at your floor.</b> Wind around the eye comes from the NHC’s wind radii (39, 58 and 74 mph by quadrant), turned 20–35° inward. Adjustments for each building use the exposure factors engineers use for wind loads (ASCE 7). On an 8th floor the wind is about 0.9× the open-water wind when it crosses the city and 1.08× when it comes off the bay. A 3rd floor among taller buildings gets 0.77×, and street level 0.70×. Gusts are 1.25–1.45× the sustained wind. Surrounding towers make gusts swirl in ways no simple factor captures.',
+    '<b>Viento a la altura de tu piso.</b> El viento alrededor del ojo sale de los radios de viento del NHC (63, 93 y 119 km/h por cuadrante), girado 20–35° hacia adentro. Para cada edificio se usan los factores de exposición que los ingenieros emplean para cargas de viento (ASCE 7). En un 8.º piso el viento es 0,9× el de mar abierto cuando cruza la ciudad y 1,08× cuando llega de la bahía. Un 3.er piso entre edificios más altos recibe 0,77× y el nivel de calle 0,70×. Las ráfagas son 1,25–1,45× el sostenido. Las torres vecinas hacen remolinos que ningún factor simple captura.');
+  var P5 = L('<b>Rivers and landslides.</b> Catchments were traced from terrain data: Río Pitillal drains ' + fmt(D.basins.pitillal.area_km2 / 2.59) + ' sq mi and Río Cuale ' + fmt(D.basins.cuale.area_km2 / 2.59) + ' sq mi of sierra. River threat uses catchment rain over 6 hours, lagged 3 hours for the water to reach town (thresholds 0.8 / 1.6 / 2.8 / 4.3 in). Landslide threat compares rain with the Caine (1980) intensity–duration threshold on slopes steeper than 22°. Both are rough guides, not river or slope forecasts.',
+    '<b>Ríos y deslaves.</b> Las cuencas se trazaron con datos de terreno: el Río Pitillal recoge ' + fmtE(D.basins.pitillal.area_km2) + ' km² y el Río Cuale ' + fmtE(D.basins.cuale.area_km2) + ' km² de sierra. La amenaza de río usa la lluvia en la cuenca en 6 horas, con 3 horas de retraso para que el agua llegue al pueblo (umbrales 20 / 40 / 70 / 110 mm). La de deslave compara la lluvia con el umbral de intensidad y duración de Caine (1980) en laderas de más de 22°. Ambas son guías aproximadas, no pronósticos del río ni de las laderas.');
+  var P6 = L('<b>Sources.</b> NOAA GOES-18 ABI (CMIPM band 13, RRQPEF) from the NOAA Open Data bucket. NHC advisory ' + D.advisory.num + '. Terrain from AWS Terrain Tiles; streets, buildings and coastline © OpenStreetMap contributors (ODbL). Meteologix itself isn’t reachable from here, so its kind of satellite nowcast was rebuilt from the raw satellite data.',
+    '<b>Fuentes.</b> NOAA GOES-18 ABI (CMIPM banda 13, RRQPEF) del repositorio de datos abiertos de NOAA. Boletín ' + D.advisory.num + ' del NHC. Terreno de AWS Terrain Tiles; calles, edificios y costa © colaboradores de OpenStreetMap (ODbL). Meteologix no es accesible desde aquí, así que ese tipo de pronóstico inmediato por satélite se reconstruyó con los datos crudos.');
+  document.getElementById('method').innerHTML = [P1, P2, P3, P4, P5, P6].map(function(p){ return '<p>' + p + '</p>'; }).join('');
+  document.getElementById('foot').innerHTML = L('Built ' + tParts(D.generated)[0] + ' CST. Not an official forecast. Follow Protección Civil Jalisco, SMN-CONAGUA and the NHC. ', 'Generado ' + tParts(D.generated)[1] + ' (hora del centro). No es un pronóstico oficial. Sigue a Protección Civil Jalisco, SMN-CONAGUA y al NHC. ')
+    + '<a href="../">' + L('Hour-by-hour model forecast', 'Pronóstico de modelos hora por hora') + '</a>';
+}
+
+// ---------- language ----------
+function setLang(l){
+  root.setAttribute('data-lang', l); try { localStorage.setItem('simon-map-lang', l); } catch (e) {}
+  document.querySelectorAll('.lang button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-lang') === l); });
+  root.lang = l === 'es' ? 'es' : 'en';
+  statics = {}; legends(); renderCards(); scrubLabels(); frame();
+}
+document.querySelector('.lang').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) setLang(b.getAttribute('data-lang')); });
+
+// keyboard: space toggles play when the focus is not on a control, arrows step inside the player
+document.addEventListener('keydown', function(e){
+  var tg = e.target, inter = tg.closest && tg.closest('button, input, select, textarea, a, [contenteditable]');
+  if (e.key === ' ' && !inter && document.getElementById('player').contains(document.activeElement) === false){ /* leave page scrolling alone */ }
+  if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && tg.closest && tg.closest('#player') && tg.id !== 'scrub'){ e.preventDefault(); stop(); setI(S.i + (e.key === 'ArrowRight' ? 1 : -1)); }
+});
+
+// ---------- init ----------
+var saved = null; try { saved = localStorage.getItem('simon-map-lang'); } catch (e) {}
+root.setAttribute('data-lang', saved || 'both');
+document.querySelectorAll('.lang button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-lang') === (saved || 'both')); });
+buildHead(); buildControls(); texts(); legends(); scrubLabels();
+sizeSat(); sizeMap(); renderCards(); setI(0);
+resetParticles(); requestAnimationFrame(animP);
+var rt = null; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ var w = mapCv.width; sizeSat(); sizeMap(); if (mapCv.width !== w) resetParticles(); scrubLabels(); frame(); }, 120); });
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){ statics = {}; frame(); });
+if (!reduce) play();
+})();
+</script>
