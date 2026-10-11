@@ -307,7 +307,7 @@ function rain(c, la, lo, sc){
 }
 
 // ---------- state ----------
-var S = {i: NOW, scen: 'ext', view: 'city', playing: false, speed: 1, loop: 'all', layers: {rain: true, wind: true, slide: true, river: true}};
+var S = {i: NOW, scen: 'nhc', view: 'city', playing: false, speed: 1, loop: 'all', layers: {rain: true, wind: true, slide: true, river: true}};
 var PV = [20.6100, -105.2345];                    // Malecón, downtown Puerto Vallarta
 var B = D.bldg;
 var ADDR = {amapas: 'Cafeto & Olas Altas', ezapata: 'Francisca Rodríguez 336', pitillal: '5 de Mayo & España'};
@@ -375,7 +375,7 @@ function chips(){
   el.onclick = function(e){ var b = e.target.closest('button'); if (!b) return; var k = b.getAttribute('data-k'); S.layers[k] = !S.layers[k]; b.setAttribute('aria-pressed', S.layers[k]); drawMap(); if (k === 'wind') resetParticles(); };
 }
 function buildControls(){
-  seg('scen-seg', [['ext', '<span class="sw"></span>' + L('Satellite extrapolation', 'Extrapolación de satélite')], ['nhc', '<span class="sw nhc"></span>' + L('NHC track', 'Trayectoria NHC')]], 'scen', function(){ invalidate(); renderCards(); frame(); });
+  seg('scen-seg', [['nhc', '<span class="sw nhc"></span>' + L('NHC track (official)', 'Trayectoria NHC (oficial)')], ['ext', '<span class="sw"></span>' + L('Satellite extrapolation', 'Extrapolación de satélite')]], 'scen', function(){ invalidate(); renderCards(); frame(); });
   seg('speed-seg', [['1', '1×'], ['2', '2×'], ['4', '4×']], 'speed', function(){});
   seg('loop-seg', [['all', L('Whole loop', 'Todo')], ['obs', L('Satellite only', 'Solo satélite')]], 'loop', function(){ if (S.loop === 'obs' && S.i > NOW) setI(0); });
   seg('view-seg', [['city', L('Greater Vallarta', 'Gran Vallarta')], ['zr', L('Amapas & E. Zapata', 'Amapas y E. Zapata')], ['pit', 'El Pitillal']], 'view', function(){ sizeMap(); resetParticles(); frame(); });
@@ -437,6 +437,15 @@ function irIndex(i){                  // satellite frame for an observed step
   var t = TIMES[Math.min(i, NOW)].replace(/[-:TZ]/g, '').slice(0, 12), k = IRF.indexOf('ir_' + t + '.webp');
   return k >= 0 ? k : IRF.length - 1;
 }
+// weakened versions of the newest image, picked by the forecast intensity (V / V now): [stronger file, weaker file, blend]
+function extLevels(r){
+  var L = [{r: 1, file: D.ir.ext.file}].concat(D.ir.ext.levels || []).sort(function(a, b){ return b.r - a.r; });
+  if (r >= L[0].r) return [L[0].file, null, 0];
+  for (var k = 0; k < L.length - 1; k++) if (r <= L[k].r && r >= L[k + 1].r) return [L[k].file, L[k + 1].file, (L[k].r - r) / (L[k].r - L[k + 1].r)];
+  return [L[L.length - 1].file, null, 0];
+}
+function catName(kt){ var c = cat(kt); return c ? [T('Cat ' + c, 'Cat ' + c), c] : kt >= 34 ? [T('Tropical storm', 'Tormenta tropical'), 0] : [T('Depression', 'Depresión'), -1]; }
+var CATCOL = {'-1': '#9fb3c8', 0: '#5ad1ff', 1: '#ffe066', 2: '#ffb347', 3: '#ff7a45', 4: '#ff4d6d', 5: '#d36bff'};
 function sizeSat(){ var r = satCv.parentNode.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2); satCv.width = Math.round(r.width * dpr); satCv.height = Math.round(r.width * dpr); }
 function drawSat(){
   var c = satCtx, W = satCv.width, s = W / R.w; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, W);
@@ -445,10 +454,15 @@ function drawSat(){
   c.save();
   var fh = W;
   if (!obs){
-    var c0 = ctr(S.scen, NOW), c1 = ctr(S.scen, i), p0 = rpx(c0.lat, c0.lon), p1 = rpx(c1.lat, c1.lon); c.translate((p1[0] - p0[0]) * s, (p1[1] - p0[1]) * s); c.globalAlpha = 0.92;
-    if (D.ir.ext && ready(img(D.ir.ext.file))){ fr = img(D.ir.ext.file); fh = W * D.ir.ext.ny / R.h; }
+    var c0 = ctr(S.scen, NOW), c1 = ctr(S.scen, i), p0 = rpx(c0.lat, c0.lon), p1 = rpx(c1.lat, c1.lon), ga = 0.92 * Math.max(0.5, Math.min(1, 0.3 + c1.v / D.V0));
+    c.translate((p1[0] - p0[0]) * s, (p1[1] - p0[1]) * s); c.globalAlpha = ga;
+    if (D.ir.ext && ready(img(D.ir.ext.file))){ var E = D.ir.ext, lv = extLevels(c1.v / D.V0), dl = D.ir.lon1 - D.ir.lon0; fh = W * E.ny / R.h;
+      var ex = E.lon0 !== undefined ? (E.lon0 - D.ir.lon0) / dl * W : 0, ew = E.lon1 !== undefined ? (E.lon1 - E.lon0) / dl * W : W;
+      if (ready(img(lv[0]))) c.drawImage(img(lv[0]), ex, 0, ew, fh);
+      if (lv[1] && lv[2] > 0 && ready(img(lv[1]))){ c.globalAlpha = ga * lv[2]; c.drawImage(img(lv[1]), ex, 0, ew, fh); }
+      fr = null; }
   }
-  if (ready(fr)) c.drawImage(fr, 0, 0, W, fh);
+  if (fr && ready(fr)) c.drawImage(fr, 0, 0, W, fh);
   c.restore();
   c.setTransform(s, 0, 0, s, 0, 0);
   // coastline above the clouds
@@ -460,6 +474,8 @@ function drawSat(){
     c.stroke(); c.restore();
   }
   line('nhc', [5, 4], '#ff9d5c'); line('ext', [], '#ffffff');
+  // intensity along the selected track: coloured dots every 6 h
+  for (var j6 = NOW; j6 < N; j6 += 36){ var t6 = ctr(S.scen, j6), p6 = rpx(t6.lat, t6.lon), cn = catName(t6.v); c.fillStyle = CATCOL[cn[1]]; c.strokeStyle = '#000'; c.lineWidth = 0.8; c.beginPath(); c.arc(p6[0], p6[1], 3.2, 0, 7); c.fill(); c.stroke(); }
   // observed fixes
   c.fillStyle = '#5ff0b4'; D.fixes.forEach(function(f){ var p = rpx(f.lat, f.lon); c.fillRect(p[0] - 0.8, p[1] - 0.8, 1.6, 1.6); });
   // wind rings and centre
@@ -467,6 +483,8 @@ function drawSat(){
   function ring(q, col){ var r = (q[0] + q[1] + q[2] + q[3]) / 4 * 1.852 * kmpx; if (r <= 0) return; c.strokeStyle = col; c.lineWidth = 1.2; c.beginPath(); c.arc(cp[0], cp[1], r, 0, 7); c.stroke(); }
   ring(cc.r34, 'rgba(255,230,120,.9)'); ring(cc.r64, 'rgba(255,90,90,.95)');
   c.fillStyle = '#fff'; c.strokeStyle = '#000'; c.lineWidth = 1; c.beginPath(); c.arc(cp[0], cp[1], 4, 0, 7); c.fill(); c.stroke();
+  var cnm = catName(cc.v), ktxt = cnm[0] + ' · ' + T(fmt(cc.v * 1.15078) + ' mph', fmtE(cc.v * 1.852) + ' km/h');
+  c.font = '700 11px "Red Hat Text", system-ui, sans-serif'; c.lineWidth = 3; c.strokeStyle = 'rgba(0,0,0,.85)'; c.strokeText(ktxt, cp[0] - 20, cp[1] + 22); c.fillStyle = CATCOL[cnm[1]]; c.fillText(ktxt, cp[0] - 20, cp[1] + 22);
   // Vallarta and the map extent
   var v = LY.views.city.bbox, a = rpx(v[0], v[2]), b = rpx(v[1], v[3]);
   c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1; c.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1]);
@@ -739,6 +757,7 @@ function legends(){
     + '<span><span class="sw"></span>' + L('extrapolated track', 'trayectoria extrapolada') + '</span><span><span class="sw nhc"></span>' + L('NHC track', 'trayectoria NHC') + '</span>'
     + '<span>' + L('Shaded slopes: steeper than 22°, coloured once rain passes the landslide threshold', 'Laderas sombreadas: más de 22°, se colorean cuando la lluvia pasa el umbral de deslave') + '</span>';
   document.getElementById('sat-legend').innerHTML = '<span>' + L('Infrared cloud-top temperature', 'Temperatura de topes de nube (infrarrojo)') + ' <span class="ramp"><i style="background:#6e7884">' + L('-22°F', '-30°C') + '</i><i style="background:#286ed2">' + L('-58°F', '-50°C') + '</i><i style="background:#3cb050">' + L('-72°F', '-58°C') + '</i><i style="background:#f4d63c;color:#151515">' + L('-83°F', '-64°C') + '</i><i style="background:#d62828">' + L('-105°F', '-76°C') + '</i><i style="background:#c45cdc">' + L('-116°F', '-82°C') + '</i></span></span>'
+    + '<span>' + L('After “now”, the newest image moves along the track and is faded to match the forecast strength (a schematic, not a cloud forecast).', 'Después de “ahora”, la imagen más reciente se mueve sobre la trayectoria y se atenúa según la fuerza pronosticada (esquema, no pronóstico de nubes).') + '</span>'
     + '<span><span class="sw obs"></span>' + L('eye, observed every 10 min', 'ojo, observado cada 10 min') + '</span><span style="color:#b38f00">◯ ' + L('39 mph winds', 'vientos de 63 km/h') + '</span><span style="color:#c9190b">◯ ' + L('74 mph (hurricane)', '119 km/h (huracán)') + '</span>';
 }
 
@@ -845,8 +864,8 @@ function texts(){
     '<b>El ojo.</b> En cada imagen infrarroja (banda 13) de GOES-18, del sector de mesoescala de un minuto, una cada 10 minutos, se buscó el ojo: el punto cálido dentro de la pared fría. La posición se corrigió por paralaje, porque desde el ángulo del satélite un tope de nube a 14 km de altura aparece desplazado unos 13 km. Una recta por las posiciones de las últimas ' + fmtE(M.hours, 1) + ' horas da el rumbo y la velocidad (dispersión de unos ' + fmtE(M.resid_km, 1) + ' km).');
   var P2 = L('<b>The extrapolation.</b> The eye is carried forward on that line at that speed, with no turns, which is what “if it keeps doing what it’s doing” means. Its strength stays the same over water. Over land it fades at the standard inland-decay rate (Kaplan & DeMaria), which is likely too slow over mountains this steep. The NHC track is the official forecast as issued and is not an average.',
     '<b>La extrapolación.</b> El ojo se lleva hacia adelante sobre esa recta a esa velocidad, sin giros: eso significa “si sigue como va”. Sobre el mar conserva su fuerza; sobre tierra se debilita al ritmo estándar de decaimiento (Kaplan y DeMaria), que en montañas tan abruptas probablemente se queda corto. La trayectoria del NHC es el pronóstico oficial tal como se publicó; no es un promedio.');
-  var P3 = L('<b>Rain.</b> GOES-18 rain-rate estimates from the last 2 hours (' + D.rain.scans.length + ' scans) were stacked around the eye and carried along each track. This is the method of NOAA’s tropical rainfall potential (TRaP). Rates are scaled down as the storm weakens, following the intensity relation in NOAA’s R-CLIPER model. Satellite rain estimates can run high in intense cores, and mountains wring out extra rain this method cannot see. For comparison, the NHC calls for 10–20 in, locally 30 in.',
-    '<b>Lluvia.</b> Las estimaciones de intensidad de lluvia de GOES-18 de las últimas 2 horas (' + D.rain.scans.length + ' barridos) se apilaron alrededor del ojo y se llevan sobre cada trayectoria. Es el método del potencial de lluvia tropical de NOAA (TRaP). La intensidad baja conforme la tormenta se debilita, según la relación del modelo R-CLIPER de NOAA. El satélite puede sobrestimar en núcleos intensos, y las montañas exprimen lluvia adicional que este método no ve. Para comparar, el NHC pronostica 250–500 mm, y hasta 760 mm en puntos aislados.');
+  var P3 = L('<b>Rain.</b> GOES-18 rain-rate estimates from the last 2 hours (' + D.rain.scans.length + ' scans) were stacked around the eye and carried along each track. This is the method of NOAA’s tropical rainfall potential (TRaP). Rates are scaled down as the storm weakens, following the intensity relation in NOAA’s R-CLIPER model. Satellite estimates run high in intense cores, so the whole field is scaled (×' + (D.rain.cal || 1).toFixed(2) + ') so that the wettest 24 hours at these three sites match the top of the SMN forecast for coastal Jalisco (6–10 in). Mountains wring out extra rain this method cannot see. For comparison, the NHC calls for 10–20 in over portions of southwestern Mexico, locally 30 in.',
+    '<b>Lluvia.</b> Las estimaciones de intensidad de lluvia de GOES-18 de las últimas 2 horas (' + D.rain.scans.length + ' barridos) se apilaron alrededor del ojo y se llevan sobre cada trayectoria. Es el método del potencial de lluvia tropical de NOAA (TRaP). La intensidad baja conforme la tormenta se debilita, según la relación del modelo R-CLIPER de NOAA. El satélite sobrestima en núcleos intensos, así que todo el campo se escala (×' + (D.rain.cal || 1).toFixed(2) + ') para que las 24 horas más lluviosas en estos tres sitios coincidan con el máximo del pronóstico del SMN para la costa de Jalisco (150–250 mm). Las montañas exprimen lluvia adicional que este método no ve. Para comparar, el NHC pronostica 250–500 mm en partes del suroeste de México, y hasta 760 mm en puntos aislados.');
   var P4 = L('<b>Wind at your floor.</b> Wind around the eye comes from the NHC’s wind radii (39, 58 and 74 mph by quadrant), turned 20–35° inward. Adjustments for each building use the exposure factors engineers use for wind loads (ASCE 7). On an 8th floor the wind is about 0.9× the open-water wind when it crosses the city and 1.08× when it comes off the bay. A 3rd floor among taller buildings gets 0.77×, and street level 0.70×. Gusts are 1.25–1.45× the sustained wind. Surrounding towers make gusts swirl in ways no simple factor captures.',
     '<b>Viento a la altura de tu piso.</b> El viento alrededor del ojo sale de los radios de viento del NHC (63, 93 y 119 km/h por cuadrante), girado 20–35° hacia adentro. Para cada edificio se usan los factores de exposición que los ingenieros emplean para cargas de viento (ASCE 7). En un 8.º piso el viento es 0,9× el de mar abierto cuando cruza la ciudad y 1,08× cuando llega de la bahía. Un 3.er piso entre edificios más altos recibe 0,77× y el nivel de calle 0,70×. Las ráfagas son 1,25–1,45× el sostenido. Las torres vecinas hacen remolinos que ningún factor simple captura.');
   var P5 = L('<b>Rivers and landslides.</b> Catchments were traced from terrain data: Río Pitillal drains ' + fmt(D.basins.pitillal.area_km2 / 2.59) + ' sq mi and Río Cuale ' + fmt(D.basins.cuale.area_km2 / 2.59) + ' sq mi of sierra. River threat uses catchment rain over 6 hours, lagged 3 hours for the water to reach town (thresholds 0.8 / 1.6 / 2.8 / 4.3 in). Landslide threat compares rain with the Caine (1980) intensity–duration threshold on slopes steeper than 22°. Both are rough guides, not river or slope forecasts.',

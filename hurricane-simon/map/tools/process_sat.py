@@ -79,10 +79,29 @@ for f in irs:
 EXT = None
 fds = sorted(glob.glob(G + '/fd/*C13*.nc'))
 if fds:
-    f = fds[-1]; t = stime(f); im = Img(f, 'CMI'); ny2 = int(round((LAT0 - 11.4) / ((LAT0 - LAT1) / (NY - 1)))) + 1
-    la2 = np.linspace(LAT0, 11.4, ny2)[:, None] * np.ones((1, NX)); lo2 = np.ones((ny2, 1)) * np.linspace(LON0, LON1, NX)[None, :]
-    Image.fromarray(colour(corrected(im, im, la2, lo2)), 'RGBA').save(f'{OUT}/frames/irx_{t:%Y%m%d%H%M}.webp', quality=78, method=6)
-    EXT = dict(file=f'irx_{t:%Y%m%d%H%M}.webp', t=t.strftime('%Y-%m-%dT%H:%MZ'), lat0=LAT0, lat1=11.4, ny=ny2)
+    # taller (south to 11.4N) and wider (0.6 deg west, 1.6 deg east) than the display box, so the image still covers it when moved along a track
+    XLON0, XLON1 = LON0 - 0.6, LON1 + 1.6
+    f = fds[-1]; t = stime(f); im = Img(f, 'CMI'); ny2 = int(round((LAT0 - 11.4) / ((LAT0 - LAT1) / (NY - 1)))) + 1; nx2 = int(round((XLON1 - XLON0) / ((LON1 - LON0) / (NX - 1)))) + 1
+    la2 = np.linspace(LAT0, 11.4, ny2)[:, None] * np.ones((1, nx2)); lo2 = np.ones((ny2, 1)) * np.linspace(XLON0, XLON1, nx2)[None, :]
+    btx = corrected(im, im, la2, lo2)
+    Image.fromarray(colour(btx), 'RGBA').save(f'{OUT}/frames/irx_{t:%Y%m%d%H%M}.webp', quality=78, method=6)
+    EXT = dict(file=f'irx_{t:%Y%m%d%H%M}.webp', t=t.strftime('%Y-%m-%dT%H:%MZ'), lat0=LAT0, lat1=11.4, ny=ny2, lon0=round(XLON0, 3), lon1=round(XLON1, 3), nx=nx2, levels=[])
+    # Weakened versions for the extrapolation: as the forecast intensity falls (r = V / V_now) the cold cloud tops
+    # warm and the eye fills in. This is a schematic, not a model of the clouds; it only keeps the picture from showing
+    # a full-strength hurricane where the forecast has a weaker one.
+    cla, clo = fixes[-1]['lat'], fixes[-1]['lon']
+    dkm = np.hypot((la2 - cla) * 111.2, (lo2 - clo) * 111.2 * np.cos(np.radians(cla))); wcore = np.exp(-(dkm / 180.0) ** 2)
+    base = np.nan_to_num(btx, nan=300.0)
+    for r in (0.85, 0.7, 0.55, 0.42, 0.3, 0.2):
+        sm = ndimage.gaussian_filter(base, 1 + 10 * (1 - r))
+        bt = base + (sm - base) * np.clip((1 - r) * 1.6, 0, 1) * wcore
+        ring = (dkm > 25) & (dkm < 60); weye = np.clip((40 - dkm) / 25, 0, 1)   # the eye fills in: no clear eye below Category 1
+        bt = bt + (np.nanmean(bt[ring]) - bt) * weye * min(1.0, (1 - r) * 2.2)
+        bt = bt + 42 * (1 - r) * np.clip((262 - bt) / 60, 0, 1)
+        bt = np.where(np.isnan(btx), np.nan, bt)
+        name = f'irx_{t:%Y%m%d%H%M}_r{int(r * 100):03d}.webp'
+        Image.fromarray(colour(bt), 'RGBA').save(f'{OUT}/frames/{name}', quality=78, method=6)
+        EXT['levels'].append(dict(r=r, file=name))
     print('extended frame', EXT)
 
 # ---- motion: least-squares fit to the true eye fixes of the last 6 h ----

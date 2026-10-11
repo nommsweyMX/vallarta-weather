@@ -51,7 +51,9 @@ def ext_track():
         if landfall is None: v = V0
         else:                                                                    # Kaplan & DeMaria (1995) inland decay
             tl = (t - landfall).total_seconds() / 3600; v = 26.7 + (0.9 * V0 - 26.7) * math.exp(-0.095 * tl)
-        out.append(dict(lat=la, lon=lo, v=v, g=v * G0 / V0, r34=list(cur['r34']), r50=list(cur['r50']) if v > 50 else [0] * 4, r64=list(cur['r64']) if v > 64 else [0] * 4))
+        pn = nhc_at(t)                                                           # never stronger than the NHC forecast at that hour
+        if pn: v = min(v, pn['v'])
+        out.append(dict(lat=la, lon=lo, v=v, g=v * G0 / V0, r34=list(cur['r34']), r50=list(cur['r50']) if v > 50 else [0] * 4, r64=list(cur['r64']) if v > 64 else [0] * 4))  # current wind radii, dropped as it weakens
     return out, landfall
 
 def nhc_track():
@@ -201,6 +203,16 @@ def onsets(lv):
     return res
 
 R2 = lambda a, n=1: [round(float(x), n) for x in a]
+# Satellite rain rates near the eyewall, carried along the track, give about twice the SMN forecast. Scale the field so the
+# wettest 24 h at any site, on either track, stays within the SMN's upper bound for the coast.
+SMN_MAX24 = 250.0
+def max24(b, k):
+    mm = np.array([rain(c, b['lat'], b['lon'], rscale(c, i)) for i, c in enumerate(SCN[k]['track'])]) * DT_H; mm[:n_obs] = 0
+    n = int(round(24 / DT_H)); c = np.concatenate([[0], np.cumsum(mm)])
+    return float((c[n:] - c[:-n]).max()) if len(mm) >= n else float(c[-1])
+RAIN_CAL = min(1.0, SMN_MAX24 / max(max24(b, k) for b in B for k in SCN))
+FIELD = FIELD * RAIN_CAL
+print('rain calibration', round(RAIN_CAL, 3))
 for b in B:
     b['elev_m'], b['slope_deg'] = [round(x, 1) for x in elev_slope(b['lat'], b['lon'])]
     b['scen'] = {}
@@ -221,7 +233,7 @@ json.dump(dict(
     generated=F(dt.datetime.now(dt.timezone.utc)), t_obs=F(t_obs), n_obs=n_obs, times=[F(t) for t in times],
     advisory=dict(num=summ['advisory'], issued=summ['issued_local'], location=summ['location'], intermediate=summ['intermediate'], earlier_fix=next((p for p in tr if p.get('earlier_fix')), None), kt=V0, gust=G0, wind_kmh=summ['wind_kmh'], pressure=summ['pressure_mb'], move=summ['move_dir'], move_kmh=summ['move_kmh']),
     fixes=[dict(t=x['t'], lat=x['lat'], lon=x['lon'], eye_c=x['eye_c'], wall_c=x['wall_c']) for x in SAT['fixes']], motion=M,
-    ir=SAT['ir'], rain=dict(km0=KM0, dkm=DKM, n=NK, scale=2.5, q=base64.b64encode(q.tobytes()).decode(), scans=SAT['rain_times']),
+    ir=SAT['ir'], rain=dict(km0=KM0, dkm=DKM, n=NK, scale=2.5, cal=round(RAIN_CAL, 3), cal_max24=SMN_MAX24, q=base64.b64encode(q.tobytes()).decode(), scans=SAT['rain_times']),
     scen={k: dict(track=trk(v['track']), landfall=v['landfall']) for k, v in SCN.items()},
     nhc_track=[dict(t=p['t'], lat=p['lat'], lon=p['lon'], kt=p['kt'], note=p.get('note')) for p in tr],
     basins={k: {kk: vv for kk, vv in v.items() if kk != 'cells'} for k, v in BASINS.items()},

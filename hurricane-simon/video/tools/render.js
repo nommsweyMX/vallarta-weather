@@ -19,12 +19,12 @@ const fs = require('fs'), path = require('path');
     const errs = []; page.on('pageerror', e => errs.push(e.message));
     await page.goto('file://' + path.resolve(file)); await page.evaluate(() => window.VIDEO.ready);
     const seg = path.join(tmp, `seg_${String(w).padStart(2, '0')}.mp4`);
-    const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', '-',
+    const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-g', String(fps * 2), '-r', String(fps), seg], { stdio: ['pipe', 'inherit', 'inherit'] });
     const cv = await page.$('#cv');
     for (let f = a; f < b; f++) {
       await page.evaluate(t => window.VIDEO.render(t), t0 + f / fps);
-      const buf = await cv.screenshot({ type: 'png' });
+      const buf = await cv.screenshot({ type: 'jpeg', quality: 95 });   // JPEG q95 is visually lossless here and encodes several times faster than PNG
       if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
       if ((f - a) % 300 === 0) console.log(`worker ${w}: ${f - a}/${b - a} (${((Date.now() - started) / 1000).toFixed(0)} s)`);
     }

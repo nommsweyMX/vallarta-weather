@@ -9,6 +9,6 @@ python3 - "$W" "$D" <<'PY'
 import json, shutil, sys
 W, D = sys.argv[1], sys.argv[2]
 ir = json.load(open(W + '/mapwork/map.json'))['ir']
-for f in ir['frames'] + ([ir['ext']['file']] if ir.get('ext') else []): shutil.copy(W + '/mapwork/frames/' + f, D + '/img/' + f)
+for f in ir['frames'] + ([ir['ext']['file']] + [l['file'] for l in ir['ext'].get('levels', [])] if ir.get('ext') else []): shutil.copy(W + '/mapwork/frames/' + f, D + '/img/' + f)
 PY
 ls "$D/img" | wc -l
