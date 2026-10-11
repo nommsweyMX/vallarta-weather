@@ -267,7 +267,7 @@ q = np.clip(np.round(FIELD * 2.5), 0, 255).astype(np.uint8)
 trk = lambda s: [[round(c['lat'], 4), round(c['lon'], 4), round(c['v'], 1), round(c['g'], 1)] + [round(x) for x in c['r34'] + c['r50'] + c['r64']] for c in s]
 json.dump(dict(
     generated=F(dt.datetime.now(dt.timezone.utc)), t_obs=F(t_obs), n_obs=n_obs, times=[F(t) for t in times],
-    advisory=dict(num=summ['advisory'], issued=summ['issued_local'], location=summ['location'], intermediate=summ['intermediate'], earlier_fix=next((p for p in tr if p.get('earlier_fix')), None), kt=V0, gust=G0, wind_kmh=summ['wind_kmh'], pressure=summ['pressure_mb'], move=summ['move_dir'], move_kmh=summ['move_kmh']),
+    advisory=dict(num=summ['advisory'], issued=summ['issued_local'], location=summ['location'], intermediate=summ['intermediate'], earlier_fix=next((p for p in tr if p.get('earlier_fix')), None), kt=V0, gust=G0, wind_kmh=summ['wind_kmh'], pressure=summ['pressure_mb'], move=summ['move_dir'], move_kmh=summ['move_kmh'], move_mph=summ.get('move_mph'), warnings=summ.get('warnings', [])),
     fixes=[dict(t=x['t'], lat=x['lat'], lon=x['lon'], eye_c=x['eye_c'], wall_c=x['wall_c']) for x in SAT['fixes']], motion=M,
     ir=SAT['ir'], rain=dict(km0=KM0, dkm=DKM, n=NK, scale=2.5, cal=round(RAIN_CAL, 3), cal_max24=SMN_MAX24, q=base64.b64encode(q.tobytes()).decode(), scans=SAT['rain_times']),
     scen={k: dict(track=trk(v['track']), landfall=v['landfall']) for k, v in SCN.items()},

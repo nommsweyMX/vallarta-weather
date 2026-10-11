@@ -66,6 +66,7 @@ summary = dict(
     wind_mph=int(g(r'MAXIMUM SUSTAINED WINDS\.\.\.(\d+) MPH')),
     move_dir=g(r'PRESENT MOVEMENT\.\.\.(\w+) OR \d+ DEGREES'),
     move_kmh=int(g(r'PRESENT MOVEMENT\.\.\..*?AT \d+ MPH\.\.\.(\d+) KM/H')),
+    move_mph=int(g(r'PRESENT MOVEMENT\.\.\..*?AT (\d+) MPH')),
     pressure_mb=int(g(r'MINIMUM CENTRAL PRESSURE\.\.\.(\d+) MB')),
     hf_km=int(g(r'Hurricane-force winds extend outward up to \d+ miles\s+\((\d+) km\)') or 0) or None,
     ts_km=int(g(r'tropical-storm-force winds extend outward up to \d+ miles\s+\((\d+) km\)') or 0) or None,
