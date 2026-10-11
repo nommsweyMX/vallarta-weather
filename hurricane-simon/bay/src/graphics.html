@@ -254,7 +254,7 @@ var SUM_BI = false;
 function bi(x, y, w, es, en, size){ var sz = size || 21; if (!SUM_BI) return rich(LANG === 'es' ? es : en, x, y, w, sz + 5, sz + 13, '#ffffff') + 12; var h = rich(es, x, y, w, sz, sz + 7, '#ffffff'); h += rich(en, x, y + h, w, sz - 2, sz + 5, C.ink2); return h + 6; }
 function bt(es, en){ return SUM_BI ? es + ' · ' + en : L(es, en); }
 var SUM_NAMES = {amapas: ['D Terrace', ['Amapas, 8.º piso, ventanas al norte', 'Amapas, 8th floor, north-facing windows']], ezapata: ['Casa Francisca', ['Emiliano Zapata, Francisca Rodríguez 336, 3.er piso', 'Emiliano Zapata, Francisca Rodríguez 336, 3rd floor']], pitillal: ['El Pitillal (Macroplaza)', ['Cinco de Mayo y Calle España, casa de 2 pisos', 'Cinco de Mayo & Calle España, 2-story house']]};
-function gSummary(){ var HS = SUM_BI ? 1800 : 1620; cv.height = HS; cx.fillStyle = C.bg; cx.fillRect(0, 0, W, HS);
+function gSummary(){ var HS = SUM_BI ? 1800 : 1700; cv.height = HS; cx.fillStyle = C.bg; cx.fillRect(0, 0, W, HS);
   text('SIMON · PUERTO VALLARTA', 40, 44, 22, C.accent, 700, 'left', FM); text(SUM_BI ? inLang('es', advLine) + ' · ' + inLang('en', advLine).replace(/^NHC advisory \d+ · /, '') : advLine() + ' · ' + L('hora de Vallarta', 'Vallarta time'), W - 40, 44, 19, C.mute, 500, 'right', FM);
   var ttl = bt('Qué esperar en tu edificio', 'What to expect at your building'); text(ttl, 40, 98, fitText(ttl, W - 80, 46), C.ink, 800, 'left', FD);
   var am = SITES[0], ez = SITES[1], pi = SITES[2];
@@ -295,7 +295,7 @@ function gSummary(){ var HS = SUM_BI ? 1800 : 1620; cv.height = HS; cx.fillStyle
     cx.save(); cx.globalCompositeOperation = 'destination-over'; cx.fillStyle = '#151b25'; roundRect(40, top, W - 80, hgt, 14); cx.fill(); cx.restore();
     cx.fillStyle = SITE_COL[s.id]; roundRect(40, top, 10, hgt, 5); cx.fill();
     y = top + hgt + 14; });
-  var fy = Math.max(y + 6, HS - 150);
+  var fy = Math.max(y + 6, HS - 150); if (fy > HS - 124) fy = HS - 124;
   cx.fillStyle = '#121720'; cx.fillRect(0, fy, W, HS - fy);
   var fES = 'Cifras de los tres sitios con las probabilidades de viento del NHC y la lluvia del SMN para Jalisco (aviso ' + SMN_AV + ': más de 250 mm). Horas aproximadas: pueden moverse con cada boletín.', fEN = 'Site figures from the NHC wind odds and the SMN rain for Jalisco (advisory ' + SMN_AV + ': over 10 in). Approximate times: they can shift with each advisory.';
   if (SUM_BI){ wrap(fES, 40, fy + 26, W - 80, 17, 22, C.mute, 500); wrap(fEN, 40, fy + 72, W - 80, 17, 22, C.mute, 500); }
