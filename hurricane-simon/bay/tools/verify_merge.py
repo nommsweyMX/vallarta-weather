@@ -59,14 +59,14 @@ def pv_next(run, c, h0, h1):
     rain = None if seg[-1].get('precip_mm') is None or r0.get('precip_mm') is None else round(seg[-1]['precip_mm'] - r0['precip_mm'], 1)
     return dict(wind_max_kt=round(max(p.get('wind_kt') or 0 for p in seg), 1), rain_mm=rain, run=c)
 KIND_COL = {'nhc': '#ffffff', 'ai': '#ff8ad0', 'dyn': '#7fb5ff', 'ens': '#5ff0b4', 'cons': '#ffd166', 'base': '#7d8794', 'blend': '#c9b27c'}
-ATCF = {'OFCL': (['NHC (pronóstico oficial)', 'NHC (official forecast)'], 'nhc'), 'GDMN': (['Google DeepMind · IA', 'Google DeepMind · AI'], 'ai'), 'HCCA': (['Consenso corregido (NHC)', 'Corrected consensus (NHC)'], 'cons'),
+ATCF = {'OFCL': (['NHC (pronóstico oficial)', 'NHC (official forecast)'], 'nhc'), 'GDMN': (['Google DeepMind · ciclones · IA', 'Google DeepMind · cyclone model · AI'], 'ai'), 'HCCA': (['Consenso corregido (NHC)', 'Corrected consensus (NHC)'], 'cons'),
         'TVCN': (['Consenso de trayectoria', 'Track consensus'], 'cons'), 'CLP5': (['Climatología + persistencia', 'Climatology + persistence'], 'base'), 'CEMN': (['ECMWF ensamble · media', 'ECMWF ensemble mean'], 'ens'),
         'AEMN': (['GEFS ensamble · media (EE. UU.)', 'GEFS ensemble mean (US)'], 'ens'), 'AVNO': (['GFS (EE. UU.)', 'GFS (US)'], 'dyn'), 'CMC': (['GEM (Canadá)', 'GEM (Canada)'], 'dyn'), 'UKX': (['UKMET (Reino Unido)', 'UKMET (UK)'], 'dyn'),
         'NVGM': (['NAVGEM (Marina EE. UU.)', 'NAVGEM (US Navy)'], 'dyn'), 'HWRF': (['HWRF (huracanes, EE. UU.)', 'HWRF (US hurricane model)'], 'dyn'), 'HMON': (['HMON (huracanes, EE. UU.)', 'HMON (US hurricane model)'], 'dyn'),
         'HFSA': (['HAFS-A (huracanes, EE. UU.)', 'HAFS-A (US hurricane model)'], 'dyn'), 'HFSB': (['HAFS-B (huracanes, EE. UU.)', 'HAFS-B (US hurricane model)'], 'dyn'), 'CTCX': (['COAMPS-TC (Marina EE. UU.)', 'COAMPS-TC (US Navy)'], 'dyn')}
 GRID = {'ifs_oper': (['ECMWF IFS (Europa)', 'ECMWF IFS (Europe)'], 'dyn'), 'aifs_single': (['ECMWF AIFS · IA', 'ECMWF AIFS · AI'], 'ai'), 'aifs_ens': (['ECMWF AIFS ensamble · IA', 'ECMWF AIFS ensemble · AI'], 'ai'),
         'aigfs': (['AIGFS (NOAA) · IA', 'AIGFS (NOAA) · AI'], 'ai'), 'nbm': (['NBM · Blend nacional (EE. UU.)', 'NBM · National Blend (US)'], 'blend'), 'hafs_a': (['HAFS-A (huracanes, EE. UU.)', 'HAFS-A (US hurricane model)'], 'dyn'),
-        'fourcastnet': (['FourCastNet (NVIDIA) · IA', 'FourCastNet (NVIDIA) · AI'], 'ai'), 'pangu': (['Pangu-Weather (Huawei) · IA', 'Pangu-Weather (Huawei) · AI'], 'ai'), 'graphcast': (['GraphCast (Google) · IA', 'GraphCast (Google) · AI'], 'ai'), 'aurora': (['Aurora (Microsoft) · IA', 'Aurora (Microsoft) · AI'], 'ai'),
+        'fourcastnet': (['FourCastNet (NVIDIA) · IA', 'FourCastNet (NVIDIA) · AI'], 'ai'), 'pangu': (['Pangu-Weather (Huawei) · IA', 'Pangu-Weather (Huawei) · AI'], 'ai'), 'graphcast': (['GraphCast (Google DeepMind) · IA', 'GraphCast (Google DeepMind) · AI'], 'ai'), 'aurora': (['Aurora (Microsoft) · IA', 'Aurora (Microsoft) · AI'], 'ai'),
         'gfs': None, 'gefs_mean': None}          # gfs/gefs grids feed the AVNO/AEMN rows (PV wind and rain); positions come from the deck
 GRID_TO_ATCF = {'gfs': 'AVNO', 'gefs_mean': 'AEMN', 'hafs_a': 'HFSA'}
 rows = {}
@@ -76,7 +76,7 @@ for k, (nm, kind) in ATCF.items():
     rc = ref_run(m['now']) or ref_run({c: 1 for c in m['pv_implied_kt']})
     pvw = m['pv_implied_kt'].get(rc) if rc else None
     rows[k] = dict(key=k, name=nm, kind=kind, color=KIND_COL[kind], score=m['mean']['score'], n=m['mean']['n'], h12=m['mean']['h12'], h24=m['mean']['h24'], h36=m['mean']['h36'], bias24=m['bias24'], now=m['now'], ref=rc,
-                   pv=dict(wind_max_kt=pvw['max'] if pvw and pvw['max'] is not None else None, wind_src='track', rain_mm=None, rain_src=None), src='ATCF')
+                   pv=dict(wind_max_kt=pvw['max'] if pvw and pvw['max'] is not None else None, wind_src=('radii' if pvw and pvw.get('radii') == 'own' else 'track'), rain_mm=None, rain_src=None), src='ATCF')
 members = {}
 if 'gefs_members' in A:
     g = A['gefs_members'].get(iso(REF)) or A['gefs_members'].get(iso(REF_ALT))

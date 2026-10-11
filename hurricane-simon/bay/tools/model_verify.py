@@ -21,15 +21,18 @@ for line in open(BDECK):
     f = [x.strip() for x in line.split(',')]
     if len(f) < 9 or f[4] != 'BEST': continue
     best.setdefault(cyc(f[2]), (*ll(f[6], f[7]), int(f[8])))
-fc = {}; RAD = {}
+fc = {}; RAD = {}; RADM = {}
 for line in open(ADECK):
     f = [x.strip() for x in line.split(',')]
     if len(f) < 9: continue
     tech, c, tau = f[4], cyc(f[2]), int(f[5]); la, lo = ll(f[6], f[7]); v = int(f[8]) if f[8] else 0
     if la == 0 and lo == 0: continue
     fc.setdefault((tech, c), {}).setdefault(tau, (la, lo, v))
-    if tech == 'OFCL' and len(f) >= 17:
-        try: RAD.setdefault(c, {}).setdefault(tau, {})[int(f[11])] = [int(f[13]), int(f[14]), int(f[15]), int(f[16])]
+    if len(f) >= 17 and f[11] in ('34', '50', '64'):
+        try:
+            quad = [int(f[13]), int(f[14]), int(f[15]), int(f[16])]
+            if any(quad): RADM.setdefault((tech, c), {}).setdefault(tau, {})[int(f[11])] = quad     # the model's own wind radii (nmi, NE/SE/SW/NW)
+            if tech == 'OFCL': RAD.setdefault(c, {}).setdefault(tau, {})[int(f[11])] = quad
         except ValueError: pass
 W0 = NOW_T - dt.timedelta(hours=48)
 # verification targets: best-track synoptic times inside the window, plus NOW (advisory position)
@@ -45,22 +48,23 @@ def interp(d, h):
 def disp(p, q):    # east/north displacement (km) of forecast p from truth q, and distance
     de = (p[1] - q[1]) * 111.32 * math.cos(math.radians(q[0])); dn = (p[0] - q[0]) * 110.57
     return round(math.hypot(de, dn)), round(de), round(dn)
-def radii(c, h):
-    R = RAD.get(c) or RAD.get(max([k for k in RAD if k <= c] or [min(RAD)]))
+def radii(c, h, own=None):
+    R = own or RAD.get(c) or RAD.get(max([k for k in RAD if k <= c] or [min(RAD)]))
     ks = sorted(R); k = max([x for x in ks if x <= h] or [ks[0]]); q = R.get(k, {})
     return {'r34': q.get(34, [60, 60, 50, 60]), 'r50': q.get(50, [30, 30, 25, 30]), 'r64': q.get(64, [15, 15, 15, 15])}
-def pv_implied(d, c, until):
-    """max parametric wind at PV (kt, sustained over open water, before exposure) along this forecast up to time 'until'"""
-    if max(p[2] for p in d.values()) == 0: return None, None    # track-only aid (no intensity)
+def pv_implied(d, c, until, own=None):
+    """max parametric wind at PV (kt, sustained over open water, before exposure) along this forecast up to time 'until';
+    own = the model's own wind radii by tau when the deck carries them, else the NHC radii of the cycle are used"""
+    if max(p[2] for p in d.values()) == 0: return None, None, None    # track-only aid (no intensity)
     pk = 0.0; at_now = None; h = 0.0; hmax = min(max(d), (until - c).total_seconds() / 3600)
     while h <= hmax + 1e-6:
         p = interp(d, h)
         if p:
-            R = radii(c, h); cc = dict(lat=p[0], lon=p[1], v=p[2], g=p[2] * 1.22, r34=R['r34'], r50=R['r50'] if p[2] > 50 else [0] * 4, r64=R['r64'] if p[2] > 64 else [0] * 4)
+            R = radii(c, h, own); cc = dict(lat=p[0], lon=p[1], v=p[2], g=p[2] * 1.22, r34=R['r34'], r50=R['r50'] if p[2] > 50 else [0] * 4, r64=R['r64'] if p[2] > 64 else [0] * 4)
             vv = wind(cc, PV[0], PV[1], True)[0]; pk = max(pk, vv)
             if abs(h - hmax) < 0.5: at_now = vv
         h += 1.0
-    return round(pk, 1), (round(at_now, 1) if at_now is not None else None)
+    return round(pk, 1), (round(at_now, 1) if at_now is not None else None), ('own' if own else 'nhc')
 cycles = sorted({c for (t, c) in fc if W0 <= c <= NOW_T})
 out = {}
 for tech, name in MODELS.items():
@@ -75,7 +79,7 @@ for tech, name in MODELS.items():
             if not p: continue
             err, de, dn = disp(p, q)
             recs.append(dict(c=iso(c), v=iso(v), lead=round(lead), err=err, de=de, dn=dn, fkt=round(p[2]), lat=round(p[0], 2), lon=round(p[1], 2)))
-        pvw[iso(c)] = pv_implied(d, c, NOW_T)
+        own = RADM.get((tech, c)); pvw[iso(c)] = pv_implied(d, c, NOW_T, own if own and len(own) >= 3 else None)
     if not recs: continue
     def mean_at(L): r = [x['err'] for x in recs if abs(x['lead'] - L) <= 3 and x['v'] != iso(NOW_T)]; return (round(sum(r) / len(r)), len(r)) if r else (None, 0)
     m12, n12 = mean_at(12); m24, n24 = mean_at(24); m36, n36 = mean_at(36)
@@ -86,7 +90,7 @@ for tech, name in MODELS.items():
                      now={c: dict(err=x['err'], de=x['de'], dn=x['dn'], lead=x['lead'], fkt=x['fkt'], lat=x['lat'], lon=x['lon']) for c, x in nowr.items()},
                      mean=dict(h12=m12, h24=m24, h36=m36, n=min(n12, n24, n36), score=round(sum(ms) / len(ms)) if ms else None),
                      bias24=dict(de=round(sum(x['de'] for x in b24) / len(b24)), dn=round(sum(x['dn'] for x in b24) / len(b24))) if b24 else None,
-                     pv_implied_kt={c: dict(max=w[0], now=w[1]) for c, w in pvw.items()}, recs=recs)
+                     pv_implied_kt={c: dict(max=w[0], now=w[1], radii=w[2]) for c, w in pvw.items()}, recs=recs)
 # ensembles in the deck: GEFS members AP01-AP30 (+AC00 control) -> error distribution at NOW per cycle
 ens = {}
 for c in cycles:
@@ -109,6 +113,6 @@ print('NOW', res['now'], 'window from', iso(W0)); print('cycles', res['cycles'])
 print(f"{'model':34s} {'score':>5s} {'h12':>5s} {'h24':>5s} {'h36':>5s} n | now-err by cycle (km, lead h) | bias24 E/N km | PV implied max kt by cycle")
 for t, m in sorted(out.items(), key=lambda kv: (kv[1]['mean']['score'] is None, kv[1]['mean']['score'] or 0)):
     mm = m['mean']; nw = ' '.join(f"{c[5:13]}:{x['err']}({x['lead']})" for c, x in sorted(m['now'].items()))
-    pv = ' '.join(f"{c[8:13]}:{w['max']}" for c, w in sorted(m['pv_implied_kt'].items()))
+    pv = ' '.join(f"{c[8:13]}:{w['max']}{'†' if w['radii'] == 'own' else ''}" for c, w in sorted(m['pv_implied_kt'].items()))
     print(f"{m['name']:34s} {str(mm['score']):>5s} {str(mm['h12']):>5s} {str(mm['h24']):>5s} {str(mm['h36']):>5s} {mm['n']} | {nw} | {m['bias24']} | {pv}")
 for c, e in ens.items(): print('GEFS members', c, {k: v for k, v in e.items() if k != 'members'})
