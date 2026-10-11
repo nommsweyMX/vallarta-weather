@@ -208,7 +208,7 @@ for b in B:
         s = series(b, k)
         mi = int(np.argmin(s['km'][n_obs:])) + n_obs
         b['scen'][k] = dict(rate=R2(s['rate']), cum=R2(s['cum']), v=R2(s['v'], 0), g=R2(s['g'], 0), vb=R2(s['vb'], 0), gb=R2(s['gb'], 0), frm=R2(s['frm'], 0),
-                            km=R2(s['km']), basin6=R2(s.get('basin6', [])), caine=R2(s.get('caine', []), 2), lv=s['lv'], onsets=onsets(s['lv']),
+                            km=R2(s['km']), basin6=R2(s.get('basin6', [])), basin_rate=R2(s.get('basin', [])), caine=R2(s.get('caine', []), 2), lv=s['lv'], onsets=onsets(s['lv']),
                             closest=dict(km=round(s['km'][mi], 1), t=F(times[mi])), total=round(s['cum'][-1]), peak_rate=round(max(s['rate'][n_obs:]), 1),
                             peak_rate_t=F(times[n_obs + int(np.argmax(s['rate'][n_obs:]))]), peak_gb=round(max(s['gb'][n_obs:])), peak_gb_t=F(times[n_obs + int(np.argmax(s['gb'][n_obs:]))]))
         print(b['id'], k, 'closest', b['scen'][k]['closest'], 'total', b['scen'][k]['total'], 'peak rate', b['scen'][k]['peak_rate'], b['scen'][k]['peak_rate_t'],
