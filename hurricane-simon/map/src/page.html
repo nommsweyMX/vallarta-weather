@@ -336,8 +336,8 @@ function buildHead(){
   document.getElementById('asof').innerHTML = L('GOES-18 latest image ' + fp[0] + ' CST · NHC advisory ' + A.num + ', ' + ti[0], 'GOES-18 última imagen ' + fp[1] + ' (hora del centro) · boletín ' + A.num + ' del NHC, ' + ti[1]);
   document.getElementById('h1').innerHTML = L('Simon over Vallarta, street by street', 'Simon sobre Vallarta, calle por calle');
   var e = closest('ext', PV[0], PV[1]), n = closest('nhc', PV[0], PV[1]), le = landfall('ext'), ln = landfall('nhc');
-  document.getElementById('lede').innerHTML = L('No model averages here. The eye was tracked on GOES-18 every 10 minutes for six hours. The forecast below comes from extending that observed motion, carrying the storm’s current satellite rain pattern with it. The NHC’s official track is shown alongside for comparison. Units here are miles, mph and inches; switch to Español for metric.',
-    'Aquí no hay promedios de modelos. Seguimos el ojo en GOES-18 cada 10 minutos durante seis horas. El pronóstico de abajo extiende ese movimiento observado y lleva consigo el patrón de lluvia que hoy mide el satélite. La trayectoria oficial del NHC aparece al lado para comparar. Aquí las unidades son kilómetros, km/h y milímetros; en English, sistema imperial.');
+  document.getElementById('lede').innerHTML = L('The eye is tracked on GOES-18 every 10 minutes. The map follows the NHC’s official track; you can switch to a straight-line extrapolation of the satellite motion to compare. The storm carries today’s satellite rain pattern, scaled to the SMN rain forecast, and the wind at each place is scaled to the NHC’s wind speed probabilities for Puerto Vallarta. Units here are miles, mph and inches; switch to Español for metric.',
+    'Seguimos el ojo en GOES-18 cada 10 minutos. El mapa sigue la trayectoria oficial del NHC; puedes cambiar a una extrapolación en línea recta del movimiento en el satélite para comparar. La tormenta lleva el patrón de lluvia que hoy mide el satélite, ajustado al pronóstico de lluvia del SMN, y el viento en cada lugar se ajusta a las probabilidades de viento del NHC para Puerto Vallarta. Aquí las unidades son kilómetros, km/h y milímetros; en English, sistema imperial.');
   var html = '';
   html += '<div class="card"><div class="eyebrow">' + L('Observed now', 'Observado ahora') + ' · ' + tL(fx.t) + '</div><div class="big">' + L('Eye ' + fmt(g[0] / 1.609) + ' mi ' + COMP_EN[Math.round(g[1] / 22.5) % 16] + ' of Vallarta', 'Ojo a ' + fmtE(g[0]) + ' km al ' + COMP_ES[Math.round(g[1] / 22.5) % 16] + ' de Vallarta') + '</div>'
     + '<p>' + L('Moving ' + COMP_EN[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) at ' + fmt(M.kmh / 1.609) + ' mph, measured from ' + (Math.round(M.hours * 6) + 1) + ' satellite fixes over ' + fmt(M.hours, 0) + ' hours. ', 'Avanza hacia el ' + COMP_ES[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) a ' + fmtE(M.kmh) + ' km/h, medido con ' + (Math.round(M.hours * 6) + 1) + ' posiciones de satélite en ' + fmtE(M.hours, 0) + ' horas. ')
@@ -354,12 +354,13 @@ function buildHead(){
   }
   function sc(k, ttl, sw, c, lf){
     var v = c.c.v, km = c.km;
-    return '<div class="card"><div class="eyebrow"><span class="sw ' + sw + '"></span>' + ttl + '</div><div class="big">' + L('Center ' + (km < 3 ? 'over' : fmt(km / 1.609) + ' mi from') + ' downtown ' + tParts(TIMES[c.i])[0], 'Centro ' + (km < 3 ? 'sobre' : 'a ' + fmtE(km) + ' km de') + ' el centro ' + tParts(TIMES[c.i])[1]) + '</div>'
-      + '<p>' + (lf ? L('Landfall near ' + lf.place + ' ' + tParts(TIMES[lf.i])[0] + '. ', 'Toca tierra cerca de ' + lf.place + ' el ' + tParts(TIMES[lf.i])[1] + '. ') : '')
-      + L('Reaches Vallarta as a ', 'Llega a Vallarta como ') + catL(v) + ' (' + U.kt(v) + ').</p></div>';
+    return '<div class="card"><div class="eyebrow"><span class="sw ' + sw + '"></span>' + ttl + '</div><div class="big">' + L('Center ' + (km < 3 ? 'over' : fmt(km / 1.609) + ' mi from') + ' downtown ' + tParts(TIMES[c.i])[0], 'Centro ' + (km < 3 ? 'sobre el centro ' : 'a ' + fmtE(km) + ' km del centro ') + tParts(TIMES[c.i])[1]) + '</div>'
+      + '<p>' + (lf ? L('At the coast near ' + lf.place + ' ' + tParts(TIMES[lf.i])[0] + '. ', 'En la costa, cerca de ' + lf.place + ', el ' + tParts(TIMES[lf.i])[1] + '. ') : '')
+      + L('Strength at the center then: ', 'Fuerza en el centro entonces: ') + catL(v) + ' (' + U.kt(v) + L('); that is not the wind in Vallarta.', '); no es el viento en Vallarta.')
+      + (k === 'nhc' && D.wind_cal && D.wind_cal.probs ? L(' NHC odds for Puerto Vallarta: ' + D.wind_cal.probs['34'] + '% tropical-storm-force wind, ' + D.wind_cal.probs['50'] + '% 58 mph or more, ' + D.wind_cal.probs['64'] + '% hurricane-force.', ' Probabilidades del NHC para Puerto Vallarta: ' + D.wind_cal.probs['34'] + '% viento de tormenta tropical, ' + D.wind_cal.probs['50'] + '% 93 km/h o más, ' + D.wind_cal.probs['64'] + '% viento de huracán.') : '') + '</p></div>';
   }
-  html += sc('ext', L('Satellite extrapolation', 'Extrapolación de satélite'), '', e, le);
-  html += sc('nhc', L('NHC forecast track', 'Trayectoria del NHC'), 'nhc', n, ln);
+  html += sc('nhc', L('NHC forecast track (official)', 'Trayectoria del NHC (oficial)'), 'nhc', n, ln);
+  html += sc('ext', L('Satellite extrapolation (comparison)', 'Extrapolación de satélite (comparación)'), '', e, le);
   document.getElementById('now').innerHTML = html;
 }
 
@@ -783,7 +784,7 @@ function keyItems(b){
   var pk = sd.peak_gb_t, pi = TIMES.indexOf(pk);
   push(pk, L('<b>Strongest gusts at your level, ' + U.windN(sd.peak_gb)[0] + ' mph</b>, from the ' + COMP_EN[Math.round(sd.frm[pi] / 22.5) % 16] + (b.id === 'amapas' && windowsHit(sd.frm[pi]) ? ', straight onto north windows' : '') + '.',
                 '<b>Ráfagas más fuertes a tu altura, ' + U.windN(sd.peak_gb)[1] + ' km/h</b>, del ' + COMP_ES[Math.round(sd.frm[pi] / 22.5) % 16] + (b.id === 'amapas' && windowsHit(sd.frm[pi]) ? ', de frente a las ventanas del norte' : '') + '.'));
-  if (O.windows){ var wn = firstAt(O.windows, '3') || firstAt(O.windows, '2'); push(wn && wn[0], L('<b>North windows take the wind head-on</b> until ' + tParts(wn[1])[0] + '.', '<b>Las ventanas del norte reciben el viento de frente</b> hasta el ' + tParts(wn[1])[1] + '.')); }
+  if (O.windows){ var wn = firstAt(O.windows, '3') || firstAt(O.windows, '2'); if (wn) push(wn[0], L('<b>North windows take the wind head-on</b> until ' + tParts(wn[1])[0] + '.', '<b>Las ventanas del norte reciben el viento de frente</b> hasta el ' + tParts(wn[1])[1] + '.')); }
   var r3 = firstAt(O.rate, '3'); push(r3 && r3[0], L('<b>Torrential rain</b> (1 in/h or more) begins.', '<b>Lluvia torrencial</b> (25 mm/h o más) comienza.'));
   push(sd.peak_rate_t, L('<b>Heaviest rain, ' + (sd.peak_rate / 25.4).toFixed(1) + ' in/h</b>.', '<b>Lluvia más intensa, ' + fmtE(sd.peak_rate, 0) + ' mm/h</b>.'));
   var ru = firstAt(O.runoff, '3'); push(ru && ru[0], L('<b>Streets turn into streams</b> (more than 2.4 in in 3 h).', '<b>Las calles se vuelven arroyos</b> (más de 60 mm en 3 h).'));
