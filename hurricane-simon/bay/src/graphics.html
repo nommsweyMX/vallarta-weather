@@ -46,9 +46,9 @@ function wrap(s, x, y, w, size, lh, color, weight, font, dry){ cx.font = (weight
 function rich(s, x, y, w, size, lh, color, font){ // *bold* segments
   cx.textAlign = 'left'; cx.textBaseline = 'middle'; var parts = s.split(/(\*[^*]+\*)/).filter(Boolean), toks = [];
   parts.forEach(function(p){ var b = p[0] === '*' && p[p.length - 1] === '*'; (b ? p.slice(1, -1) : p).split(' ').forEach(function(wd, k, arr){ if (wd !== '' || k < arr.length - 1) toks.push({t: wd, b: b, sp: k < arr.length - 1}); }); });
-  var px = x, n = 0; cx.font = '500 ' + size + 'px ' + (font || FT); var sw = cx.measureText(' ').width;
-  for (var i = 0; i < toks.length; i++){ var tk = toks[i]; if (!tk.t){ px += sw; continue; } cx.font = (tk.b ? 700 : 500) + ' ' + size + 'px ' + (font || FT); var ww = cx.measureText(tk.t).width;
-    if (px + ww > x + w && px > x){ px = x; n++; } cx.fillStyle = tk.b ? C.ink : (color || C.ink2); cx.fillText(tk.t, px, y + n * lh); px += ww + (tk.sp ? sw : 0); }
+  var px = x, n = 0, glued = false; cx.font = '500 ' + size + 'px ' + (font || FT); var sw = cx.measureText(' ').width;
+  for (var i = 0; i < toks.length; i++){ var tk = toks[i]; if (!tk.t){ px += sw; glued = false; continue; } cx.font = (tk.b ? 700 : 500) + ' ' + size + 'px ' + (font || FT); var ww = cx.measureText(tk.t).width;
+    if (!glued && px + ww > x + w && px > x){ px = x; n++; } cx.fillStyle = tk.b ? C.ink : (color || C.ink2); cx.fillText(tk.t, px, y + n * lh); px += ww + (tk.sp ? sw : 0); glued = !tk.sp; }
   return (n + 1) * lh; }
 function fitText(s, w, size, weight, font){ cx.font = (weight || 800) + ' ' + size + 'px ' + (font || FD); while (cx.measureText(s).width > w && size > 14){ size -= 1; cx.font = (weight || 800) + ' ' + size + 'px ' + (font || FD); } return size; }
 function arrow(x, y, ang, len, color, lw){ var a = (ang - 90) * Math.PI / 180, dx = Math.cos(a), dy = Math.sin(a); cx.strokeStyle = color; cx.fillStyle = color; cx.lineWidth = lw; cx.lineCap = 'round';
@@ -250,26 +250,29 @@ function gModels(){ header(5, L('Los modelos: cuáles han acertado y qué dicen 
   footer([L('Modelos del ciclo ' + FC.cycle.slice(6, 8) + '/' + FC.cycle.slice(8) + 'Z (NHC/ATCF). Error: contra la trayectoria oficial observada; «últimos 2 días» promedia solo ' + nLo + ' a ' + nHi + ' pronósticos por modelo y plazo, así que el orden puede cambiar. Viento en Vallarta: estructura de viento del NHC sobre la línea de cada modelo, sin la corrección por probabilidades.', 'Models from the ' + FC.cycle.slice(8) + 'Z ' + FC.cycle.slice(6, 8) + ' Oct cycle (NHC/ATCF). Error: against the observed official track; “last 2 days” averages only ' + nLo + ' to ' + nHi + ' forecasts per model and lead time, so the order can change. Vallarta wind: the NHC wind structure on each model’s line, without the odds-based correction.')]); }
 // ====================== 6. ONE-PAGE BILINGUAL SUMMARY (three places) ======================
 function inLang(l, fn){ var keep = LANG; LANG = l; try { return fn(); } finally { LANG = keep; } }
-function bi(x, y, w, es, en, size){ var sz = size || 21; var h = rich(es, x, y, w, sz, sz + 7, '#ffffff'); h += rich(en, x, y + h, w, sz - 2, sz + 5, C.ink2); return h + 6; }
-var SUM_NAMES = {amapas: ['D Terrace', 'Amapas, 8.º piso, ventanas al norte · 8th floor, north-facing windows'], ezapata: ['Casa Francisca', 'Emiliano Zapata, Francisca Rodríguez 336, 3.er piso · 3rd floor'], pitillal: ['El Pitillal (Macroplaza)', 'Cinco de Mayo y Calle España, casa de 2 pisos · 2-story house']};
-function gSummary(){ var HS = 1800; cv.height = HS; cx.fillStyle = C.bg; cx.fillRect(0, 0, W, HS);
-  text('SIMON · PUERTO VALLARTA', 40, 44, 22, C.accent, 700, 'left', FM); text(inLang('es', advLine) + ' · ' + inLang('en', advLine).replace(/^NHC advisory \d+ · /, ''), W - 40, 44, 19, C.mute, 500, 'right', FM);
-  text('Qué esperar en tu edificio · What to expect at your building', 40, 98, fitText('Qué esperar en tu edificio · What to expect at your building', W - 80, 46), C.ink, 800, 'left', FD);
+var SUM_BI = false;
+function bi(x, y, w, es, en, size){ var sz = size || 21; if (!SUM_BI) return rich(LANG === 'es' ? es : en, x, y, w, sz + 5, sz + 13, '#ffffff') + 12; var h = rich(es, x, y, w, sz, sz + 7, '#ffffff'); h += rich(en, x, y + h, w, sz - 2, sz + 5, C.ink2); return h + 6; }
+function bt(es, en){ return SUM_BI ? es + ' · ' + en : L(es, en); }
+var SUM_NAMES = {amapas: ['D Terrace', ['Amapas, 8.º piso, ventanas al norte', 'Amapas, 8th floor, north-facing windows']], ezapata: ['Casa Francisca', ['Emiliano Zapata, Francisca Rodríguez 336, 3.er piso', 'Emiliano Zapata, Francisca Rodríguez 336, 3rd floor']], pitillal: ['El Pitillal (Macroplaza)', ['Cinco de Mayo y Calle España, casa de 2 pisos', 'Cinco de Mayo & Calle España, 2-story house']]};
+function gSummary(){ var HS = SUM_BI ? 1800 : 1620; cv.height = HS; cx.fillStyle = C.bg; cx.fillRect(0, 0, W, HS);
+  text('SIMON · PUERTO VALLARTA', 40, 44, 22, C.accent, 700, 'left', FM); text(SUM_BI ? inLang('es', advLine) + ' · ' + inLang('en', advLine).replace(/^NHC advisory \d+ · /, '') : advLine() + ' · ' + L('hora de Vallarta', 'Vallarta time'), W - 40, 44, 19, C.mute, 500, 'right', FM);
+  var ttl = bt('Qué esperar en tu edificio', 'What to expect at your building'); text(ttl, 40, 98, fitText(ttl, W - 80, 46), C.ink, 800, 'left', FD);
   var am = SITES[0], ez = SITES[1], pi = SITES[2];
   var odds = ['NHC para Puerto Vallarta: *' + PP['34'] + '%* viento de tormenta tropical · *' + PP['50'] + '%* de 93 km/h o más · *' + PP['64'] + '%* huracán', 'NHC for Puerto Vallarta: *' + PP['34'] + '%* tropical-storm-force wind · *' + PP['50'] + '%* for 58 mph or more · *' + PP['64'] + '%* hurricane'];
-  var y = 134; y += bi(40, y, W - 80, odds[0], odds[1], 21);
+  var y = 134; y += bi(40, y, W - 80, odds[0], odds[1], SUM_BI ? 21 : 19);
   // worst stretch (same rule as graphic 4)
   var pr = pi.river && (pi.river.dangerous || pi.river.elevated), ends = [am.rain.heavy && am.rain.heavy[1], ez.river && ez.river.dangerous && ez.river.dangerous[1], pr && pr[1], am.wind.worst && am.wind.worst[1]].filter(Boolean).sort();
   var w0 = am.rain.heavy ? am.rain.heavy[0] : am.wind.peak_t, w1 = ends[ends.length - 1];
   y += 10; cx.fillStyle = '#2a1a1a'; roundRect(40, y, W - 80, 134, 14); cx.fill(); cx.fillStyle = C.t3; roundRect(40, y, 10, 134, 5); cx.fill();
   var wes = 'Lo peor: ' + inLang('es', function(){ return dhl(w0, 60) + ' a ' + dhl(w1, 60); }), wen = 'The worst: ' + inLang('en', function(){ return dhl(w0, 60) + ' to ' + dhl(w1, 60); });
-  text(wes, 68, y + 34, fitText(wes, W - 130, 34), '#fff', 800, 'left', FD); text(wen, 68, y + 72, 24, C.ink2, 700, 'left', FD);
-  text(inLang('es', function(){ return 'El centro pasaría a ~' + dist(am.closest.km) + ' al ' + c16l((MD.now.OFCL.sites.pv.closest.brg + 180) % 360) + ' hacia ' + dh(am.closest.t); }) + ' · ' + inLang('en', function(){ return 'center ~' + dist(am.closest.km) + ' ' + c16l((MD.now.OFCL.sites.pv.closest.brg + 180) % 360) + ' around ' + dh(am.closest.t); }), 68, y + 106, 19, C.ink2, 500, 'left', FT);
+  var cES = inLang('es', function(){ return 'El centro pasaría a ~' + dist(am.closest.km) + ' al ' + c16l((MD.now.OFCL.sites.pv.closest.brg + 180) % 360) + ' hacia ' + dh(am.closest.t) + '. Viento con rachas, la lluvia más fuerte y luego los ríos: no salgas.'; }), cEN = inLang('en', function(){ return 'The center would pass ~' + dist(am.closest.km) + ' ' + c16l((MD.now.OFCL.sites.pv.closest.brg + 180) % 360) + ' around ' + dh(am.closest.t) + '. Gusty wind, the heaviest rain, then the rivers: stay in.'; });
+  if (SUM_BI){ text(wes, 68, y + 34, fitText(wes, W - 130, 34), '#fff', 800, 'left', FD); text(wen, 68, y + 72, 24, C.ink2, 700, 'left', FD); text(cES.split('. ')[0] + ' · ' + cEN.split('. ')[0].replace('The center would pass', 'center'), 68, y + 106, 19, C.ink2, 500, 'left', FT); }
+  else { var wt = L(wes, wen); text(wt, 68, y + 40, fitText(wt, W - 130, 40), '#fff', 800, 'left', FD); wrap(L(cES, cEN), 68, y + 88, W - 130, 23, 29, C.ink2, 500); }
   y += 134 + 18;
   var toa = WC.toa34;
   SITES.forEach(function(s, k){ var w = s.wind, r = s.rain, nm = SUM_NAMES[s.id];
     var top = y; cx.fillStyle = '#151b25'; roundRect(40, top, W - 80, 10, 14); // placeholder, resized below
-    var yy = top + 24; text(nm[0], 68, yy, 30, SITE_COL[s.id], 800, 'left', FD); yy += 30; text(nm[1], 68, yy, 19, C.ink2, 500, 'left', FT); yy += 34;
+    var yy = top + (SUM_BI ? 24 : 30); text(nm[0], 68, yy, SUM_BI ? 30 : 36, SITE_COL[s.id], 800, 'left', FD); yy += SUM_BI ? 30 : 36; text(bt(nm[1][0], nm[1][1]), 68, yy, SUM_BI ? 19 : 22, C.ink2, 500, 'left', FT); yy += SUM_BI ? 34 : 40;
     var W0 = 68, WW = W - 136;
     // WHEN
     var whenES = inLang('es', function(){ return '*Cuándo:* viento fuerte con rachas *' + spanW(w.worst) + '*, lo más fuerte hacia *' + dh(s.closest.t) + '*. Lluvia más fuerte *' + span(r.wettest6[0], r.wettest6[1]) + '*.' + (s.river && s.river.dangerous ? ' *Río ' + (s.id === 'pitillal' ? 'Pitillal' : 'Cuale') + ' peligroso ' + span(s.river.dangerous[0], s.river.dangerous[1]) + '*.' : s.river && s.river.elevated ? ' Río ' + (s.id === 'pitillal' ? 'Pitillal' : 'Cuale') + ' crecido desde *' + dh(s.river.elevated[0]) + '*.' : '') + (s.id === 'pitillal' && s.streets && s.streets.some ? ' Agua en calles desde *' + dh(s.streets.some[0]) + '*.' : ''); });
@@ -294,11 +297,12 @@ function gSummary(){ var HS = 1800; cv.height = HS; cx.fillStyle = C.bg; cx.fill
     y = top + hgt + 14; });
   var fy = Math.max(y + 6, HS - 150);
   cx.fillStyle = '#121720'; cx.fillRect(0, fy, W, HS - fy);
-  wrap('Cifras de los tres sitios con las probabilidades de viento del NHC y la lluvia del SMN para Jalisco (aviso ' + SMN_AV + ': más de 250 mm). Horas aproximadas: pueden moverse con cada boletín.', 40, fy + 26, W - 80, 17, 22, C.mute, 500);
-  wrap('Site figures from the NHC wind odds and the SMN rain for Jalisco (advisory ' + SMN_AV + ': over 10 in). Approximate times: they can shift with each advisory.', 40, fy + 72, W - 80, 17, 22, C.mute, 500);
-  text('No es un pronóstico oficial · Not an official forecast · SMN · NHC · Protección Civil · 911', 40, HS - 24, 19, C.ink2, 700, 'left', FT); }
+  var fES = 'Cifras de los tres sitios con las probabilidades de viento del NHC y la lluvia del SMN para Jalisco (aviso ' + SMN_AV + ': más de 250 mm). Horas aproximadas: pueden moverse con cada boletín.', fEN = 'Site figures from the NHC wind odds and the SMN rain for Jalisco (advisory ' + SMN_AV + ': over 10 in). Approximate times: they can shift with each advisory.';
+  if (SUM_BI){ wrap(fES, 40, fy + 26, W - 80, 17, 22, C.mute, 500); wrap(fEN, 40, fy + 72, W - 80, 17, 22, C.mute, 500); }
+  else wrap(L(fES, fEN), 40, fy + 34, W - 80, 19, 24, C.mute, 500);
+  text(bt('No es un pronóstico oficial', 'Not an official forecast') + ' · SMN · NHC · Protección Civil · 911', 40, HS - 24, 19, C.ink2, 700, 'left', FT); }
 var GRAPHICS = {wind: gWind, rain: gRain, flood: gFlood, timing: gTiming, models: gModels, summary: gSummary};
-window.render = function(g, lang){ LANG = lang || 'es'; document.documentElement.lang = LANG; if (cv.height !== H) cv.height = H; cx.setTransform(1, 0, 0, 1, 0, 0); GRAPHICS[g](); };
+window.render = function(g, lang){ SUM_BI = lang === 'bi'; LANG = SUM_BI ? 'es' : (lang || 'es'); document.documentElement.lang = LANG; if (cv.height !== H) cv.height = H; cx.setTransform(1, 0, 0, 1, 0, 0); GRAPHICS[g](); };
 window.READY = READY;
 var q = new URLSearchParams(location.search); if (q.get('g')) READY.then(function(){ window.render(q.get('g'), q.get('lang') || 'es'); });
 </script></body></html>
