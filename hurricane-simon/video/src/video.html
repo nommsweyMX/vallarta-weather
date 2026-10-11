@@ -150,6 +150,7 @@ function mapStatic(view, R){
   staticCache[key] = oc; return oc;
 }
 function mpx(view, R, la, lo){ var v = LY.views[view], b = v.bbox; return [R.x + (lo - b[2]) / (b[3] - b[2]) * R.w, R.y + (b[0] - la) / (b[0] - b[1]) * R.h]; }
+function overlay(key, R, a){ if (!IMG[key] || a <= 0) return; cx.save(); cx.globalAlpha = Math.min(1, a); cx.drawImage(IMG[key], R.x, R.y, R.w, R.h); cx.restore(); }
 function marker(x, y, t, color, name, side){
   var p = 0.5 + 0.5 * Math.sin(t * 3);
   cx.save(); cx.strokeStyle = color; cx.globalAlpha = 0.6 * (1 - p); cx.lineWidth = 3; cx.beginPath(); cx.arc(x, y, 14 + 18 * p, 0, 7); cx.stroke(); cx.restore();
@@ -219,17 +220,20 @@ scene({id: 'now', dur: 22, title: ['Dónde está Simon', 'Where Simon is now'], 
   }});
 
 var WATERFACT = AT && AT.water_fact ? AT.water_fact : null;
-scene({id: 'category', dur: 22, title: ['Más allá de la categoría', 'Beyond the category'], steps: [
+scene({id: 'category', dur: 30, title: ['Más allá de la categoría', 'Beyond the category'], steps: [
   {at: 0, es: '“Categoría ' + FX.cat + '” describe el *viento más fuerte sobre el mar*, cerca del ojo. No dice cuánta lluvia caerá en la sierra, cuánto crecerán los ríos ni qué laderas pueden deslavarse.' + (WATERFACT ? ' ' + WATERFACT.es : ''),
           en: '“Category ' + FX.cat + '” describes the *strongest wind over the sea*, near the eye. It doesn’t tell you how much rain will fall on the mountains, how high the rivers will rise or which slopes may slide.' + (WATERFACT ? ' ' + WATERFACT.en : '')},
-  {at: 11, es: 'Los titulares alarmistas y los mapas del peor caso no te dicen qué hacer en tu calle. *Los números del pronóstico van a cambiar; los riesgos de tu lugar no.*',
-           en: 'Alarming headlines and worst-case maps don’t tell you what to do on your street. *Forecast numbers will keep changing; the risks of your place won’t.*'}],
+  {at: 10, es: 'Los mapas oficiales lo confirman: CENAPRED califica a Puerto Vallarta con peligro *' + AT.grades.flood[0].toLowerCase() + ' por inundaciones y por deslaves*, y *' + AT.grades.cyclone[0].toLowerCase() + ' por ciclones*.',
+           en: 'Official maps agree: CENAPRED rates Puerto Vallarta *' + AT.grades.flood[1].toLowerCase() + ' for flooding and landslides*, and *' + AT.grades.cyclone[1].toLowerCase() + ' for tropical cyclones*.'},
+  {at: 19, es: 'Los titulares alarmistas no te dicen qué hacer en tu calle, y las cifras cambian: el 10 de octubre el SMN pasó de ' + AT.smn_change.from + ' mm a ' + AT.smn_change.to + ' mm para Jalisco en ' + AT.smn_change.hours + ' horas. *Lo que no cambia son los riesgos de tu lugar.*',
+           en: 'Alarming headlines don’t tell you what to do on your street, and the numbers change: on Oct 10 the SMN went from 2–3 in to 6–10 in for Jalisco in ' + AT.smn_change.hours + ' hours. *What doesn’t change is the risk where you are.*'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
     var x0 = VX + 90, a = ease(t / 1);
     cx.globalAlpha = a; cx.fillStyle = '#1b2230'; roundRect(x0, 120, VW - 180, 200, 18); cx.fill();
     cx.font = '900 72px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText('Categoría ' + FX.cat + ' · Category ' + FX.cat, x0 + 44, 226);
     cx.font = '500 30px ' + FT; cx.fillStyle = C.ink2; cx.fillText('viento máximo sobre el mar · peak wind over the sea', x0 + 46, 282); cx.globalAlpha = 1;
+    if (t >= 10){ gradesGraphic(x0, t); return; }
     var cards = [['Lluvia en la sierra', 'Rain on the mountains', C.water], ['Ríos que crecen', 'Rising rivers', '#4fd1c5'], ['Laderas que se deslavan', 'Sliding slopes', C.slope], ['Viento a la altura de tu piso', 'Wind at your floor', '#b9a7ff']];
     cx.font = '600 26px ' + FM; cx.fillStyle = C.mute; cx.globalAlpha = ease((t - 1.5) / 1); cx.fillText('LO QUE DECIDE TU RIESGO · WHAT DECIDES YOUR RISK', x0, 400); cx.globalAlpha = 1;
     cards.forEach(function(cd, k){
@@ -237,8 +241,22 @@ scene({id: 'category', dur: 22, title: ['Más allá de la categoría', 'Beyond t
       cx.globalAlpha = aa; cx.fillStyle = '#151b25'; roundRect(x0, y, cw, 118, 14); cx.fill(); cx.fillStyle = cd[2]; roundRect(x0, y, 12, 118, 6); cx.fill();
       cx.font = '700 40px ' + FD; cx.fillStyle = '#fff'; cx.fillText(cd[0], x0 + 40, y + 54); cx.font = '500 30px ' + FT; cx.fillStyle = C.ink2; cx.fillText(cd[1], x0 + 40, y + 96); cx.globalAlpha = 1;
     });
-    if (t > 11){ cx.globalAlpha = ease((t - 11) / 1) * 0.7; cx.strokeStyle = '#fff'; cx.lineWidth = 6; cx.beginPath(); cx.moveTo(x0 + 20, 220); cx.lineTo(x0 + VW - 200, 220); cx.stroke(); cx.globalAlpha = 1; }
   }});
+function gradesGraphic(x0, t){
+  var rows = [['Inundaciones', 'Flooding', AT.grades.flood, 4, C.water], ['Deslaves', 'Landslides', AT.grades.slide, 4, C.slope], ['Ciclones tropicales', 'Tropical cyclones', AT.grades.cyclone, 3, '#b9a7ff']];
+  var a0 = ease((t - 10.2) / 0.8), cw = VW - 180;
+  cx.globalAlpha = a0; cx.font = '600 26px ' + FM; cx.fillStyle = C.mute; cx.textBaseline = 'alphabetic';
+  cx.fillText('CENAPRED · PUERTO VALLARTA', x0, 380); cx.font = '500 22px ' + FT; cx.fillText('Grado de peligro · Hazard grade (Indicadores Municipales, 2020)', x0, 414); cx.globalAlpha = 1;
+  rows.forEach(function(rw, k){ var a = ease((t - 10.6 - k * 0.6) / 0.8), y = 450 + k * 132; cx.globalAlpha = a;
+    cx.fillStyle = '#151b25'; roundRect(x0, y, cw, 112, 14); cx.fill();
+    cx.font = '700 36px ' + FD; cx.fillStyle = '#fff'; cx.fillText(rw[0], x0 + 30, y + 48); cx.font = '500 26px ' + FT; cx.fillStyle = C.ink2; cx.fillText(rw[1], x0 + 30, y + 86);
+    var bx = x0 + 470, bw = cw - 500; for (var q = 0; q < 5; q++){ cx.fillStyle = q < rw[3] ? rw[4] : '#252d3a'; roundRect(bx + q * (bw / 5), y + 30, bw / 5 - 8, 26, 5); cx.fill(); }
+    cx.font = '800 28px ' + FD; cx.fillStyle = '#fff'; cx.fillText(rw[2][0] + ' · ' + rw[2][1], bx, y + 94); cx.globalAlpha = 1; });
+  if (t >= 19){ var a2 = ease((t - 19.4) / 0.8), y2 = 870; cx.globalAlpha = a2; cx.fillStyle = '#1b2230'; roundRect(x0, y2, cw, 120, 14); cx.fill();
+    cx.font = '600 22px ' + FM; cx.fillStyle = C.mute; cx.fillText('SMN · JALISCO · 10 OCT', x0 + 30, y2 + 38);
+    cx.font = '800 40px ' + FD; cx.fillStyle = '#fff'; cx.fillText(AT.smn_change.from + ' mm  →  ' + AT.smn_change.to + ' mm', x0 + 30, y2 + 88);
+    cx.font = '500 26px ' + FT; cx.fillStyle = C.ink2; cx.textAlign = 'right'; cx.fillText('en ' + AT.smn_change.hours + ' horas · in ' + AT.smn_change.hours + ' hours', x0 + cw - 30, y2 + 86); cx.textAlign = 'left'; cx.globalAlpha = 1; }
+}
 function roundRect(x, y, w, h, r){ cx.beginPath(); cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
 
 // cross-section
@@ -307,10 +325,10 @@ scene({id: 'mountains', dur: 34, title: ['Las montañas cambian la tormenta', 'H
 // catchments
 var BA = VD.basins, CA = {pit: BA.pitillal.area_km2, cua: BA.cuale.area_km2};
 scene({id: 'catchments', dur: 24, title: ['De la sierra a tu calle', 'From the mountains to your street'], steps: [
-  {at: 0, es: 'La lluvia de la sierra baja por cientos de arroyos hacia dos ríos que cruzan la ciudad: el *Pitillal*, que recoge unos *' + fE(CA.pit) + ' km²*, y el *Cuale*, unos *' + fE(CA.cua) + ' km²*.',
-          en: 'Rain on the mountains runs down hundreds of streams into two rivers that cross the city: the *Pitillal*, draining about *' + fN(CA.pit / 2.59) + ' sq mi*, and the *Cuale*, about *' + fN(CA.cua / 2.59) + ' sq mi*.'},
-  {at: 12, es: 'Al agua le toma *unas 2 a 4 horas* llegar a la ciudad. Por eso un río puede seguir creciendo *cuando en tu calle ya llueve menos*.',
-           en: 'The water takes *roughly 2 to 4 hours* to reach town. That is why a river can keep rising *after the rain on your street eases*.'}],
+  {at: 0, es: 'La lluvia de la sierra baja por cientos de arroyos hacia dos ríos que cruzan la ciudad. Según el Atlas de Riesgos 2024, el *Pitillal* recoge *' + fE(Math.round(AT.catch.pitillal)) + ' km²* y el *Cuale* *' + fE(Math.round(AT.catch.cuale)) + ' km²*.',
+          en: 'Rain on the mountains runs down hundreds of streams into two rivers that cross the city. Per the 2024 risk atlas, the *Pitillal* drains *' + fN(AT.catch.pitillal / 2.59) + ' sq mi* and the *Cuale* *' + fN(AT.catch.cuale / 2.59) + ' sq mi*.'},
+  {at: 12, es: 'El Atlas advierte que la lluvia en la montaña puede saturar los ríos *en minutos*, y un estudio de la cuenca del Cuale calcula *unas 3 horas* para que llegue el agua de toda la cuenca. En Nora, un edificio junto al Cuale se derrumbó *horas después* de que el centro se alejó.',
+           en: 'The atlas warns that mountain rain can overload the rivers *within minutes*, and a study of the Cuale basin puts the time for water from the whole basin to arrive at *about 3 hours*. In Nora, a building by the Cuale collapsed *hours after* the center had moved away.'}],
   draw: function(t){
     var v = VD.view, R = fitRect(v.w, v.h, 0), s = R.w / v.w;
     cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H);
@@ -324,28 +342,50 @@ scene({id: 'catchments', dur: 24, title: ['De la sierra a tu calle', 'From the m
     });
     // outlets and places
     var po = BA.pitillal.oxy, co = BA.cuale.oxy;
-    label('Río Pitillal · ' + fE(CA.pit) + ' km² / ' + fN(CA.pit / 2.59) + ' sq mi', R.x + po[0] * s + 24, R.y + po[1] * s - 30, 28, '#ffd08a', 700);
-    label('Río Cuale · ' + fE(CA.cua) + ' km² / ' + fN(CA.cua / 2.59) + ' sq mi', R.x + co[0] * s + 24, R.y + co[1] * s + 34, 28, '#a9dcff', 700);
+    label('Río Pitillal · ' + fE(Math.round(AT.catch.pitillal)) + ' km² / ' + fN(AT.catch.pitillal / 2.59) + ' sq mi', R.x + po[0] * s + 24, R.y + po[1] * s - 30, 28, '#ffd08a', 700);
+    label('Río Cuale · ' + fE(Math.round(AT.catch.cuale)) + ' km² / ' + fN(AT.catch.cuale / 2.59) + ' sq mi', R.x + co[0] * s + 24, R.y + co[1] * s + 34, 28, '#a9dcff', 700);
     var bb = VD.view.bbox, mp = function(la, lo){ return [R.x + (lo - bb[2]) / (bb[3] - bb[2]) * R.w, R.y + (bb[0] - la) / (bb[0] - bb[1]) * R.h]; };
     [['pitillal', 'El Pitillal'], ['ezapata', 'E. Zapata'], ['amapas', 'Amapas']].forEach(function(q, k){ var b = B[q[0]], p = mp(b.lat, b.lon); marker(p[0], p[1], t + k, '#fff', null); });
     label('Bahía de Banderas', R.x + 30, R.y + 470, 30, '#8cc4ff', 600);
     if (t > 12){ var la = ease((t - 12) / 1); cx.globalAlpha = la; cx.fillStyle = 'rgba(11,14,19,.82)'; roundRect(R.x + R.w - 520, R.y + R.h - 170, 480, 130, 14); cx.fill();
-      cx.font = '900 50px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText('2–4 h', R.x + R.w - 490, R.y + R.h - 104);
-      cx.font = '500 24px ' + FT; cx.fillStyle = C.ink2; cx.fillText('de la sierra a la ciudad', R.x + R.w - 490, R.y + R.h - 72); cx.fillText('from the mountains to town', R.x + R.w - 490, R.y + R.h - 44); cx.globalAlpha = 1; }
+      cx.font = '900 44px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText('minutos → ~3 h', R.x + R.w - 490, R.y + R.h - 104);
+      cx.font = '500 24px ' + FT; cx.fillStyle = C.ink2; cx.fillText('sube en minutos, sigue por horas', R.x + R.w - 490, R.y + R.h - 72); cx.fillText('rises in minutes, keeps coming for hours', R.x + R.w - 490, R.y + R.h - 44); cx.globalAlpha = 1; }
+  }});
+
+// history: the category did not predict what happened (Nora 2021 vs Lidia 2023, from the 2024 risk atlas)
+scene({id: 'history', dur: 24, title: ['Ya pasó antes', 'It has happened before'], steps: [
+  {at: 0, es: 'En 2021, *Nora era apenas categoría 1*, pero la lluvia en la sierra desbordó el Pitillal y el Cuale: cayó el puente del Cuale y el agua arrastró casas junto al Pitillal. Se consideró la peor inundación de esos ríos en 50 años.',
+          en: 'In 2021 *Nora was only a Category 1*, but rain on the mountains overflowed the Pitillal and Cuale rivers: the Cuale bridge collapsed and water swept away homes along the Pitillal. It was considered the worst flooding on those rivers in 50 years.'},
+  {at: 12, es: 'En 2023, *Lidia tocó tierra como categoría 4*: tiró árboles y techos. Lo peor del agua llegó *dos días después*, cuando una tormenta cayó sobre suelos y canales ya llenos. *La categoría no predijo qué pasaría en cada colonia.*',
+           en: 'In 2023 *Lidia made landfall as a Category 4*: it brought down trees and roofs. The worst water came *two days later*, when a storm hit already-full soils and canals. *The category did not predict what would happen in each neighborhood.*'}],
+  draw: function(t){
+    var v = LY.views.city, R = fitRect(v.w, v.h, 0); cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H); cx.drawImage(mapStatic('city', R), R.x, R.y, R.w, R.h);
+    overlay('atlas_flood_city', R, 0.9 * ease((t - 0.5) / 1.2));
+    cx.fillStyle = 'rgba(11,14,19,.35)'; cx.fillRect(R.x, R.y, R.w, R.h);
+    function card(y, a, yr, cat, l1, l2, col){
+      cx.globalAlpha = a; cx.fillStyle = 'rgba(16,20,27,.93)'; roundRect(VX + 60, y, VW - 120, 190, 16); cx.fill(); cx.fillStyle = col; roundRect(VX + 60, y, 12, 190, 6); cx.fill();
+      cx.font = '900 54px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(yr, VX + 100, y + 70);
+      cx.font = '700 32px ' + FD; cx.fillStyle = col; cx.textAlign = 'right'; cx.fillText(cat, VX + VW - 100, y + 66); cx.textAlign = 'left';
+      cx.font = '500 28px ' + FT; cx.fillStyle = '#fff'; cx.fillText(l1, VX + 100, y + 122); cx.fillStyle = C.ink2; cx.fillText(l2, VX + 100, y + 162); cx.globalAlpha = 1;
+    }
+    card(150, ease((t - 0.8) / 0.8), 'Nora 2021', 'Categoría 1 · Category 1', 'Ríos desbordados: cayó el puente del Cuale', 'Rivers overflowed: the Cuale bridge fell', C.water);
+    card(380, ease((t - 12.4) / 0.8), 'Lidia 2023', 'Categoría 4 · Category 4', 'Árboles y techos; El Pitillal se inundó 2 días después', 'Trees and roofs; El Pitillal flooded 2 days later', '#b9a7ff');
+    label('En azul: modelo de inundación de CENAPRED · In blue: CENAPRED flood model', VX + 60, H - 70, 22, '#8cc4ff', 600);
+    label('Fuentes · Sources: Atlas de Riesgos PV 2024 · NHC · Protección Civil Jalisco', VX + 60, H - 38, 20, C.ink2, 500);
   }});
 
 // steep slopes
-scene({id: 'slopes', dur: 20, title: ['Laderas empinadas', 'Steep slopes'], steps: [
-  {at: 0, es: 'En naranja: terreno con *más de 22° de pendiente*. Con lluvia intensa el suelo se satura y puede deslizarse, *también horas después de que deje de llover*.',
-          en: 'In orange: ground *steeper than 22°*. In heavy rain the soil saturates and can slide, *even hours after the rain stops*.'},
-  {at: 10, es: 'En Amapas y Conchas Chinas las calles suben por la ladera. El agua corre por ellas como arroyos y puede arrastrar piedras y lodo.',
-           en: 'In Amapas and Conchas Chinas the streets climb the hillside. Water runs down them like streams and can carry rocks and mud.'}],
+scene({id: 'slopes', dur: 22, title: ['Laderas empinadas', 'Steep slopes'], steps: [
+  {at: 0, es: 'En naranja y rojo: laderas que CENAPRED califica con susceptibilidad *alta o muy alta* a deslizarse. Con lluvia intensa el suelo se satura y puede ceder, *también horas después de que deje de llover*.',
+          en: 'In orange and red: slopes CENAPRED rates *high or very high* for landslides. In heavy rain the soil saturates and can give way, *even hours after the rain stops*.'},
+  {at: 11, es: 'Cada punto blanco es un deslave registrado por Protección Civil: *' + AT.inventory.n + ' de ' + AT.inventory.years + '*, la mayoría en agosto y septiembre, muchos en *Amapas y Conchas Chinas*.',
+           en: 'Each white dot is a landslide logged by Protección Civil: *' + AT.inventory.n + ' from ' + AT.inventory.years + '*, most in August and September, many in *Amapas and Conchas Chinas*.'}],
   draw: function(t){
-    var view = t < 10 ? 'city' : 'zr', v = LY.views[view], R = fitRect(v.w, v.h, 0);
+    var view = t < 11 ? 'city' : 'zr', v = LY.views[view], R = fitRect(v.w, v.h, 0);
     cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H); cx.drawImage(mapStatic(view, R), R.x, R.y, R.w, R.h);
-    var m = IMG['slope_' + view];
-    if (m){ var oc = document.createElement('canvas'); oc.width = R.w; oc.height = R.h; var oc2 = oc.getContext('2d'); oc2.fillStyle = C.slope; oc2.fillRect(0, 0, R.w, R.h); oc2.globalCompositeOperation = 'destination-in'; oc2.drawImage(m, 0, 0, R.w, R.h);
-      cx.globalAlpha = 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(t * 2)); cx.drawImage(oc, R.x, R.y); cx.globalAlpha = 1; }
+    overlay('atlas_slide_' + view, R, (view === 'city' ? 0.62 : 0.45) * ease((t - (view === 'city' ? 0.5 : 11.2)) / 1.2));
+    if (view === 'zr') overlay('atlas_dep_' + view, R, ease((t - 12) / 1));
+    else overlay('atlas_dep_city', R, ease((t - 6) / 1.5) * 0.9);
     if (AT && AT.layers) atlasLayers(view, R, t, view === 'zr' ? 10 : 0);
     if (AT && AT.zones && AT.zones[view]) AT.zones[view].forEach(function(z){ var p = mpx(view, R, z.lat, z.lon); label(z.name, p[0], p[1], 22, '#ffe0b0', 600, 'center'); });
     var a = B.amapas, e = B.ezapata, pa = mpx(view, R, a.lat, a.lon), pe = mpx(view, R, e.lat, e.lon);
@@ -388,6 +428,8 @@ function bscene(o){
     cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H);
     var Rm = {x: VX + (VW - Math.min(VW, v.w * 1080 / v.h)) / 2, y: 0, w: Math.min(VW, v.w * 1080 / v.h), h: 0}; Rm.h = Rm.w * v.h / v.w; Rm.y = (H - Rm.h) / 2;
     cx.drawImage(mapStatic(o.view, Rm), Rm.x, Rm.y, Rm.w, Rm.h);
+    (o.overlays || []).forEach(function(ov){ overlay(ov[0], Rm, ov[1] * ease((t - 0.5) / 1)); });
+    if (o.ovLabel){ label(o.ovLabel[0], Rm.x + 30, 40, 22, o.ovLabel[2] || '#ffd08a', 700); label(o.ovLabel[1], Rm.x + 30, 70, 20, C.ink2, 500); }
     // run Sunday 6 am -> Monday noon through the scene
     var f = ease((t - 1) / (o.dur - 3)), i = Math.round(TL0 + f * (N - 1 - TL0)), sd = b.scen.ext;
     var rate = sd.rate[i]; if (rate > 0.5){ cx.fillStyle = 'rgba(96,62,204,' + Math.min(0.35, 0.06 + rate / 140) + ')'; cx.fillRect(Rm.x, Rm.y, Rm.w, Rm.h); }
@@ -420,29 +462,31 @@ function bscene(o){
   }});
 }
 function rng(w, fmt){ return w ? fmt(w[0]) + '–' + (w[2] ? (fmt === hES ? 'lunes' : 'Monday') : fmt(w[1]).replace('~', '')) : ''; }
-bscene({id: 'amapas', view: 'zr', dur: 24, title: ['Amapas · 8.º piso, ventanas al norte', 'Amapas · 8th floor, north-facing windows'],
+bscene({id: 'amapas', view: 'zr', dur: 26, overlays: [['atlas_slide_zr', 0.45], ['atlas_dep_zr', 0.95]], ovLabel: ['Laderas de susceptibilidad alta (CENAPRED) · deslaves registrados (Protección Civil)', 'High-susceptibility slopes (CENAPRED) · logged landslides (Protección Civil)'], title: ['Amapas · 8.º piso, ventanas al norte', 'Amapas · 8th floor, north-facing windows'],
   rows: [['wind', 'Viento', 'Wind'], ['windows', 'Ventanas N', 'N windows'], ['rate', 'Lluvia', 'Rain'], ['slide', 'Deslave', 'Landslide']],
   labels: [['AMAPAS', 20.5935, -105.2350, 26], ['Río Cuale', 20.6066, -105.2320, 22, '#8cc4ff']],
   steps: [
     {at: 0, es: 'Arriba el viento es más fuerte que en la calle. Antes de que pase el ojo sopla del noreste y *pega de frente en las ventanas del norte*: domingo de ' + hES(FX.windows3[0]) + ' a ' + hES(FX.windows3[1]) + '. En esas horas, *quédate en un cuarto interior*, lejos de las ventanas.',
             en: 'Up high the wind is stronger than at street level. Before the eye passes it blows from the northeast, *straight onto north windows*: Sunday ' + hEN(FX.windows3[0]) + ' to ' + hEN(FX.windows3[1]) + '. During those hours *stay in an inner room*, away from windows.'},
-    {at: 12, es: 'Después del ojo el viento llega del suroeste. Las laderas de alrededor pueden *deslavarse y cortar la calle*; el agua bajará por ella. No salgas a revisar durante la tormenta.',
-             en: 'After the eye the wind comes from the southwest. The slopes around you can *slide and cut off the street*, and water will run down it. Don’t go out to check during the storm.'}]});
-bscene({id: 'ezapata', view: 'zr', dur: 24, title: ['Emiliano Zapata · 3.er piso, entre edificios de 8', 'Emiliano Zapata · 3rd floor, among 8-story buildings'],
+    {at: 13, es: 'El Atlas 2024 incluye tu zona entre las que pueden recibir material de deslaves; hay *' + AT.near.amapas_500m + ' deslaves registrados a menos de 500 m*, y en 2021 uno en Amapas obligó a evacuar a 20 personas. Las laderas pueden *cortar la calle*: no salgas a revisar durante la tormenta.',
+             en: 'The 2024 atlas includes your area among those that can receive landslide debris; *' + AT.near.amapas_500m + ' landslides were logged within 1,600 ft*, and in 2021 one in Amapas forced 20 people out. Slopes can *cut off the street*: don’t go out to check during the storm.'}]});
+bscene({id: 'ezapata', view: 'zr', dur: 24, overlays: [['atlas_flood_zr', 0.8]], ovLabel: ['Modelo de inundación de CENAPRED, crecida de 100 años', 'CENAPRED flood model, 100-year flood', '#8cc4ff'], title: ['Emiliano Zapata · 3.er piso, entre edificios de 8', 'Emiliano Zapata · 3rd floor, among 8-story buildings'],
   rows: [['wind', 'Viento', 'Wind'], ['runoff', 'Calles', 'Streets'], ['river', 'Río Cuale', 'Cuale River'], ['slide', 'Deslave', 'Landslide']],
   labels: [['EMILIANO ZAPATA', 20.6038, -105.2290, 26], ['Río Cuale', 20.6066, -105.2320, 22, '#8cc4ff']],
   steps: [
     {at: 0, es: 'Los edificios altos frenan el viento constante, pero lo vuelven *racheado y arremolinado*. El peligro mayor viene de arriba: *tinacos, calentadores, vidrios y láminas* que pueden caer de los pisos altos.',
             en: 'Taller buildings block the steady wind but make it *gusty and swirling*. The bigger danger comes from above: *water tanks, heaters, glass and roofing* that can fall from upper floors.'},
-    {at: 12, es: 'Estás en alto: es poco probable que el agua entre a tu piso, pero las calles de abajo llevarán agua y el *Río Cuale puede estar peligroso desde el domingo ' + hES(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. Cuando pase el ojo habrá calma: *no salgas*, el viento regresa.',
-             en: 'You are up the slope: water is unlikely to reach your floor, but the streets below will carry runoff and the *Cuale River may be dangerous from Sunday ' + hEN(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. When the eye passes it will go calm: *stay inside*, the wind comes back.'}]});
-bscene({id: 'pitillal', view: 'pit', dur: 24, title: ['El Pitillal · casa de 2 pisos, a nivel de calle', 'El Pitillal · 2-story house, street level'],
+    {at: 12, es: 'Estás en alto: es poco probable que el agua llegue a tu piso, pero en Nora (2021) el Cuale se desbordó hacia calles de Emiliano Zapata, y *puede estar peligroso desde el domingo ' + hES(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. Cuando pase el ojo habrá calma: *no salgas*, el viento regresa.',
+             en: 'You are up the slope: water is unlikely to reach your floor, but in Nora (2021) the Cuale overflowed into streets of Emiliano Zapata, and it *may be dangerous from Sunday ' + hEN(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. When the eye passes it will go calm: *stay inside*, the wind comes back.'}]});
+bscene({id: 'pitillal', view: 'pit', dur: 32, overlays: [['atlas_flood_pit', 0.8]], ovLabel: ['Modelo de inundación de CENAPRED, crecida de 100 años', 'CENAPRED flood model, 100-year flood', '#8cc4ff'], title: ['El Pitillal · casa de 2 pisos, a nivel de calle', 'El Pitillal · 2-story house, street level'],
   rows: [['rate', 'Lluvia', 'Rain'], ['runoff', 'Calles', 'Streets'], ['river', 'Río Pitillal', 'Pitillal River'], ['wind', 'Viento', 'Wind']],
   labels: [['EL PITILLAL', 20.6540, -105.2050, 28], ['Río Pitillal', 20.6440, -105.2165, 22, '#8cc4ff']],
   steps: [
-    {at: 0, es: 'Aquí el riesgo principal es *el agua*: la calle y el Río Pitillal, a 160 m. Las calles pueden inundarse desde el domingo ' + hES(FX.run3p ? FX.run3p[0] : TIMES[N - 1]) + '; el río puede estar peligroso desde ' + hES(FX.pit3 ? FX.pit3[0] : TIMES[N - 1]) + ' y *seguir alto el lunes* aunque ya llueva menos.',
-            en: 'Here the main risk is *water*: the street and the Pitillal River, 525 ft away. Streets may flood from Sunday ' + hEN(FX.run3p ? FX.run3p[0] : TIMES[N - 1]) + '; the river may be dangerous from ' + hEN(FX.pit3 ? FX.pit3[0] : TIMES[N - 1]) + ' and *stay high on Monday* even as the rain eases.'},
-    {at: 12, es: '*Sube documentos, medicinas y objetos de valor* antes del domingo en la tarde. Si el agua entra, corta la luz y sube al segundo piso. *Nunca cruces agua en movimiento*, ni a pie ni en auto.',
+    {at: 0, es: 'Aquí el riesgo principal es *el agua*: la calle y el Río Pitillal, a 160 m; en azul, lo que inunda el modelo de CENAPRED. Las calles pueden inundarse desde el domingo ' + hES(FX.run3p ? FX.run3p[0] : TIMES[N - 1]) + '; el río puede estar peligroso desde ' + hES(FX.pit3 ? FX.pit3[0] : TIMES[N - 1]) + ' y *seguir alto el lunes* aunque ya llueva menos.',
+            en: 'Here the main risk is *water*: the street and the Pitillal River, 525 ft away; in blue, what CENAPRED’s flood model floods. Streets may flood from Sunday ' + hEN(FX.run3p ? FX.run3p[0] : TIMES[N - 1]) + '; the river may be dangerous from ' + hEN(FX.pit3 ? FX.pit3[0] : TIMES[N - 1]) + ' and *stay high on Monday* even as the rain eases.'},
+    {at: 11, es: 'Ya pasó: en 2021 (Nora) el Pitillal arrastró casas y se evacuó la colonia Río Pitillal; en 2023, dos días después de Lidia, la calle Corregidora, en el centro de El Pitillal, se inundó y la corriente arrastró autos.',
+             en: 'It has happened: in 2021 (Nora) the Pitillal swept away homes and the Río Pitillal neighborhood was evacuated; in 2023, two days after Lidia, calle Corregidora in central El Pitillal flooded and the current carried cars away.'},
+    {at: 21, es: '*Sube documentos, medicinas y objetos de valor* antes del domingo en la tarde. Si el agua entra, corta la luz y sube al segundo piso. *Nunca cruces agua en movimiento*, ni a pie ni en auto.',
              en: '*Move documents, medicine and valuables upstairs* before Sunday afternoon. If water comes in, cut the power and go to the second floor. *Never cross moving water*, on foot or by car.'}]});
 
 // summary timeline
