@@ -12,8 +12,8 @@ best = {P(b['t']): (b['lat'], b['lon']) for b in A['best']}
 targets = {t: p for t, p in best.items() if W0 <= t <= NOW_T}; targets[NOW_T] = NOW
 REF = NOW_T.replace(hour=0, minute=0)                      # the run of "yesterday evening" (00Z = 6 pm CST the day before) used for the dartboard and the PV columns
 REF_ALT = REF - dt.timedelta(hours=12)
-OBS = dict(wind_max_kt=13, wind_note=['viento máx. 24 km/h en el aeropuerto (METAR, 48 h)', 'max wind 13 kt (15 mph) at the airport (METAR, 48 h)'],
-           rain_mm_lo=0, rain_mm_hi=9, rain_note=['sin lluvia hasta las 13:00; después un chubasco (~9 mm en el aeropuerto)', 'no rain until 1 pm, then one shower (~0.35 in at the airport)'])
+OBS = dict(wind_max_kt=9, wind_note=['viento máx. 17 km/h en los reportes del aeropuerto (METAR, 48 h; sin reportes entre el sáb 18:00 y el dom 13:00)', 'max wind 9 kt (10 mph) in the airport reports (METAR, 48 h; none between Sat 6 pm and Sun 1 pm)'],
+           rain_mm_lo=0, rain_mm_hi=9, rain_note=['~9 mm en el aeropuerto hasta las 13:44 (un chubasco); en la ciudad, nada según los vecinos', '~0.35 in at the airport by 1:44 pm (one shower); none in town by residents’ reports'])
 def disp(p, q):
     de = (p[1] - q[1]) * 111.32 * math.cos(math.radians(q[0])); dn = (p[0] - q[0]) * 110.57
     return round(math.hypot(de, dn)), round(de), round(dn)
