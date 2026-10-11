@@ -11,6 +11,9 @@ names = {'title': ('Inicio', 'Start'), 'f-title': ('Inicio', 'Start'), 'credits'
 def name(c):
     if c['id'] in names: return names[c['id']]
     return tuple(c['title']) if c.get('title') else (c['id'], c['id'])
+# YouTube needs chapters of 10 s or more starting at 0:00: fold the short title card into the first scene, and a short credits card into the one before
+ch = [c for c in ch if c['id'] not in ('title', 'f-title') and not (c['id'] == 'credits' and c.get('dur', 10) < 10)]
+if ch: ch[0] = dict(ch[0], t='0:00')
 chap = '\n'.join(f"{c['t']} {name(c)[0]} / {name(c)[1]}" for c in ch)
 DISCLAIMER_ES = f'Datos al {asof_es}, boletín {adv} del NHC. NO es un pronóstico oficial: sigue al SMN-CONAGUA, al Centro Nacional de Huracanes (NHC) y a Protección Civil de Puerto Vallarta y de Jalisco. Emergencias: 911.'
 DISCLAIMER_EN = f'Data as of {asof_en}, NHC advisory {adv}. This is NOT an official forecast: follow SMN-CONAGUA, the National Hurricane Center (NHC) and Protección Civil of Puerto Vallarta and Jalisco. Emergencies: 911.'

@@ -22,6 +22,6 @@ const fs = require('fs'), path = require('path');
     fs.writeFileSync(path.join(outdir, `${name}.${lang}.srt`), cues.map((c, i) => `${i + 1}\n${ts(c[0])} --> ${ts(c[1])}\n${c[2]}\n`).join('\n'));
   }
   const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-  fs.writeFileSync(path.join(outdir, `${name}.chapters.json`), JSON.stringify(sc.map(s => ({ t: mmss(s.t0), id: s.id, title: s.title })), null, 1));
+  fs.writeFileSync(path.join(outdir, `${name}.chapters.json`), JSON.stringify(sc.map(s => ({ t: mmss(s.t0), dur: s.dur, id: s.id, title: s.title })), null, 1));
   console.log('captions and chapters written; total', total, 's');
 })();
