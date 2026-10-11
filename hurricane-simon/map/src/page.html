@@ -369,8 +369,8 @@ function buildHead(){
   var html = '';
   html += '<div class="card"><div class="eyebrow">' + L('Observed now', 'Observado ahora') + ' · ' + tL(fx.t) + '</div><div class="big">' + LB('Eye ' + fmt(g[0] / 1.609) + ' mi ' + COMP_EN[Math.round(g[1] / 22.5) % 16] + ' of Vallarta', 'Ojo a ' + fmtE(g[0]) + ' km al ' + COMP_ES[Math.round(g[1] / 22.5) % 16] + ' de Vallarta') + '</div>';
   var mv = nhcMotion(A, ti);
-  html += '<p>' + LB('Moving ' + COMP_EN[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) at ' + fmt(M.kmh / 1.609) + ' mph, measured from ' + (Math.round(M.hours * 6) + 1) + ' satellite fixes over ' + fmt(M.hours, 0) + ' hours. ' + mv[0],
-                     'Avanza hacia el ' + COMP_ES[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) a ' + fmtE(M.kmh) + ' km/h, medido con ' + (Math.round(M.hours * 6) + 1) + ' posiciones de satélite en ' + fmtE(M.hours, 0) + ' horas. ' + mv[1]) + '</p></div>';
+  html += '<p>' + LB('Moving ' + COMP_EN[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) at ' + fmt(M.kmh / 1.609) + ' mph, measured from ' + (Math.round(M.hours * 6) + 1) + ' satellite fixes over ' + fmt(M.hours, M.hours < 2 ? 1 : 0) + ' hours. ' + mv[0],
+                     'Avanza hacia el ' + COMP_ES[Math.round(M.dir_to / 22.5) % 16] + ' (' + Math.round(M.dir_to) + '°) a ' + fmtE(M.kmh) + ' km/h, medido con ' + (Math.round(M.hours * 6) + 1) + ' posiciones de satélite en ' + fmtE(M.hours, M.hours < 2 ? 1 : 0) + ' horas. ' + mv[1]) + '</p></div>';
   function nhcMotion(A, ti){         // the advisory's own "PRESENT MOVEMENT" line, quoted in each unit as issued
     var WE = ['north', 'north-northeast', 'northeast', 'east-northeast', 'east', 'east-southeast', 'southeast', 'south-southeast', 'south', 'south-southwest', 'southwest', 'west-southwest', 'west', 'west-northwest', 'northwest', 'north-northwest'],
         WS = ['norte', 'nor-noreste', 'noreste', 'este-noreste', 'este', 'este-sureste', 'sureste', 'sur-sureste', 'sur', 'sur-suroeste', 'suroeste', 'oeste-suroeste', 'oeste', 'oeste-noroeste', 'noroeste', 'nor-noroeste'], k = COMP_EN.indexOf(A.move);
@@ -381,7 +381,7 @@ function buildHead(){
   function sc(k, ttl, sw, c, lf){
     var v = c.c.v, km = c.km, PP = (D.wind_cal || {}).probs, cp = catP(v), en = '', es = '';
     if (k === 'nhc'){
-      var nc = (D.nhc_track || []).filter(function(p){ return /NEAR THE COAST|ON THE COAST|INLAND/.test(p.note || '') && !/POST-TROP/.test(p.note || ''); })[0], TA = toaParts();
+      var nc = (D.nhc_track || []).filter(function(p){ return /NEAR (THE )?COAST|ON THE COAST|INLAND/.test(p.note || '') && !/POST-TROP/.test(p.note || ''); })[0], TA = toaParts();
       if (PP){
         en += 'NHC odds for Puerto Vallarta: ' + PP['34'] + '% for tropical-storm-force wind (39 mph or more), ' + PP['50'] + '% for 58 mph or more and ' + PP['64'] + '% for hurricane-force wind (74 mph or more). From those odds we work out a 50-50 peak sustained wind of about ' + Math.round(D.wind_cal.v50_kt * 1.15078 / 5) * 5 + ' mph'
           + (TA ? '; tropical-storm-force wind most likely arrives around ' + TA[0][0] + ' and could start as early as ' + TA[1][0] + ' (our calculations, not NHC figures). ' : ' (our calculation, not an NHC figure). ');
@@ -390,8 +390,8 @@ function buildHead(){
       }
       if (nc){
         if (/NEAR/.test(nc.note)){
-          en += 'The NHC has Simon near the Jalisco coast from ' + tParts(nc.t)[0] + ' and says it will either make landfall or skirt the coast (the models still disagree on which); its intensity forecast is low-confidence, and Simon could weaken much faster if it moves east of the official track. ';
-          es += 'El NHC ubica a Simon junto a la costa de Jalisco desde el ' + tParts(nc.t)[1] + ' y dice que tocará tierra o solo rozará la costa (los modelos aún no coinciden en cuál); su pronóstico de intensidad es de baja confianza y Simon podría debilitarse mucho más rápido si pasa al este de la trayectoria oficial. ';
+          en += 'The NHC has Simon near the Jalisco coast from ' + tParts(nc.t)[0] + '. It says it is too close to call whether Simon makes landfall, and its intensity forecast is very low-confidence: a little farther east, Simon would fall apart fast over land; a little farther west, it would keep more strength. Advisory ' + D.advisory.num + ' nudged the track west, though it is still east of most models. ';
+          es += 'El NHC ubica a Simon junto a la costa de Jalisco desde el ' + tParts(nc.t)[1] + '. Dice que es demasiado cerrado para saber si tocará tierra, y su pronóstico de intensidad es de muy baja confianza: un poco más al este, Simon se disiparía rápido en tierra; un poco más al oeste, conservaría más fuerza. El boletín ' + D.advisory.num + ' movió la trayectoria un poco al oeste, aunque sigue al este de la mayoría de los modelos. ';
         } else { en += 'Reaches the coast ' + tParts(nc.t)[0] + '. '; es += 'Llega a la costa el ' + tParts(nc.t)[1] + '. '; }
       }
       en += 'Strength at Simon’s center as it passes: ' + cp[0] + ' (not the wind in Vallarta).';
