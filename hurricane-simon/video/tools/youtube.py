@@ -7,6 +7,15 @@ DES = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'][(t.weekday() + 1) % 7]
 h12 = (t.hour % 12 or 12, 'am' if t.hour < 12 else 'pm')
 asof_es = f'{DES} {t.day} oct {t:%H:%M} (hora del centro)'; asof_en = f'{DEN} Oct {t.day}, {h12[0]}:{t:%M} {h12[1]} CST'
 adv = mp['advisory']['num']
+# the advisory's own time ('300 AM CST Sun Oct 11'): its products are valid then; the satellite frames run later
+import re
+_m = re.match(r'(\d{1,2})(\d{2}) ([AP])M \w+ (\w{3}) \w{3} (\d+)', mp['advisory'].get('issued', ''))
+if _m:
+    _h = int(_m.group(1)) % 12 + (12 if _m.group(3) == 'P' else 0)
+    adv_es = f"boletín {adv} del NHC ({ {'Sun':'dom','Mon':'lun','Tue':'mar','Wed':'mié','Thu':'jue','Fri':'vie','Sat':'sáb'}[_m.group(4)]} {_m.group(5)} oct, {_h:02d}:{_m.group(2)})"
+    adv_en = f"NHC advisory {adv} ({_m.group(4)} Oct {_m.group(5)}, {int(_m.group(1)) % 12 or 12}{':' + _m.group(2) if _m.group(2) != '00' else ''} {_m.group(3).lower()}m CST)"
+else:
+    adv_es, adv_en = f'boletín {adv} del NHC', f'NHC advisory {adv}'
 names = {'title': ('Inicio', 'Start'), 'f-title': ('Inicio', 'Start'), 'credits': ('Fuentes', 'Sources')}
 def name(c):
     if c['id'] in names: return names[c['id']]
@@ -15,8 +24,8 @@ def name(c):
 ch = [c for c in ch if c['id'] not in ('title', 'f-title') and not (c['id'] == 'credits' and c.get('dur', 10) < 10)]
 if ch: ch[0] = dict(ch[0], t='0:00')
 chap = '\n'.join(f"{c['t']} {name(c)[0]} / {name(c)[1]}" for c in ch)
-DISCLAIMER_ES = f'Datos al {asof_es}, boletín {adv} del NHC. NO es un pronóstico oficial: sigue al SMN-CONAGUA, al Centro Nacional de Huracanes (NHC) y a Protección Civil de Puerto Vallarta y de Jalisco. Emergencias: 911.'
-DISCLAIMER_EN = f'Data as of {asof_en}, NHC advisory {adv}. This is NOT an official forecast: follow SMN-CONAGUA, the National Hurricane Center (NHC) and Protección Civil of Puerto Vallarta and Jalisco. Emergencies: 911.'
+DISCLAIMER_ES = f'Datos: {adv_es}; satélite hasta las {t:%H:%M} (hora del centro). NO es un pronóstico oficial: sigue al SMN-CONAGUA, al Centro Nacional de Huracanes (NHC) y a Protección Civil de Puerto Vallarta y de Jalisco. Emergencias: 911.'
+DISCLAIMER_EN = f'Data: {adv_en}; satellite through {h12[0]}:{t:%M} {h12[1]}. This is NOT an official forecast: follow SMN-CONAGUA, the National Hurricane Center (NHC) and Protección Civil of Puerto Vallarta and Jalisco. Emergencies: 911.'
 
 if prog == 'forecast':
     title = 'Huracán Simon: el pronóstico para Puerto Vallarta, sin exagerar | Hurricane Simon: the Puerto Vallarta forecast, without the hype'
@@ -31,7 +40,7 @@ if prog == 'forecast':
           'The strength shown on the map is at the hurricane’s center, not in Vallarta. The satellite image fades as the forecast weakens the storm: a schematic, not a cloud forecast.')
     src = ['National Hurricane Center (NHC): public advisory, forecast discussion and wind speed probabilities, advisory ' + adv,
            'NHC: 2026 cone of uncertainty radii (eastern North Pacific); best track and model guidance (ATCF)',
-           'SMN-CONAGUA: tropical cyclone advisory for Jalisco (rain, waves and wind on the coast)',
+           'SMN-CONAGUA: tropical cyclone advisory 30 (rain for Jalisco; waves and storm surge on the Jalisco and Colima coasts)',
            'NOAA GOES-18 ABI: infrared band 13 (mesoscale and full disk)', 'NHC Tropical Cyclone Report: Hurricane Patricia (2015); WMO Weather and Climate Extremes Archive', 'NHC advisory archive for Simon (forecast tracks and Puerto Vallarta wind probabilities by advisory)']
     tags = 'huracán Simon, pronóstico, Puerto Vallarta, Jalisco, Nayarit, NHC, SMN, cono de incertidumbre, Hurricane Simon, hurricane forecast, Puerto Vallarta hurricane, Patricia'
 else:
