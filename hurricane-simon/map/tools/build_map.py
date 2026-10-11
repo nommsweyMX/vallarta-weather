@@ -239,14 +239,15 @@ def toa34():
     return dict(early=at(0.1), likely=at(0.5), total=int(tot))
 TOA34 = toa34()
 print('wind calibration', dict(v50=round(V50 or 0, 1), v20=round(V20 or 0, 1), model_peak_pv=round(VPK, 1), cap=round(VCAP, 1), probs=NHC.get('pv_probs'), toa34=TOA34))
-# Satellite rain rates near the eyewall, carried along the track, give about twice the SMN forecast. Scale the field so the
-# wettest 24 h at any site, on either track, stays within the SMN's upper bound for the coast.
+# The satellite rain pattern carried along the track misses the rain the onshore wind wrings out of the sierra, and near the
+# eyewall it runs high. Scale the field so the wettest 24 h at any site, on either track, equals the SMN's upper bound for
+# the coast: the threat timelines then follow the official rain forecast for Jalisco, up or down.
 SMN_MAX24 = 250.0
 def max24(b, k):
     mm = np.array([rain(c, b['lat'], b['lon'], rscale(c, i)) for i, c in enumerate(SCN[k]['track'])]) * DT_H; mm[:n_obs] = 0
     n = int(round(24 / DT_H)); c = np.concatenate([[0], np.cumsum(mm)])
     return float((c[n:] - c[:-n]).max()) if len(mm) >= n else float(c[-1])
-RAIN_CAL = min(1.0, SMN_MAX24 / max(max24(b, k) for b in B for k in SCN))
+RAIN_RAW24 = max(max24(b, k) for b in B for k in SCN); RAIN_CAL = SMN_MAX24 / RAIN_RAW24 if RAIN_RAW24 > 0 else 1.0
 FIELD = FIELD * RAIN_CAL
 print('rain calibration', round(RAIN_CAL, 3))
 for b in B:
@@ -269,7 +270,7 @@ json.dump(dict(
     generated=F(dt.datetime.now(dt.timezone.utc)), t_obs=F(t_obs), n_obs=n_obs, times=[F(t) for t in times],
     advisory=dict(num=summ['advisory'], issued=summ['issued_local'], location=summ['location'], intermediate=summ['intermediate'], earlier_fix=next((p for p in tr if p.get('earlier_fix')), None), kt=V0, gust=G0, wind_kmh=summ['wind_kmh'], pressure=summ['pressure_mb'], move=summ['move_dir'], move_kmh=summ['move_kmh'], move_mph=summ.get('move_mph'), warnings=summ.get('warnings', [])),
     fixes=[dict(t=x['t'], lat=x['lat'], lon=x['lon'], eye_c=x['eye_c'], wall_c=x['wall_c']) for x in SAT['fixes']], motion=M,
-    ir=SAT['ir'], rain=dict(km0=KM0, dkm=DKM, n=NK, scale=2.5, cal=round(RAIN_CAL, 3), cal_max24=SMN_MAX24, q=base64.b64encode(q.tobytes()).decode(), scans=SAT['rain_times']),
+    ir=SAT['ir'], rain=dict(km0=KM0, dkm=DKM, n=NK, scale=2.5, cal=round(RAIN_CAL, 3), cal_max24=SMN_MAX24, raw_max24=round(RAIN_RAW24), q=base64.b64encode(q.tobytes()).decode(), scans=SAT['rain_times']),
     scen={k: dict(track=trk(v['track']), landfall=v['landfall']) for k, v in SCN.items()},
     nhc_track=[dict(t=p['t'], lat=p['lat'], lon=p['lon'], kt=p['kt'], note=p.get('note')) for p in tr],
     basins={k: {kk: vv for kk, vv in v.items() if kk != 'cells'} for k, v in BASINS.items()},
