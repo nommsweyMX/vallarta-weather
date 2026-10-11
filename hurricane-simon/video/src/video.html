@@ -95,15 +95,22 @@ var FX = (function(){
   return {fx: fx, km: g[0], brg: g[1], kmh: M.kmh, dir: M.dir_to, c1: c1, c2: c2, shift: shift.length ? TIMES[Math.min.apply(null, shift)] : null,
           vAt: Math.max(ce.v, cn.v), vAtMin: Math.min(ce.v, cn.v), cat: D.advisory.kt >= 113 ? 4 : 3,
           wind2: win('amapas', 'wind', 2), wind3: win('amapas', 'wind', 3), windows3: (function(){ var w = win('amapas', 'windows', 3) || win('amapas', 'windows', 2); return w && ms(w[1]) - ms(w[0]) >= 3600e3 ? w : null; })(), toa: (D.wind_cal || {}).toa34 || null, dirIn: (function(){ var t = (D.wind_cal || {}).toa34, s = B.amapas.scen.nhc, i = t ? TIMES.indexOf(t.likely.slice(0, 15) + '0Z') : -1; if (i < 0 && t){ var best = NOBS; for (var k = NOBS; k < N; k++) if (Math.abs(ms(TIMES[k]) - ms(t.likely)) < Math.abs(ms(TIMES[best]) - ms(t.likely))) best = k; i = best; } return s.frm[i >= 0 ? i : NOBS]; })(), amPkDir: (function(){ var s = B.amapas.scen.nhc, k = NOBS; for (var i = NOBS; i < N; i++) if (s.gb[i] > s.gb[k]) k = i; return s.frm[k]; })(), rate2: win('amapas', 'rate', 2), rate3: [win('amapas', 'rate', 3), win('pitillal', 'rate', 3)],
-          slide2: win('amapas', 'slide', 2), cuale3: win('ezapata', 'river', 3), pit3: win('pitillal', 'river', 3), run3p: win('pitillal', 'runoff', 3) || win('pitillal', 'runoff', 2), run3z: win('ezapata', 'runoff', 3),
+          slide2: win('amapas', 'slide', 2), cuale3: win('ezapata', 'river', 3), pit3: win('pitillal', 'river', 3), cuale2: win('ezapata', 'river', 2), pit2: win('pitillal', 'river', 2), run3p: win('pitillal', 'runoff', 3) || win('pitillal', 'runoff', 2), run3z: win('ezapata', 'runoff', 3),
           gustPk: (function(){ var g = B.amapas.scen.nhc.gb, m = 0, s0 = null, e0 = null; for (var i = NOBS; i < N; i++) m = Math.max(m, g[i]); for (var j = NOBS; j < N; j++) if (g[j] >= 0.85 * m){ if (s0 === null) s0 = j; e0 = j; } return s0 === null ? null : [TIMES[s0], TIMES[e0], e0 === N - 1]; })(),
           totMin: Math.min(B.amapas.scen.nhc.total, B.pitillal.scen.nhc.total), totMax: Math.max(B.amapas.scen.nhc.total, B.pitillal.scen.nhc.total)};
 })();
 var ADV = D.advisory;
+var RAIN_NHC = {lo: 10, hi: 20, iso: 30, where: ['Michoacán, Colima y Jalisco', 'Michoacán, Colima and Jalisco']};   // NHC TCP rainfall statement (inches), storm totals
+var SMN_AV = 28;   // SMN aviso quoted for rain, waves and surge
 function issuedES(){ var m = /^(\d{1,2})(\d{2}) ([AP])M/.exec(ADV.issued || ''); if (!m) return ''; var h = +m[1] % 12 + (m[3] === 'P' ? 12 : 0); return String(h).padStart(2, '0') + ':' + m[2]; }
 function issuedEN(){ var m = /^(\d{1,2})(\d{2}) ([AP])M/.exec(ADV.issued || ''); if (!m) return ''; var h = +m[1] % 12 || 12; return h + (m[2] !== '00' ? ':' + m[2] : '') + ' ' + m[3].toLowerCase() + 'm'; }
 var asofD = cst(FX.fx.t);
 var ASOF_ES = DS_ES[asofD.getUTCDay()] + ' ' + asofD.getUTCDate() + ' oct, ' + hrES(asofD), ASOF_EN = DS_EN[asofD.getUTCDay()] + ' Oct ' + asofD.getUTCDate() + ', ' + hrEN(asofD);
+// the advisory's own nominal time (its products are valid then; the satellite frames run later)
+var ADVD = (function(){ var m = /^(\d{1,2})(\d{2}) ([AP])M \w+ (\w{3}) (\w{3}) (\d+)/.exec(ADV.issued || ''); if (!m) return null; var dES = {Sun: 'dom', Mon: 'lun', Tue: 'mar', Wed: 'mié', Thu: 'jue', Fri: 'vie', Sat: 'sáb'}[m[4]];
+  return [dES + ' ' + m[6] + ' oct, ' + issuedES(), m[4] + ' Oct ' + m[6] + ', ' + issuedEN()]; })();
+var DATA_ES = ADVD ? 'boletín ' + ADV.num + ' NHC (' + ADVD[0] + ') · satélite ' + hrES(asofD) : ASOF_ES;
+var DATA_EN = ADVD ? 'NHC advisory ' + ADV.num + ' (' + ADVD[1] + ') · satellite ' + hrEN(asofD) : ASOF_EN;
 
 // ---------- text drawing ----------
 // Rich text: *bold* segments. Returns the height used.
@@ -143,11 +150,12 @@ function panel(sc, t){
   }
   var hEs = para(step.es, x, y, w, 35, 47, C.ink, false, a);
   y += hEs + 26; cx.fillStyle = C.line; cx.fillRect(x, y, 80, 2); y += 26;
-  para(step.en, x, y, w, 29, 39, C.ink2, false, a);
+  var hEn = para(step.en, x, y, w, 29, 39, C.ink2, false, a);
   // footer
   cx.font = '500 20px ' + FM; cx.fillStyle = C.ink2; cx.textBaseline = 'alphabetic';
-  cx.fillText('Datos: ' + ASOF_ES + ' · No es pronóstico oficial', x, H - 74);
-  cx.fillText('Data: ' + ASOF_EN + ' CST · Not an official forecast', x, H - 46);
+  cx.font = '500 18px ' + FM; cx.fillText('Datos: ' + DATA_ES, x, H - 102); cx.fillText('Data: ' + DATA_EN, x, H - 74);
+  cx.fillText('No es pronóstico oficial · Not an official forecast', x, H - 46);
+  window.__panelBottom = Math.max(window.__panelBottom || 0, y + hEn - 39);
 }
 
 // ---------- map drawing ----------
@@ -217,11 +225,12 @@ function satDraw(R, frame, shiftK, i, opts){
 var SC = [];
 function scene(o){ if ((o.prog || 'risk') === PROGRAM) SC.push(o); }
 var r = function(x){ return Math.round(x); };
-var kmE = Math.round(FX.km / 10) * 10, miE = Math.round(FX.km / 1.609 / 10) * 10;
+var AP = /([\d.]+)N ([\d.]+)W/.exec(ADV.location || ''), AG = AP ? geo(PV[0], PV[1], +AP[1], -AP[2]) : [FX.km, FX.brg];
+var kmE = Math.round(AG[0] / 10) * 10, miE = Math.round(AG[0] / 1.609 / 10) * 10;
 var CN = closestPV('nhc');
 // NHC wind speed probabilities for Puerto Vallarta (cumulative) and the wind they put at the middle of the range
 var WC = D.wind_cal || {}, PP = WC.probs || (FC && FC.nhc ? FC.nhc.pv_probs : {}) || {}, P34 = PP['34'], P50 = PP['50'], P64 = PP['64'], V50 = WC.v50_kt;
-var dirS = C16S[ci(FX.brg)], dirE = C16EN[ci(FX.brg)];
+var dirS = C16S[ci(AG[1])], dirE = C16EN[ci(AG[1])];
 var LANDFIRST = ['nhc'].every(function(k){ var lf = D.scen[k].landfall; return lf && TIMES.indexOf(lf) >= 0 && TIMES.indexOf(lf) < closestPV(k).i; });
 
 scene({id: 'title', dur: 8, steps: [{at: 0, es: '', en: ''}], noPanel: true, draw: function(t){
@@ -229,27 +238,27 @@ scene({id: 'title', dur: 8, steps: [{at: 0, es: '', en: ''}], noPanel: true, dra
   satDraw(R, k, null, 0, {center: false, nopv: true});
   var g = cx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(11,14,19,.96)'); g.addColorStop(0.55, 'rgba(11,14,19,.78)'); g.addColorStop(1, 'rgba(11,14,19,.15)'); cx.fillStyle = g; cx.fillRect(0, 0, W, H);
   var a = ease(t / 1.2);
-  cx.globalAlpha = a; cx.fillStyle = 'rgba(11,14,19,.85)'; cx.fillRect(90, 718, 1740, 112); cx.textBaseline = 'alphabetic';
+  cx.globalAlpha = a; cx.fillStyle = 'rgba(11,14,19,.85)'; cx.fillRect(90, 718, 1740, 146); cx.textBaseline = 'alphabetic';
   var ts = 86; cx.font = '900 86px ' + FD; while (cx.measureText('Puerto Vallarta: por qué tu zona está en riesgo').width > W - 220){ ts -= 2; cx.font = '900 ' + ts + 'px ' + FD; } cx.fillStyle = C.ink; cx.fillText('Puerto Vallarta: por qué tu zona está en riesgo', 110, 320);
   cx.font = '500 50px ' + FD; cx.fillStyle = C.warm; cx.fillText('Olas, viento, agua y deslaves, según CENAPRED y el Atlas de Riesgos', 110, 404);
   cx.font = '700 52px ' + FD; cx.fillStyle = C.ink2; cx.fillText('Puerto Vallarta: why your area is at risk', 110, 548);
   cx.font = '500 40px ' + FD; cx.fillStyle = '#d9b46a'; cx.fillText('Waves, wind, water and landslides, from CENAPRED and the risk atlas', 110, 612);
   cx.font = '500 26px ' + FM; cx.fillStyle = C.mute;
-  cx.fillText('Datos al ' + ASOF_ES + ' (hora del centro) · Data as of ' + ASOF_EN + ' CST', 110, 760);
-  cx.fillText('No es un pronóstico oficial: sigue a Protección Civil · Not an official forecast: follow Protección Civil', 110, 806);
+  cx.fillText('Datos: ' + DATA_ES + ' (hora del centro)', 110, 760); cx.fillText('Data: ' + DATA_EN + ' CST', 110, 796);
+  cx.fillText('No es un pronóstico oficial: sigue a Protección Civil · Not an official forecast: follow Protección Civil', 110, 840);
   cx.globalAlpha = 1;
 }});
 
 scene({id: 'now', dur: 26, title: ['Simon y estos riesgos', 'Simon and these risks'], steps: [
-  {at: 0, es: 'Imágenes reales del satélite GOES-18 de las últimas 4 horas. El ojo está a unos *' + fE(kmE) + ' km al ' + dirS + '* de Vallarta y avanza lentamente hacia el norte. Es un huracán fuerte (categoría ' + FX.cat + ').',
-            en: 'Real GOES-18 satellite images from the last 4 hours. The eye is about *' + fN(miE) + ' miles ' + dirE + '* of Vallarta, moving slowly north. It is a strong hurricane (Category ' + FX.cat + ').'},
-  {at: 11, es: 'El NHC prevé que su centro pase cerca de Vallarta ' + whenES(TIMES[CN.i]).replace(/^(el |hacia la )/, '$1*') + '*, ' + (track('nhc', CN.i).lon < PV[1] - 0.03 ? 'sobre la bahía, a unos ' + Math.round(CN.km / 5) * 5 + ' km al oeste,' : 'a unos ' + Math.round(CN.km / 5) * 5 + ' km,') + ' debilitándose. En Vallarta, el NHC da *' + P34 + '%* de probabilidad de viento de tormenta tropical, *' + P50 + '%* de 93 km/h o más y *' + P64 + '%* de viento de huracán. Lo principal: *el agua y las laderas*; en la costa, *las olas*.',
-             en: 'The NHC expects its center to pass near Vallarta *' + whenEN(TIMES[CN.i]) + '*, ' + (track('nhc', CN.i).lon < PV[1] - 0.03 ? 'over the bay about ' + Math.round(CN.km / 1.609 / 5) * 5 + ' miles to the west,' : 'about ' + Math.round(CN.km / 1.609 / 5) * 5 + ' miles away,') + ' weakening. For Vallarta, the NHC gives a *' + P34 + '%* chance of tropical-storm-force wind, *' + P50 + '%* for 58 mph or more and *' + P64 + '%* for hurricane force. The main risks: *water and slopes*; on the coast, *waves*.'}],
+  {at: 0, es: 'Imágenes reales del satélite GOES-18 de las últimas 4 horas. Según el boletín ' + ADV.num + ' del NHC (' + issuedES() + '), el centro está a unos *' + fE(kmE) + ' km al ' + dirS + '* de Vallarta y avanza lentamente hacia el norte. Es un huracán fuerte (categoría ' + FX.cat + ').',
+            en: 'Real GOES-18 satellite images from the last 4 hours. In NHC advisory ' + ADV.num + ' (' + issuedEN() + '), the center is about *' + fN(miE) + ' miles ' + dirE + '* of Vallarta, moving slowly north. It is a strong hurricane (Category ' + FX.cat + ').'},
+  {at: 11, es: 'En la trayectoria del NHC, el centro pasaría a unos ' + Math.round(CN.km / 5) * 5 + ' km' + (track('nhc', CN.i).lon < PV[1] - 0.03 ? ' al oeste' : '') + ' de Vallarta ' + whenES(TIMES[CN.i]).replace(/^(el |hacia la )/, '$1*') + '*, ' + (catOf(CN.v) >= 1 ? 'más débil pero todavía como huracán' : 'ya como ' + catLabel(CN.v)[0].toLowerCase()) + '. En Vallarta, el NHC da *' + P34 + '%* de probabilidad de viento de tormenta tropical, *' + P50 + '%* de 93 km/h o más y *' + P64 + '%* de viento de huracán. Lo principal: *el agua y las laderas*; en la costa, *las olas*.',
+             en: 'On the NHC track, the center would pass about ' + Math.round(CN.km / 1.609 / 5) * 5 + ' miles ' + (track('nhc', CN.i).lon < PV[1] - 0.03 ? 'west of' : 'from') + ' Vallarta *' + whenEN(TIMES[CN.i]) + '*, ' + (catOf(CN.v) >= 1 ? 'weaker but still a hurricane' : 'by then a ' + catLabel(CN.v)[1].toLowerCase()) + '. For Vallarta, the NHC gives a *' + P34 + '%* chance of tropical-storm-force wind, *' + P50 + '%* for 58 mph or more and *' + P64 + '%* for hurricane force. The main risks: *water and slopes*; on the coast, *waves*.'}],
   draw: function(t){
     var R = {x: VX + (VW - 1080) / 2, y: 0, w: 1080, h: 1080};
     if (t < 11){ satDraw(R, Math.floor(t * 5) % IRF.length, null, 0, {tracks: ease((t - 6) / 2)}); label(t < 11 ? 'OBSERVADO · OBSERVED' : '', R.x + 30, 50, 24, '#5ff0b4', 700); }
     else { var f = ease((t - 11.5) / 12), i = Math.round(NOW + 1 + f * (N - 2 - NOW)); satDraw(R, 0, 'nhc', i, {tracks: 1}); var d = cst(TIMES[i]);
-      var cc = track('nhc', i), cl = catLabel(cc.v), dPV = geo(PV[0], PV[1], cc.lat, cc.lon)[0]; label(dPV > 150 ? 'En el centro: ' + cl[0].toLowerCase() + ' · At the center: ' + cl[1].toLowerCase() : 'Centro: ' + cl[0].toLowerCase() + ', no es el viento en Vallarta · Center: ' + cl[1].toLowerCase() + ', not Vallarta’s wind', R.x + 30, 92, 22, C.ink2, 700);
+      var cc = track('nhc', i), cl = catLabel(cc.v), dPV = geo(PV[0], PV[1], cc.lat, cc.lon)[0]; cx.fillStyle = 'rgba(11,14,19,.8)'; roundRect(R.x + 14, 16, 1052, 160, 12); cx.fill(); label(dPV > 150 ? 'En el centro: ' + cl[0].toLowerCase() + ' · At the center: ' + cl[1].toLowerCase() : 'Centro: ' + cl[0].toLowerCase() + ', no es el viento en Vallarta · Center: ' + cl[1].toLowerCase() + ', not Vallarta’s wind', R.x + 30, 92, 22, C.ink2, 700);
       label('En Vallarta (NHC): ' + P34 + '% tormenta tropical · ' + P64 + '% huracán · In Vallarta: ' + P34 + '% TS · ' + P64 + '% hurricane', R.x + 30, H - 40, 21, '#fff', 700);
       label('PRONÓSTICO NHC · NHC FORECAST  ' + DS_ES[d.getUTCDay()] + ' ' + hrES(d) + ' · ' + DS_EN[d.getUTCDay()] + ' ' + hrEN(d), R.x + 30, 50, 24, '#fff', 700);
       label('Nubes de hoy, desplazadas y atenuadas: un esquema, no un pronóstico de nubes', R.x + 30, 132, 20, C.ink2, 500); label('Today’s clouds, shifted and faded: a schematic, not a cloud forecast', R.x + 30, 160, 20, C.ink2, 500); }
@@ -294,7 +303,7 @@ function gradesGraphic(x0, t){
     [['Tormenta tropical Javier, 1998', 'Tropical Storm Javier, 1998', 243, '#5ad1ff'], ['Huracán Kenna, cat. 4, 2002', 'Hurricane Kenna, Cat 4, 2002', 27, '#ff4d6d']].forEach(function(q, k){ var y = 420 + k * 260, bw = (VW - 560) * q[2] / 260 * ease((t - 19.8 - k * 0.6) / 1.2);
       cx.font = '700 34px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(q[0], x0, y); cx.font = '500 26px ' + FT; cx.fillStyle = C.ink2; cx.fillText(q[1], x0, y + 36);
       cx.fillStyle = q[3]; roundRect(x0, y + 60, Math.max(8, bw), 70, 10); cx.fill(); cx.font = '800 40px ' + FD; cx.fillStyle = '#fff'; cx.fillText(q[2] + ' mm · ' + (q[2] / 25.4).toFixed(1) + ' in', x0 + Math.max(8, bw) + 20, y + 110); });
-    cx.font = '500 22px ' + FT; cx.fillStyle = C.mute; cx.fillText('Lluvia en un día, estación El Cuale (SMN) · One-day rain, El Cuale station (SMN) · Morales Hernández et al. 2013', x0, 1010); cx.globalAlpha = 1; return; }
+    cx.font = '500 22px ' + FT; cx.fillStyle = C.mute; cx.fillText('Lluvia en un día, estación El Cuale (SMN) · Morales Hernández et al. 2013', x0, 994); cx.fillText('One-day rain, El Cuale station (SMN)', x0, 1024); cx.globalAlpha = 1; return; }
   if (t >= 29){ var a2 = ease((t - 29.4) / 0.8), y2 = 850; cx.globalAlpha = a2; cx.fillStyle = '#1b2230'; roundRect(x0, y2, cw, 170, 14); cx.fill();
     cx.font = '600 22px ' + FM; cx.fillStyle = C.mute; cx.fillText('SMN · JALISCO · 10 OCT · PRONÓSTICO DE LLUVIA · RAIN FORECAST', x0 + 30, y2 + 38);
     cx.font = '800 40px ' + FD; cx.fillStyle = '#fff'; cx.fillText(AT.smn_change.from + ' mm  →  ' + AT.smn_change.to + ' mm', x0 + 30, y2 + 90);
@@ -484,10 +493,10 @@ scene({id: 'overview', dur: 28, title: ['Cuatro amenazas, cuatro lugares distint
     var R = cityBase(t);
     overlay('atlas_flood_city', R, ease((t - 0.5) / 1.5));
     overlay('atlas_slide_city', R, 0.6 * ease((t - 9.3) / 1.5));
-    overlay('lowcoast_city', R, (0.6 + 0.3 * Math.sin(t * 2)) * ease((t - 18.3) / 1.2));
+    overlay('lowcoast_city', R, 0.75 * ease((t - 18.3) / 1.2));
     var leg = [['Agua (ríos y calles)', 'Water (rivers and streets)', '#4f86ff', 0.5], ['Deslaves', 'Landslides', '#e88c38', 9.3], ['Costa baja: marea y olas', 'Low coast: surge and waves', '#5ae6ff', 18.3]];
-    cx.fillStyle = 'rgba(11,14,19,.86)'; roundRect(VX + 30, 30, 560, 40 + leg.length * 66, 14); cx.fill();
-    leg.forEach(function(l, k){ var a = ease((t - l[3]) / 0.8); cx.globalAlpha = a; cx.fillStyle = l[2]; roundRect(VX + 54, 54 + k * 66, 34, 34, 6); cx.fill(); label(l[0], VX + 104, 66 + k * 66, 25, '#fff', 700, 'left', false); label(l[1], VX + 104, 92 + k * 66, 20, C.ink2, 500, 'left', false); cx.globalAlpha = 1; });
+    var LX = VX + 40, LY0 = 520; cx.fillStyle = 'rgba(11,14,19,.86)'; roundRect(LX, LY0, 420, 28 + leg.length * 66, 14); cx.fill();
+    leg.forEach(function(l, k){ var a = ease((t - l[3]) / 0.8); cx.globalAlpha = a; cx.fillStyle = l[2]; roundRect(LX + 24, LY0 + 24 + k * 66, 34, 34, 6); cx.fill(); label(l[0], LX + 74, LY0 + 36 + k * 66, 25, '#fff', 700, 'left', false); label(l[1], LX + 74, LY0 + 62 + k * 66, 20, C.ink2, 500, 'left', false); cx.globalAlpha = 1; });
     label('Fuentes · Sources: CENAPRED (inundación, laderas) · terreno AWS · OpenStreetMap', VX + 40, H - 30, 19, C.ink2, 500);
   }});
 
@@ -507,7 +516,9 @@ scene({id: 'rivers', dur: 33, title: ['Agua 1: ríos', 'Water 1: rivers'], steps
     label('Modelo de inundación de CENAPRED (crecida de 100 años) · CENAPRED flood model (100-year flood)', VX + 40, H - 30, 19, C.ink2, 500);
   }});
 
-var STREETS = ['La Floresta', 'Las Mojoneras', 'La Bobadilla', 'Parque las Palmas', 'Los Portales - UMA', 'Centro Ixtapa', 'Hotelera las Glorias', 'Centro Pitillal'];
+var STREETS = ['La Floresta', 'Las Mojoneras', 'La Bobadilla', 'Parque las Palmas', 'Los Portales - UMA', 'Centro Ixtapa', 'Centro Pitillal'];
+// label text and offset [dx, dy, align] from the colonia's anchor point, so the close-together colonias do not overlap
+var STREET_LBL = {'Parque las Palmas': ['Parque Las Palmas', -12, 0, 'right'], 'Las Mojoneras': ['Las Mojoneras', 12, -6, 'left'], 'Los Portales - UMA': ['Los Portales', -12, 0, 'right'], 'La Floresta': ['La Floresta', 12, -14, 'left'], 'La Bobadilla': ['La Bobadilla', 12, -2, 'left'], 'Centro Pitillal': ['Centro Pitillal', 12, 22, 'left']};
 scene({id: 'streets', dur: 30, title: ['Agua 2: calles', 'Water 2: streets'], steps: [
   {at: 0, es: 'No toda el agua viene de los ríos. Un aguacero fuerte *sobre la ciudad* llena los canales pluviales y convierte las calles bajas en arroyos, lejos de cualquier río.',
           en: 'Not all the water comes from the rivers. A downpour *over the city itself* fills the storm canals and turns low streets into streams, far from any river.'},
@@ -520,19 +531,22 @@ scene({id: 'streets', dur: 30, title: ['Agua 2: calles', 'Water 2: streets'], st
     // storm canals and small streams in the city
     cx.save(); cx.strokeStyle = '#5eb4ff'; cx.lineWidth = 3; cx.setLineDash([12, 8]); cx.lineDashOffset = -t * 30; v.layers.streams.forEach(function(a){ cx.beginPath(); path(a, R, s2); cx.stroke(); }); cx.restore();
     STREETS.forEach(function(nm, k){ var a = ease((t - 11.3 - k * 0.4) / 0.8); if (a <= 0) return; cx.globalAlpha = a; colPoly(nm).forEach(function(c){ drawCol('city', R, c, 'rgba(94,180,255,.35)', '#9fd3ff', 2); });
-      var c0 = colPoly(nm)[0]; if (c0){ var q = mpx('city', R, c0.lat, c0.lon); label(nm.replace(' - UMA', '').replace('Hotelera ', ''), q[0] + 12, q[1], 20, '#fff', 700); } cx.globalAlpha = 1; });
-    label('Canales y arroyos urbanos (OpenStreetMap) · colonias según el Atlas 2024 · City canals and streams · colonias from the 2024 atlas', VX + 40, H - 30, 19, C.ink2, 500);
+      var c0 = colPoly(nm)[0]; if (c0){ var q = mpx('city', R, c0.lat, c0.lon), o = STREET_LBL[nm] || [nm, 12, 0, 'left']; label(o[0], q[0] + o[1], q[1] + o[2], 20, '#fff', 700, o[3]); } cx.globalAlpha = 1; });
+    label('Canales y arroyos urbanos (OpenStreetMap) · colonias según el Atlas 2024', VX + 40, H - 58, 19, C.ink2, 500); label('City canals and streams (OpenStreetMap) · colonias from the 2024 atlas', VX + 40, H - 30, 19, C.ink2, 500);
   }});
 
-var COAST = [{n: 'Marina Vallarta', la: 20.668, lo: -105.250, s: 'muy alta · very high'}, {n: 'Desembocadura del Ameca', la: 20.673, lo: -105.286, s: 'alta · high', side: 'l'}, {n: 'Arroyo Los Camarones', la: 20.618, lo: -105.232, s: 'alta · high'}, {n: 'Malecón (Kenna 2002)', la: 20.611, lo: -105.236, s: 'olas sobre el malecón · waves over the boardwalk'}];
-scene({id: 'coast', dur: 26, title: ['Agua 3: el mar', 'Water 3: the sea'], steps: [
-  {at: 0, es: 'La *marea de tormenta* es el mar que el viento empuja hacia la costa. Entra más donde la costa es baja y la plataforma es ancha y somera: en celeste, la tierra a menos de 4 m.',
-          en: '*Storm surge* is sea water pushed ashore by the wind. It gets farthest where the coast is low and the shelf is wide and shallow: in light blue, land under 13 ft.'},
+var COAST = [{n: 'Marina Vallarta', la: 20.668, lo: -105.250, s: 'muy alta · very high'}, {n: 'Desembocadura del Ameca', la: 20.673, lo: -105.286, s: 'alta · high', side: 'l'}, {n: 'Arroyo Los Camarones', la: 20.618, lo: -105.232, s: 'alta · high'}, {n: 'Malecón (Kenna 2002)', la: 20.611, lo: -105.236, s: 'olas sobre el malecón · waves over the boardwalk', side: 'l'}];
+scene({id: 'coast', dur: 36, title: ['Agua 3: el mar', 'Water 3: the sea'], steps: [
+  {at: 0, es: 'La *marea de tormenta* es el mar que el viento empuja hacia la costa. Entra más donde la costa es baja y la plataforma es ancha y somera: en celeste, la tierra a menos de 4 m. *Es la altura del terreno, no un pronóstico.*',
+          en: '*Storm surge* is sea water pushed ashore by the wind. It gets farthest where the coast is low and the shelf is wide and shallow: in light blue, land under 13 ft. *It shows ground height, not a forecast.*'},
   {at: 12, es: 'Un estudio de la Universidad de Guadalajara (anexo del Atlas 2024) señala como más vulnerables a *Marina Vallarta*, la desembocadura del *Ameca* y el arroyo *Los Camarones*. En Kenna (2002), las olas pasaron sobre el malecón y dañaron hoteles.',
-           en: 'A University of Guadalajara study (annexed to the 2024 atlas) names *Marina Vallarta*, the *Ameca* mouth and the *Los Camarones* creek as most vulnerable. In Kenna (2002), waves went over the boardwalk and damaged hotels.'}],
+           en: 'A University of Guadalajara study (annexed to the 2024 atlas) names *Marina Vallarta*, the *Ameca* mouth and the *Los Camarones* creek as most vulnerable. In Kenna (2002), waves went over the boardwalk and damaged hotels.'},
+  {at: 26, es: 'Para Simon, el NHC advierte una *marea de tormenta peligrosa* en la franja costera inmediata, cerca y al este de donde el centro toque tierra, pero no da alturas para la bahía. El SMN (aviso ' + SMN_AV + ') prevé *de 1 a 2 m* en la costa de Colima.',
+           en: 'For Simon, the NHC warns of *dangerous storm surge* along the immediate coast near and to the east of where the center makes landfall, but gives no heights for the bay. The SMN (advisory ' + SMN_AV + ') expects *3 to 7 ft* on the Colima coast.'}],
   draw: function(t){
-    var R = cityBase(t); overlay('lowcoast_city', R, (0.65 + 0.25 * Math.sin(t * 2)) * ease((t - 0.5) / 1.2));
+    var R = cityBase(t); overlay('lowcoast_city', R, 0.75 * ease((t - 0.5) / 1.2));
     COAST.forEach(function(c, k){ pin('city', R, c.la, c.lo, c.n, k === 3 ? '#ffd166' : '#5ae6ff', c.side || 'r', ease((t - 12.3 - k * 0.6) / 0.8), c.s); });
+    label('Celeste: terreno a menos de 4 m, no un pronóstico de marea · Light blue: land under 13 ft, not a surge forecast', VX + 40, H - 58, 19, C.ink2, 500);
     label('Altura del terreno: AWS Terrain Tiles (aprox.) · zonas: Flores 2021, UdeG · Terrain heights approximate', VX + 40, H - 30, 19, C.ink2, 500);
   }});
 
@@ -558,7 +572,7 @@ scene({id: 'waves', dur: 42, title: ['Olas: el fondo de la bahía decide', 'Wave
       [[20.56, -105.50, 'Cañón > 1,000 m', 'Canyon > 3,300 ft'], [20.735, -105.40, 'Plataforma < 100 m', 'Shelf < 330 ft']].forEach(function(q, k){ var p = bayPx(R, q[0], q[1]); cx.globalAlpha = ease((t - 1.5 - k) / 1); label(q[2], p[0], p[1] - 14, 28, '#dff1ff', 800, 'center'); label(q[3], p[0], p[1] + 18, 22, C.ink2, 600, 'center'); cx.globalAlpha = 1; }); }
     else if (t < 27){ rays(R, 'SW', t, '#e6f4ff'); label('Oleaje del suroeste · swell from the southwest', R.x + 30, 50, 26, '#fff', 800); }
     else { rays(R, 'W', t, '#ffe6a8'); label('Olas del oeste · waves from the west', R.x + 30, 50, 26, '#ffe6a8', 800); }
-    [[20.70, -105.58, 'Islas Marietas'], [20.77, -105.52, 'Punta Mita'], [20.75, -105.33, 'Bucerías'], [20.70, -105.30, 'Nuevo Vallarta'], [20.605, -105.24, 'Zona Romántica'], [20.53, -105.30, 'Mismaloya'], [20.42, -105.68, 'Cabo Corrientes']].forEach(function(q){ var p = bayPx(R, q[0], q[1]); label(q[2], p[0] + 10, p[1], 20, '#fff', 700); });
+    [[20.70, -105.58, 'Islas Marietas'], [20.77, -105.52, 'Punta Mita'], [20.75, -105.33, 'Bucerías'], [20.70, -105.30, 'Nuevo Vallarta'], [20.605, -105.24, 'Zona Romántica'], [20.53, -105.30, 'Mismaloya'], [20.42, -105.68, 'Cabo Corrientes']].forEach(function(q){ var p = bayPx(R, q[0], q[1]), rgt = q[2] === 'Zona Romántica'; label(q[2], p[0] + (rgt ? -10 : 10), p[1], 20, '#fff', 700, rgt ? 'right' : 'left'); });
     label('Esquema: refracción de oleaje de 14 s sobre batimetría global (~1 km). Indica tendencias, no alturas.', VX + 40, H - 58, 19, C.ink2, 500);
     label('Schematic: 14-second swell refraction over global bathymetry (~1 km). Shows tendencies, not heights.', VX + 40, H - 30, 19, C.ink2, 500);
   }});
@@ -569,8 +583,8 @@ scene({id: 'wind', dur: 30, title: ['Viento: altura y terreno', 'Wind: height an
           en: 'Wind gets stronger with height and on hilltops and windward slopes: in advisories for other hurricanes, the NHC has warned it can be *up to 30% stronger* there. An 8th floor gets more wind than the street.'},
   {at: 11, es: 'Entre edificios altos el viento se encañona y hace remolinos. En la calle el peligro mayor es lo que vuela o cae: tinacos, láminas, vidrios, ramas y cables. En Lidia (2023) cayeron árboles y techos.',
            en: 'Between tall buildings the wind funnels and swirls. On the street the biggest danger is what flies or falls: water tanks, roofing sheets, glass, branches and power lines. In Lidia (2023) trees and roofs came down.'},
-  {at: 21, es: 'Las casas con *techo de lámina* son las más expuestas. Si de pronto hay calma al pasar el ojo, *no salgas*: el viento regresa del lado contrario.',
-           en: 'Homes with *sheet-metal roofs* are the most exposed. If it suddenly goes calm as the eye passes, *stay inside*: the wind comes back from the other side.'}],
+  {at: 21, es: 'Las casas con *techo de lámina* son las más expuestas. Si de pronto el viento se calma, *no salgas*: puede ser el centro pasando cerca, y el viento regresa del lado contrario.',
+           en: 'Homes with *sheet-metal roofs* are the most exposed. If the wind suddenly drops, *stay inside*: it may be the center passing nearby, and the wind comes back from the other side.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
     var g0 = 860, x0 = VX + 120, items = [['Calle', 'Street', 0.70, 60], ['3.er piso', '3rd floor', 0.77, 150], ['8.º piso', '8th floor', 1.0, 330], ['Cima o ladera', 'Hilltop or slope', 1.3, 420]];
@@ -612,7 +626,7 @@ function bscene(o){
     var d = cst(TIMES[i]), bx = VX + 40, by = H - 300, bw = VW - 80;
     cx.fillStyle = 'rgba(11,14,19,.88)'; roundRect(bx, by, bw, 270, 16); cx.fill();
     cx.font = '800 38px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(DAY_ES[d.getUTCDay()] + ' ' + hrES(d) + '  ·  ' + DAY_EN[d.getUTCDay()] + ' ' + hrEN(d), bx + 24, by + 50);
-    var lw = Math.max(se.lv.wind[i], sn.lv.wind[i]), WL = [['débil', 'Light'], ['fuerte', 'Strong'], ['de tormenta tropical', 'Tropical-storm-force'], ['de tormenta tropical', 'Tropical-storm-force'], ['de huracán', 'Hurricane-force']][lw], dE = C16E[ci(sd.frm[i])];
+    var lw = Math.max(se.lv.wind[i], sn.lv.wind[i]), WL = [['flojo a moderado', 'Light to moderate'], ['fuerte', 'Strong'], ['de tormenta tropical', 'Tropical-storm-force'], ['de tormenta tropical', 'Tropical-storm-force'], ['de huracán', 'Hurricane-force']][lw], dE = C16E[ci(sd.frm[i])];
     cx.font = '500 22px ' + FM; cx.fillStyle = C.ink2;
     cx.fillText('Viento ' + WL[0] + ', del ' + dE.replace(/W/g, 'O') + ' · ' + WL[1] + ' wind from ' + dE, bx + 24, by + 88);
     var rows = o.rows, x0 = bx + 300, x1 = bx + bw - 24, rh = 22;
@@ -634,9 +648,9 @@ bscene({id: 'amapas', view: 'zr', dur: 26, overlays: [['atlas_slide_zr', 0.45], 
   rows: [['wind', 'Viento', 'Wind'], ['windows', 'Ventanas N', 'N windows'], ['rate', 'Lluvia', 'Rain'], ['slide', 'Deslave', 'Landslide']],
   labels: [['AMAPAS', 20.5984, -105.2415, 26], ['Río Cuale', 20.6066, -105.2320, 22, '#8cc4ff']],
   steps: [
-    {at: 0, es: FX.windows3 ? 'En un piso alto el viento es más fuerte que en la calle. Mientras el centro se acerca, sopla del noreste y *golpea las ventanas que dan al norte*. Horas de más riesgo: *' + spanES(span2h(FX.windows3)[0], span2h(FX.windows3)[1]) + '*. En esas horas, *quédate en un cuarto o pasillo interior*, lejos de las ventanas, o baja a un piso más bajo.'
+    {at: 0, es: FX.windows3 ? 'En un piso alto el viento es más fuerte que en la calle. Mientras el centro se acerca, sopla del noreste y *golpea las ventanas al norte*, sobre todo *' + (function(x){ return x.indexOf('del ') === 0 ? x : 'el ' + x; })(spanES(span2h(FX.windows3)[0], span2h(FX.windows3)[1])) + '*.' + (FX.wind2 ? ' Luego gira, pero *sigue fuerte ' + (FX.wind2[2] ? 'al menos ' : '') + 'hasta el ' + tES(FX.wind2[1]) + '*. Todo ese tiempo, ' : ' En esas horas, ') + '*quédate en un cuarto o pasillo interior*, lejos de las ventanas, o baja a un piso más bajo.'
           : 'En un piso alto el viento es más fuerte que en la calle. Con la trayectoria actual, el viento fuerte llega del *' + C16S[ci(FX.amPkDir)] + '*: tus ventanas al norte quedan del lado protegido. Aun así, ' + (FX.wind2 ? '*' + spanES(FX.wind2[0], FX.wind2[1]) + '*, ' : 'durante la tormenta, ') + '*aléjate de las ventanas*: el viento lanza objetos que rompen vidrios.',
-            en: FX.windows3 ? 'Up high the wind is stronger than at street level. As the center approaches it blows from the northeast and *hits the north-facing windows*. Riskiest hours: *' + spanEN(span2h(FX.windows3)[0], span2h(FX.windows3)[1]) + '*. During those hours *stay in an interior room or hallway*, away from windows, or move to a lower floor.'
+            en: FX.windows3 ? 'Up high the wind is stronger than at street level. As the center approaches it blows from the northeast and *hits the north-facing windows*, hardest *' + spanEN(span2h(FX.windows3)[0], span2h(FX.windows3)[1]) + '*.' + (FX.wind2 ? ' Then it turns but *stays strong ' + (FX.wind2[2] ? 'at least ' : '') + 'until ' + tEN(FX.wind2[1]) + '*. All that time, ' : ' During those hours, ') + '*stay in an interior room or hallway*, away from windows, or move to a lower floor.'
           : 'Up high the wind is stronger than at street level. On the current track the strong wind comes from the *' + C16EN[ci(FX.amPkDir)] + '*: your north windows are on the sheltered side. Even so, ' + (FX.wind2 ? '*' + spanEN(FX.wind2[0], FX.wind2[1]) + '*, ' : 'during the storm, ') + '*stay away from windows*: the wind throws objects that break glass.'},
     {at: 13, es: 'El Atlas 2024 incluye tu zona entre las que pueden recibir material de deslaves; hay *' + AT.near.amapas_500m + ' deslaves registrados a menos de 500 m*, y en 2021 uno en Amapas obligó a evacuar a 20 personas. Las laderas pueden *cortar la calle*: no salgas a revisar durante la tormenta.',
              en: 'The 2024 atlas includes your area among those that can receive landslide debris; *' + AT.near.amapas_500m + ' landslides were logged within 1,600 ft*, and in 2021 one in Amapas forced 20 people out. Slopes can *cut off the street*: don’t go out to check during the storm.'}]});
@@ -660,50 +674,57 @@ bscene({id: 'pitillal', view: 'pit', dur: 32, overlays: [['atlas_flood_pit', 0.8
              en: '*Move documents and medicine upstairs* tonight or early Sunday' + (FX.toa ? ': tropical-storm-force wind could start as early as ' + oEN(FX.toa.early) : '') + '. If Protección Civil calls for evacuation, *go right away*. If water rises in the street, shut off the power *before* it gets in (never while standing in water) and go upstairs. *Never cross moving water.*'}]});
 
 // summary timeline
-scene({id: 'timeline', dur: 20, title: ['Domingo y lunes, hora por hora (estimado)', 'Sunday and Monday, hour by hour (estimate)'], steps: [
+scene({id: 'timeline', dur: 28, title: ['Domingo y lunes, hora por hora (estimado)', 'Sunday and Monday, hour by hour (estimate)'], steps: [
   {at: 0, es: 'Los horarios son aproximados: con cada boletín nuevo pueden moverse algunas horas. Lo que no cambia es *qué te amenaza en tu lugar*.',
-          en: 'Times are approximate: they can shift by a few hours with each new advisory. What does not change is *what threatens you where you are*.'}],
+          en: 'Times are approximate: they can shift by a few hours with each new advisory. What does not change is *what threatens you where you are*.'},
+  {at: 11, es: 'Los horarios de ríos, calles y deslaves se calcularon con hasta ' + Math.round(D.rain.cal_max24) + ' mm de lluvia en 24 horas, el tope del pronóstico del SMN para la costa de Jalisco. El NHC prevé de ' + Math.round(RAIN_NHC.lo * 25.4 / 10) * 10 + ' a ' + Math.round(RAIN_NHC.hi * 25.4 / 10) * 10 + ' mm en partes del suroeste de México: *si llueve más, las inundaciones y los deslaves pueden empezar antes y ser más graves*.',
+           en: 'River, street and landslide times are based on up to ' + Math.round(D.rain.cal_max24 / 25.4) + ' inches of rain in 24 hours, the top of the SMN forecast for coastal Jalisco. The NHC calls for ' + RAIN_NHC.lo + ' to ' + RAIN_NHC.hi + ' inches over parts of southwestern Mexico: *with more rain, flooding and landslides can start sooner and be worse*.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
     var x0 = VX + 470, x1 = W - 70, y0 = 190, i0 = TL0, X = function(i){ return x0 + (i - i0) / (N - 1 - i0) * (x1 - x0); };
     var rows = [
-      ['Viento de tormenta tropical', 'Tropical-storm winds · NHC: ' + P34 + '%', FX.toa && FX.wind2 ? [FX.toa.likely.slice(0, 15) + '0Z', FX.wind2[1], FX.wind2[2], FX.toa.early.slice(0, 15) + '0Z'] : FX.wind2, C.t2],
+      ['Viento de tormenta tropical · NHC: ' + P34 + '%', 'Tropical-storm winds · NHC: ' + P34 + '%', FX.toa && FX.wind2 ? [FX.toa.likely.slice(0, 15) + '0Z', FX.wind2[1], FX.wind2[2], FX.toa.early.slice(0, 15) + '0Z'] : FX.wind2, C.t2],
       ['Ráfagas más fuertes', 'Strongest gusts', FX.gustPk, C.t4],
       ['Lluvia fuerte', 'Heavy rain', FX.rate2, '#7f6bff'],
       ['Paso del centro', 'Center passes', [TIMES[FX.c1.i], TIMES[FX.c2.i]], '#ffffff'],
       ['Viento del mar: lluvia en la sierra', 'Onshore wind: rain on the mountains', FX.shift ? [FX.shift, TIMES[N - 1], true] : null, '#9fe0ff'],
-      ['Río Cuale peligroso', 'Cuale River dangerous', FX.cuale3, C.water],
-      ['Río Pitillal peligroso', 'Pitillal River dangerous', FX.pit3, C.water],
+      ['Río Cuale peligroso', 'Cuale River dangerous', FX.cuale3, C.water, FX.cuale2],
+      ['Río Pitillal peligroso', 'Pitillal River dangerous', FX.pit3, C.water, FX.pit2],
       ['Deslaves posibles', 'Landslides possible', FX.slide2, C.slope]];
     rows.forEach(function(rw, k){
-      var y = y0 + k * 96, a = ease((t - 0.6 - k * 0.5) / 0.8);
-      cx.globalAlpha = a; cx.font = '700 25px ' + FT; cx.fillStyle = '#fff'; cx.textAlign = 'right'; cx.textBaseline = 'alphabetic'; cx.fillText(rw[0], x0 - 20, y + 22);
+      var y = y0 + k * 88, a = ease((t - 0.6 - k * 0.5) / 0.8);
+      cx.globalAlpha = a; var fs = 25; cx.font = '700 25px ' + FT; while (cx.measureText(rw[0]).width > x0 - VX - 50 && fs > 18){ fs--; cx.font = '700 ' + fs + 'px ' + FT; } cx.fillStyle = '#fff'; cx.textAlign = 'right'; cx.textBaseline = 'alphabetic'; cx.fillText(rw[0], x0 - 20, y + 22);
       cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText(rw[1], x0 - 20, y + 52); cx.textAlign = 'left';
       cx.fillStyle = '#1a212c'; cx.fillRect(x0, y, x1 - x0, 46);
       if (rw[2] && rw[2][3]){ var se = Math.max(i0, TIMES.indexOf(rw[2][3])), sl = TIMES.indexOf(rw[2][0]); if (se >= 0 && sl > se){ cx.fillStyle = rw[3]; cx.globalAlpha = a * 0.35; cx.fillRect(X(se), y, X(sl) - X(se), 46); cx.globalAlpha = a; } }
       if (rw[2]){ var s = Math.max(i0, TIMES.indexOf(rw[2][0])), e = TIMES.indexOf(rw[2][1]); if (e - s < 6){ s -= 3; e += 3; } cx.fillStyle = rw[3]; cx.globalAlpha = a * 0.9; cx.fillRect(X(s), y, Math.max(6, X(e) - X(s)), 46);
         if (rw[2][2] === true){ cx.beginPath(); cx.moveTo(x1 + 6, y + 6); cx.lineTo(x1 + 30, y + 23); cx.lineTo(x1 + 6, y + 40); cx.closePath(); cx.fill(); } }
+      // rivers: a light tail while the level stays elevated after the dangerous stretch
+      if (rw[2] && rw[4]){ var ts = TIMES.indexOf(rw[2][1]), te = TIMES.indexOf(rw[4][1]); if (ts >= i0 && te > ts){ cx.fillStyle = rw[3]; cx.globalAlpha = a * 0.35; cx.fillRect(X(ts), y, X(te) - X(ts), 46);
+        if (rw[4][2] === true){ cx.beginPath(); cx.moveTo(x1 + 6, y + 6); cx.lineTo(x1 + 30, y + 23); cx.lineTo(x1 + 6, y + 40); cx.closePath(); cx.fill(); } } }
       cx.globalAlpha = 1;
     });
     cx.font = '500 22px ' + FM; cx.fillStyle = C.mute; cx.textAlign = 'center';
-    for (var j = i0; j < N; j++){ var d = cst(TIMES[j]); if (d.getUTCMinutes() === 0 && d.getUTCHours() % 6 === 0){ cx.fillStyle = '#2a313b'; cx.fillRect(X(j), y0 - 20, 1, rows.length * 96); cx.fillStyle = C.mute;
+    for (var j = i0; j < N; j++){ var d = cst(TIMES[j]); if (d.getUTCMinutes() === 0 && d.getUTCHours() % 6 === 0){ cx.fillStyle = '#2a313b'; cx.fillRect(X(j), y0 - 20, 1, rows.length * 88); cx.fillStyle = C.mute;
       cx.fillText(d.getUTCHours() === 0 ? DS_ES[d.getUTCDay()] : hrES(d), X(j), y0 - 58); cx.fillText(d.getUTCHours() === 0 ? DS_EN[d.getUTCDay()] : hrEN(d), X(j), y0 - 30); } }
     cx.textAlign = 'left';
-    label('Trayectoria oficial del NHC. Viento: el caso 50-50 de sus probabilidades; puede ser más fuerte o más débil.', VX + 90, H - 118, 19, C.ink2, 500, 'left', false);
-    label('Official NHC track. Wind: the 50-50 case of its odds; it may be stronger or weaker.', VX + 90, H - 92, 19, C.ink2, 500, 'left', false);
-    label('Las barras que llegan al borde siguen · Bars reaching the edge continue', VX + 90, H - 66, 19, C.mute, 500, 'left', false);
-    label('Inicio: hora más probable del NHC; franja clara, lo más temprano · Start: NHC most likely time; light band, earliest', VX + 90, H - 40, 17, C.mute, 500, 'left', false);
-    label('Viento y lluvia: Amapas, 8.º piso · Wind and rain: Amapas, 8th floor', VX + 90, H - 14, 17, C.mute, 500, 'left', false);
+    label('Trayectoria oficial del NHC. Viento: caso 50-50 calculado por nosotros con sus probabilidades; puede ser más fuerte o más débil.', VX + 90, H - 186, 18, C.ink2, 500, 'left', false);
+    label('Official NHC track. Wind: our 50-50 calculation from its odds; it may be stronger or weaker.', VX + 90, H - 160, 18, C.ink2, 500, 'left', false);
+    label('Viento, inicio: hora más probable, calculada con las probabilidades del NHC; franja clara, lo más temprano', VX + 90, H - 132, 17, C.mute, 500, 'left', false);
+    label('Wind, start: most likely time, computed from NHC odds; light band, earliest', VX + 90, H - 108, 17, C.mute, 500, 'left', false);
+    label('Ríos, franja clara: pueden seguir crecidos mientras llueva en la sierra · Rivers, light band: may stay high while rain keeps falling', VX + 90, H - 82, 17, C.mute, 500, 'left', false);
+    label('Las barras que llegan al borde siguen · Bars reaching the edge continue', VX + 90, H - 56, 17, C.mute, 500, 'left', false);
+    label('Viento y lluvia: Amapas, 8.º piso · Wind and rain: Amapas, 8th floor', VX + 90, H - 30, 17, C.mute, 500, 'left', false);
   }});
 
 scene({id: 'todo', dur: 22, title: ['Qué hacer', 'What to do'], steps: [
   {at: 0, es: 'Sigue los avisos del *SMN* y de *Protección Civil* de Puerto Vallarta y de Jalisco. Emergencias: *911*. Si vives junto a un río o bajo una ladera, *decide hoy a dónde irías*, y si Protección Civil pide evacuar, *hazlo de inmediato*.',
           en: 'Follow the latest *SMN* advisories and *Protección Civil* of Puerto Vallarta and Jalisco. Emergencies: *911*. If you live by a river or below a slope, *decide today where you would go*, and if Protección Civil calls for evacuation, *go right away*.'},
-  {at: 11, es: 'Si de pronto hay calma al pasar el ojo, *no salgas*: el viento vuelve del otro lado. *No cruces agua en movimiento* y no vayas a la playa ni al malecón: el SMN prevé oleaje alto. Después de la tormenta, aléjate de laderas, arroyos y cables eléctricos caídos.',
-           en: 'If it suddenly goes calm as the eye passes, *stay inside*: the wind comes back from the other side. *Don’t cross moving water*, and stay off the beach and the malecón: the SMN expects high waves. After the storm, keep away from slopes, streams and downed power lines.'}],
+  {at: 11, es: 'Si de pronto el viento se calma, *no salgas*: puede ser el centro pasando cerca, y el viento vuelve del otro lado. *No cruces agua en movimiento* y no vayas a la playa ni al malecón: el SMN prevé oleaje alto. Después de la tormenta, aléjate de laderas, arroyos y cables eléctricos caídos.',
+           en: 'If the wind suddenly drops, *stay inside*: it may be the center passing nearby, and the wind comes back from the other side. *Don’t cross moving water*, and stay off the beach and the malecón: the SMN expects high waves. After the storm, keep away from slopes, streams and downed power lines.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
-    var items = [['SMN · Protección Civil · 911', 'Si piden evacuar, sal · If told to evacuate, go', '#ffffff'], ['Río o ladera: plan hoy', 'River or slope: plan today', C.water], ['Ojo = calma engañosa', 'Eye = a false calm', C.warm], ['Agua en movimiento: no cruzar', 'Moving water: don’t cross', '#7f6bff'], ['Playa y malecón: lejos', 'Beach and malecón: stay away', '#5ae6ff'], ['Después: laderas y cables', 'Afterwards: slopes and power lines', C.slope]];
+    var items = [['SMN · Protección Civil · 911', 'Si piden evacuar, sal · If told to evacuate, go', '#ffffff'], ['Río o ladera: plan hoy', 'River or slope: plan today', C.water], ['Calma repentina: no salgas', 'Sudden calm: stay inside', C.warm], ['Agua en movimiento: no cruzar', 'Moving water: don’t cross', '#7f6bff'], ['Playa y malecón: lejos', 'Beach and malecón: stay away', '#5ae6ff'], ['Después: laderas y cables', 'Afterwards: slopes and power lines', C.slope]];
     items.forEach(function(it, k){ var a = ease((t - 0.5 - k * (k < 2 ? 0.8 : 0) - (k >= 2 ? 10.5 + (k - 2) * 0.8 : 0)) / 0.8), y = 120 + k * 150;
       cx.globalAlpha = a; cx.fillStyle = '#151b25'; roundRect(VX + 90, y, VW - 180, 124, 16); cx.fill(); cx.fillStyle = it[2]; roundRect(VX + 90, y, 12, 124, 6); cx.fill();
       cx.font = '800 42px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(it[0], VX + 136, y + 56); cx.font = '500 29px ' + FT; cx.fillStyle = C.ink2; cx.fillText(it[1], VX + 136, y + 100); cx.globalAlpha = 1; });
@@ -718,7 +739,7 @@ scene({id: 'credits', dur: 10, noPanel: true, steps: [{at: 0, es: '', en: ''}], 
   var y = 310 + src.length * 46;
   cx.font = '700 36px ' + FD; cx.fillStyle = C.warm; cx.fillText('Hecho con datos abiertos. No es un pronóstico oficial.', 140, y + 40);
   cx.font = '500 32px ' + FD; cx.fillStyle = '#d9b46a'; cx.fillText('Made with open data. Not an official forecast.', 140, y + 90);
-  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute; cx.fillText('Datos al ' + ASOF_ES + ' (hora del centro) · Data as of ' + ASOF_EN + ' CST', 140, y + 160);
+  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute; cx.fillText('Datos: ' + DATA_ES + ' (hora del centro)', 140, y + 160); cx.fillText('Data: ' + DATA_EN + ' CST', 140, y + 196);
   cx.globalAlpha = 1;
 }});
 
@@ -745,33 +766,37 @@ function epPx(R, la, lo){ var e = FC.ep; return [R.x + (lo - e.lon0) / (e.lon1 -
 
 if (FT0){
 var F = FT0, adv = F.adv;
+var cPV = catLabel(F.pv.kt), huPV = catOf(F.pv.kt) > 0, PVB = F.pts.filter(function(p){ return p.t <= F.pv.t; }).pop(), PVA = F.pts.filter(function(p){ return p.t > F.pv.t; })[0];
 scene({prog: 'forecast', id: 'f-title', dur: 7, noPanel: true, steps: [{at: 0, es: '', en: ''}], draw: function(t){
   var R = {x: 0, y: (H - W) / 2, w: W, h: W}; satDraw(R, Math.floor(t * 7) % IRF.length, null, 0, {center: false, nopv: true});
   var g = cx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(11,14,19,.96)'); g.addColorStop(0.6, 'rgba(11,14,19,.8)'); g.addColorStop(1, 'rgba(11,14,19,.2)'); cx.fillStyle = g; cx.fillRect(0, 0, W, H);
-  cx.globalAlpha = ease(t / 1.2); cx.fillStyle = 'rgba(11,14,19,.85)'; cx.fillRect(90, 698, 1740, 112); cx.textBaseline = 'alphabetic';
+  cx.globalAlpha = ease(t / 1.2); cx.fillStyle = 'rgba(11,14,19,.85)'; cx.fillRect(90, 698, 1740, 146); cx.textBaseline = 'alphabetic';
   cx.font = '900 88px ' + FD; cx.fillStyle = C.ink; cx.fillText('Simon: el pronóstico, sin exagerar', 110, 330);
   cx.font = '500 46px ' + FD; cx.fillStyle = C.warm; cx.fillText('Dónde estuvo, a dónde va y qué es lo más probable para Vallarta', 110, 410);
   cx.font = '700 54px ' + FD; cx.fillStyle = C.ink2; cx.fillText('Simon: the forecast, without the hype', 110, 540);
   cx.font = '500 38px ' + FD; cx.fillStyle = '#d9b46a'; cx.fillText('Where it was, where it’s going, and what’s most likely for Vallarta', 110, 604);
-  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute; cx.fillText('NHC boletín / advisory ' + adv + ' · Datos al ' + ASOF_ES + ' · Data as of ' + ASOF_EN + ' CST', 110, 740);
-  cx.fillText('No es un pronóstico oficial: sigue al SMN, al NHC y a Protección Civil · Not an official forecast', 110, 786); cx.globalAlpha = 1;
+  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute; cx.fillText('Datos: ' + DATA_ES + ' (hora del centro)', 110, 740); cx.fillText('Data: ' + DATA_EN + ' CST', 110, 776);
+  cx.fillText('No es un pronóstico oficial: sigue al SMN, al NHC y a Protección Civil · Not an official forecast', 110, 820); cx.globalAlpha = 1;
 }});
 
 scene({prog: 'forecast', id: 'f-history', dur: 22, title: ['De dónde viene', 'Where it came from'], steps: [
   {at: 0, es: 'Simon empezó como una zona de baja presión frente a Centroamérica el ' + dayES(F.gen.t) + ' de octubre. Fue tormenta tropical el ' + dayES(F.ts.t) + ' y huracán el ' + dayES(F.hu.t) + '.',
           en: 'Simon began as an area of low pressure off Central America on ' + dayEN(F.gen.t).replace(/ (\d+)$/, ' Oct $1') + '. It became a tropical storm on the ' + cst(F.ts.t).getUTCDate() + 'th and a hurricane on the ' + cst(F.hu.t).getUTCDate() + 'th.'},
-  {at: 11, es: 'Luego se intensificó muy rápido: de *' + kmh(F.hu.kt) + ' a ' + kmh(F.peak.kt) + ' km/h* en un día y medio. Hoy es *categoría ' + catOf(ADV.kt) + '*, sobre el mar, y avanza muy despacio hacia el norte.',
-           en: 'Then it strengthened very fast: from *' + mph(F.hu.kt) + ' to ' + mph(F.peak.kt) + ' mph* in a day and a half. Today it is a *Category ' + catOf(ADV.kt) + '* over the ocean, crawling north.'}],
+  {at: 11, es: 'Luego se intensificó muy rápido: de *' + kmh(F.hu.kt) + ' a ' + kmh(F.peak.kt) + ' km/h* en un día y medio' + (kmh(ADV.kt) !== kmh(F.peak.kt) ? ', y en el boletín ' + adv + ' (' + issuedES() + ') tenía *' + kmh(ADV.kt) + ' km/h*' : '') + '. Hoy es *categoría ' + catOf(ADV.kt) + '*, sobre el mar, y avanza muy despacio hacia el norte.',
+           en: 'Then it strengthened very fast: from *' + mph(F.hu.kt) + ' to ' + mph(F.peak.kt) + ' mph* in a day and a half' + (mph(ADV.kt) !== mph(F.peak.kt) ? ', and in advisory ' + adv + ' (' + issuedEN() + ') it had *' + mph(ADV.kt) + ' mph*' : '') + '. Today it is a *Category ' + catOf(ADV.kt) + '* over the ocean, crawling north.'}],
   draw: function(t){
     var R = epR(); cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H); if (IMG.ep_base) cx.drawImage(IMG.ep_base, R.x, R.y, R.w, R.h);
-    var bt = FC.best, f = ease((t - 0.8) / 16), n = Math.max(1, Math.round(f * (bt.length - 1)));
+    var bt = FC.best, p0 = F.pts[0];
+    if (p0 && p0.t > ms(bt[bt.length - 1].t)) bt = bt.concat([{t: iso(p0.t), lat: p0.lat, lon: p0.lon, kt: p0.kt, ty: p0.kt >= 64 ? 'HU' : p0.kt >= 34 ? 'TS' : 'TD', adv: true}]);
+    var f = ease((t - 0.8) / 16), n = Math.max(1, Math.round(f * (bt.length - 1)));
     cx.lineWidth = 3; for (var k = 1; k <= n; k++){ var a = epPx(R, bt[k - 1].lat, bt[k - 1].lon), b = epPx(R, bt[k].lat, bt[k].lon); cx.strokeStyle = CATC[catOf(bt[k].kt)]; cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.stroke(); }
     for (var k2 = 0; k2 <= n; k2 += 2){ var p = epPx(R, bt[k2].lat, bt[k2].lon); cx.fillStyle = CATC[catOf(bt[k2].kt)]; cx.beginPath(); cx.arc(p[0], p[1], 6, 0, 7); cx.fill(); }
     var cur = bt[n], pc = epPx(R, cur.lat, cur.lon), cl = /^(DB|LO|WV)$/.test(cur.ty) ? ['Zona de baja presión', 'Low-pressure area'] : catLabel(cur.kt);
     cx.strokeStyle = '#fff'; cx.lineWidth = 3; cx.beginPath(); cx.arc(pc[0], pc[1], 12, 0, 7); cx.stroke();
     var fl = pc[0] > W - 520, lx = fl ? pc[0] - 22 : pc[0] + 22, la = fl ? 'right' : 'left';
-    var curLab = function(){ label(dayES(cur.t) + ' oct · ' + cl[0] + ' · ' + kmh(cur.kt) + ' km/h', lx, pc[1] - 16, 26, CATC[catOf(cur.kt)], 700, la);
-      label(dayEN(cur.t).replace(/ (\d+)$/, ' Oct $1') + ' · ' + cl[1] + ' · ' + mph(cur.kt) + ' mph', lx, pc[1] + 16, 22, C.ink2, 600, la); };
+    var curLab = function(){ var ov = pc[1] + 34 > H - 350 && lx < VX + 560, ly = ov ? pc[1] - 70 : pc[1];
+      label(dayES(cur.t) + ' oct' + (cur.adv ? ', ' + issuedES() : '') + ' · ' + cl[0] + ' · ' + kmh(cur.kt) + ' km/h', lx, ly - 16, 26, CATC[catOf(cur.kt)], 700, la);
+      label(dayEN(cur.t).replace(/ (\d+)$/, ' Oct $1') + (cur.adv ? ', ' + issuedEN() : '') + ' · ' + cl[1] + ' · ' + mph(cur.kt) + ' mph', lx, ly + 16, 22, C.ink2, 600, la); };
     var pv = epPx(R, PV[0], PV[1]); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(pv[0], pv[1], 6, 0, 7); cx.fill(); label('Puerto Vallarta', pv[0] + 12, pv[1] - 14, 24, '#fff', 700);
     // intensity chart
     var gx = VX + 50, gy = H - 300, gw = 400, gh = 200; cx.fillStyle = 'rgba(11,14,19,.86)'; roundRect(gx - 20, gy - 50, gw + 80, gh + 90, 14); cx.fill();
@@ -785,8 +810,8 @@ scene({prog: 'forecast', id: 'f-history', dur: 22, title: ['De dónde viene', 'W
 scene({prog: 'forecast', id: 'f-forecast', dur: 34, title: ['A dónde va', 'Where it is going'], steps: [
   {at: 0, es: 'Pronóstico oficial del NHC (boletín ' + adv + '): ' + (F.lf ? 'toca la costa de Jalisco el *' + tES(iso(F.lf.t)) + '* como *' + catLabel(F.lf.kt)[0].toLowerCase() + '*' : F.nc ? 'llega junto a la costa de Jalisco el *' + tES(iso(F.nc.t)) + '* como *' + catLabel(F.nc.kt)[0].toLowerCase() + '*; puede tocar tierra o solo rozar la costa' : 'se acerca a la costa de Jalisco') + '. El cono muestra dónde puede estar el centro: 2 de cada 3 veces queda dentro.',
           en: 'Official NHC forecast (advisory ' + adv + '): ' + (F.lf ? 'it reaches the Jalisco coast *' + tEN(iso(F.lf.t)) + '* as a *' + catLabel(F.lf.kt)[1] + '*' : F.nc ? 'it reaches the Jalisco coastline *' + tEN(iso(F.nc.t)) + '* as a *' + catLabel(F.nc.kt)[1] + '*; it may make landfall or just skirt the coast' : 'it nears the Jalisco coast') + '. The cone shows where the center may be: it stays inside 2 times out of 3.'},
-  {at: 10, es: 'Al rozar o cruzar la sierra pierde fuerza rápido: el aire seco que baja de las montañas lo desarma. Según el boletín ' + adv + ', su centro pasaría a unos *' + Math.round(F.pv.km / 5) * 5 + ' km ' + (F.pv.brg > 180 ? 'al oeste de Vallarta, sobre la bahía' : 'al este de Vallarta, sobre la sierra') + '* ' + whenES(iso(F.pv.t)).replace(/^(el |hacia la )/, '$1*') + '*, ya debilitado.',
-           en: 'As it skirts or crosses the mountains it weakens fast: dry air sinking off the mountains disrupts it. In advisory ' + adv + ', its center would pass *' + sideEN((F.pv.brg > 180 ? -1 : 1) * F.pv.km) + '* *' + whenEN(iso(F.pv.t)) + '*, already weakened.'},
+  {at: 10, es: 'Según el NHC, al interactuar con tierra se debilita rápido, y más aún si pasa al este de la trayectoria oficial. En el boletín ' + adv + ', su centro pasaría a unos *' + Math.round(F.pv.km / 5) * 5 + ' km ' + (F.pv.brg > 180 ? 'al oeste de Vallarta, sobre la bahía' : 'al este de Vallarta, sobre la sierra') + '*, ' + whenES(iso(F.pv.t)).replace(/^(el |hacia la )/, '$1*') + '*: más débil, pero todavía ' + (huPV ? '*huracán ' + cPV[0].toLowerCase() + '*' : '*' + cPV[0].toLowerCase() + '*') + ' en el centro.',
+           en: 'The NHC expects it to weaken fast once it interacts with land, even faster if it passes east of the official track. In advisory ' + adv + ', its center would pass *' + sideEN((F.pv.brg > 180 ? -1 : 1) * F.pv.km) + '*, *' + whenEN(iso(F.pv.t)) + '*: weaker, but still ' + (huPV ? 'a *' + cPV[1] + ' hurricane*' : 'a *' + cPV[1].toLowerCase() + '*') + ' at the center.'},
   {at: 18, es: 'Pero el viento en Vallarta no es el del centro: el NHC da *' + P34 + '%* de probabilidad de viento de tormenta tropical, *' + P50 + '%* de 93 km/h o más y *' + P64 + '%* de viento de huracán.',
            en: 'But the wind in Vallarta is not the wind at the center: the NHC gives a *' + P34 + '%* chance of tropical-storm-force wind, *' + P50 + '%* for 58 mph or more and *' + P64 + '%* for hurricane force.'},
   {at: 26, es: 'El lunes sigue hacia el norte, junto a la costa de Nayarit o tierra adentro, cada vez más débil; el martes se disipa. La imagen de satélite se *atenúa* conforme se debilita: es un esquema, no un pronóstico de nubes.',
@@ -806,18 +831,21 @@ scene({prog: 'forecast', id: 'f-forecast', dur: 34, title: ['A dónde va', 'Wher
       var pp = rp(p.lat, p.lon); path2.moveTo(pp[0] + rr * 1.852 * kmpx, pp[1]); path2.arc(pp[0], pp[1], rr * 1.852 * kmpx, 0, 7); }
     cx.fill(path2, 'nonzero'); cx.restore();
     // track with intensity colours and the forecast points
-    cx.lineWidth = 5; for (var k = 0; k < F.pts.length - 1; k++){ var a = rp(F.pts[k].lat, F.pts[k].lon), b = rp(F.pts[k + 1].lat, F.pts[k + 1].lon); cx.strokeStyle = CATC[catOf(F.pts[k + 1].kt)]; cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.stroke(); }
+    cx.lineWidth = 5; var tEnd = F.pts[F.pts.length - 1].t;
+    for (var tt = F.pts[0].t; tt < tEnd; tt += 1800e3){ var q0 = F.at(tt), q1 = F.at(Math.min(tt + 1800e3, tEnd)); if (!q0 || !q1) continue; var a = rp(q0.lat, q0.lon), b = rp(q1.lat, q1.lon); cx.strokeStyle = CATC[catOf((q0.kt + q1.kt) / 2)]; cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.stroke(); }
+    label('Color de la línea: fuerza del centro (NHC)', R.x + 30, 300, 19, '#fff', 700); label('Line color: strength at the center (NHC)', R.x + 30, 326, 18, C.ink2, 600);
+    [[4, 'Cat 4'], [3, 'Cat 3'], [2, 'Cat 2'], [1, 'Cat 1'], [0, 'Tormenta tropical · Tropical storm']].forEach(function(q, k){ var y = 362 + k * 30; cx.strokeStyle = CATC[q[0]]; cx.lineWidth = 6; cx.beginPath(); cx.moveTo(R.x + 30, y); cx.lineTo(R.x + 62, y); cx.stroke(); label(q[1], R.x + 72, y, 18, '#fff', 700); });
     F.pts.forEach(function(p){ var q = rp(p.lat, p.lon); if (q[1] < 0) return; cx.fillStyle = CATC[catOf(p.kt)]; cx.strokeStyle = '#000'; cx.lineWidth = 2; cx.beginPath(); cx.arc(q[0], q[1], 9, 0, 7); cx.fill(); cx.stroke();
       var d = cst(iso(p.t)); label(DS_ES[d.getUTCDay()] + ' ' + hrES(d) + ' · ' + DS_EN[d.getUTCDay()] + ' ' + hrEN(d), q[0] + 16, q[1] - 2, 18, '#fff', 700); });
-    var pv = rp(PV[0], PV[1]); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(pv[0], pv[1], 7, 0, 7); cx.fill(); label('Puerto Vallarta', pv[0] - 14, pv[1] - 18, 26, '#fff', 700, 'right');
+    var pv = rp(PV[0], PV[1]); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(pv[0], pv[1], 7, 0, 7); cx.fill(); label('Puerto Vallarta', pv[0] + 14, pv[1] - 18, 26, '#fff', 700, 'left');
     if (c){ var pc = rp(c.lat, c.lon), cl = catLabel(c.kt); cx.strokeStyle = '#fff'; cx.lineWidth = 3; cx.beginPath(); cx.arc(pc[0], pc[1], 14, 0, 7); cx.stroke();
       var d2 = cst(iso(tm)), by = H - 262; cx.fillStyle = 'rgba(11,14,19,.88)'; roundRect(R.x + 30, by, 780, 160, 14); cx.fill();
       label(DAY_ES[d2.getUTCDay()] + ' ' + hrES(roundHalf(d2)) + ' · ' + DAY_EN[d2.getUTCDay()] + ' ' + hrEN(roundHalf(d2)), R.x + 54, by + 34, 28, '#fff', 800, 'left', false);
-      label('En el centro del huracán: ' + cl[0].toLowerCase() + ' · At the center: ' + cl[1], R.x + 54, by + 74, 21, C.ink2, 600, 'left', false);
+      label('En el centro: ' + cl[0].toLowerCase() + ' · At the center: ' + cl[1], R.x + 54, by + 74, 21, C.ink2, 600, 'left', false);
       label('En Vallarta, según el NHC: ' + P34 + '% tormenta tropical · ' + P64 + '% huracán', R.x + 54, by + 108, 21, '#fff', 700, 'left', false);
       label('In Vallarta (NHC odds): ' + P34 + '% tropical-storm-force · ' + P64 + '% hurricane-force', R.x + 54, by + 138, 20, C.ink2, 600, 'left', false); }
     label('Imagen de satélite desplazada y atenuada: un esquema · Satellite image shifted and faded: a schematic', R.x + 30, H - 68, 19, C.ink2, 600);
-    label('Cono del NHC: el centro queda dentro 2 de cada 3 veces · NHC cone: the center stays inside 2 times in 3', R.x + 30, H - 40, 20, C.ink2, 500);
+    label('Cono del NHC: el centro queda dentro del cono 2 de cada 3 veces · NHC cone: the center stays inside it 2 times out of 3', R.x + 30, H - 40, 20, C.ink2, 500);
   }});
 
 // how the official forecast moved from advisory to advisory, and what that did to Vallarta's wind odds
@@ -830,14 +858,15 @@ var HLAST = HL.length ? HL[HL.length - 1] : null, HPREV = HL.length > 1 ? HL[HL.
 var HMAX = HL.reduce(function(b, a){ return a.pv && (!b || a.pv['64'] > b.pv['64']) ? a : b; }, null);
 function sideES(km){ return km === null ? '' : Math.abs(km) < 3 ? 'casi sobre Vallarta' : 'unos ' + Math.round(Math.abs(km) / 5) * 5 + ' km ' + (km > 0 ? 'al este de Vallarta, sobre la sierra' : 'al oeste de Vallarta, sobre la bahía'); }
 function sideEN(km){ var mi = Math.abs(km) / 1.609, mr = mi < 7.5 ? Math.max(1, Math.round(mi)) : Math.round(mi / 5) * 5; return km === null ? '' : Math.abs(km) < 3 ? 'almost over Vallarta' : 'about ' + mr + ' miles ' + (km > 0 ? 'east of Vallarta, over the mountains' : 'west of Vallarta, over the bay'); }
+var MONO = HL.every(function(a, k){ if (!k) return true; var t0 = timeAtLat(HL[k - 1], PV[0]), t1 = timeAtLat(a, PV[0]); return t0 !== null && t1 !== null && t1 >= t0; });   // each advisory later than the one before?
 if (HLAST && HPREV){
 scene({prog: 'forecast', id: 'f-shift', dur: 32, title: ['Cómo ha cambiado el pronóstico', 'How the forecast has changed'], steps: [
   {at: 0, es: 'Cada boletín del NHC corrige la trayectoria. A la altura de Vallarta, el boletín ' + HPREV.num + ' ponía el centro ' + sideES(offPV(HPREV)) + '; el boletín ' + HLAST.num + ', ' + sideES(offPV(HLAST)) + '. Esos vaivenes son menores que el margen normal del pronóstico.',
           en: 'Each NHC advisory corrects the track. At Vallarta’s latitude, advisory ' + HPREV.num + ' put the center ' + sideEN(offPV(HPREV)) + '; advisory ' + HLAST.num + ', ' + sideEN(offPV(HLAST)) + '. Those swings are smaller than the forecast’s normal margin.'},
-  {at: 9, es: 'Lo que sí ha cambiado boletín tras boletín es la hora: Simon va cada vez más lento. El boletín ' + HL[0].num + ' lo ponía frente a Vallarta ' + whenES(iso(timeAtLat(HL[0], PV[0]))) + '; el ' + HLAST.num + ', ' + whenES(iso(timeAtLat(HLAST, PV[0]))) + '.',
-          en: 'What has changed advisory after advisory is the timing: Simon keeps slowing down. Advisory ' + HL[0].num + ' had it off Vallarta ' + whenEN(iso(timeAtLat(HL[0], PV[0]))) + '; advisory ' + HLAST.num + ', ' + whenEN(iso(timeAtLat(HLAST, PV[0]))) + '.'},
-  {at: 18, es: 'Para Vallarta eso cambia el viento esperado. La probabilidad de viento de huracán fue, boletín por boletín: ' + HL.slice(-4).map(function(a){ return a.num + ': *' + a.pv['64'] + '%*'; }).join(', ') + '. La de viento de tormenta tropical, ahora *' + HLAST.pv['34'] + '%*. Por eso no hay que fijarse en un solo boletín: sigue el más reciente.',
-           en: 'For Vallarta that changes the expected wind. The chance of hurricane-force wind, advisory by advisory: ' + HL.slice(-4).map(function(a){ return a.num + ': *' + a.pv['64'] + '%*'; }).join(', ') + '. Tropical-storm-force wind: now *' + HLAST.pv['34'] + '%*. That is why no single advisory is the answer: follow the latest one.'}],
+  {at: 9, es: (MONO ? 'Lo que sí ha cambiado en los últimos boletines es la hora: cada uno ha retrasado el paso de Simon. El boletín ' : 'La hora también cambia de un boletín a otro. El boletín ') + HL[0].num + ' ponía el centro a la altura de Vallarta ' + whenES(iso(timeAtLat(HL[0], PV[0]))) + '; el ' + HLAST.num + ', ' + whenES(iso(timeAtLat(HLAST, PV[0]))) + '. Simon avanza muy despacio.',
+          en: (MONO ? 'What has changed in the last few advisories is the timing: each one has pushed Simon’s passage later. Advisory ' : 'The timing also shifts from one advisory to the next. Advisory ') + HL[0].num + ' had the center at Vallarta’s latitude ' + whenEN(iso(timeAtLat(HL[0], PV[0]))) + '; advisory ' + HLAST.num + ', ' + whenEN(iso(timeAtLat(HLAST, PV[0]))) + '. Simon is crawling north.'},
+  {at: 18, es: 'Para Vallarta, estos cambios mueven la probabilidad de viento. La probabilidad de viento de huracán fue, boletín por boletín: ' + HL.slice(-4).map(function(a){ return a.num + ': *' + a.pv['64'] + '%*'; }).join(', ') + '. La de viento de tormenta tropical, ahora *' + HLAST.pv['34'] + '%*. Por eso no hay que fijarse en un solo boletín: sigue el más reciente.',
+           en: 'For Vallarta, these shifts move the wind odds. The chance of hurricane-force wind, advisory by advisory: ' + HL.slice(-4).map(function(a){ return a.num + ': *' + a.pv['64'] + '%*'; }).join(', ') + '. Tropical-storm-force wind: now *' + HLAST.pv['34'] + '%*. That is why no single advisory is the answer: follow the latest one.'}],
   draw: function(t){
     var Z = [22.6, 17.6, -107.7, -102.7], R = {x: VX + (VW - 1080) / 2, y: 0, w: 1080, h: 1080}, rb = LY.reg.bbox, im = IMG.reg_base;
     function zp(la, lo){ return [R.x + (lo - Z[2]) / (Z[3] - Z[2]) * R.w, R.y + (Z[0] - la) / (Z[0] - Z[1]) * R.h]; }
@@ -850,10 +879,11 @@ scene({prog: 'forecast', id: 'f-shift', dur: 32, title: ['Cómo ha cambiado el p
       cx.globalAlpha = a0 * (last || prev ? 1 : 0.45); cx.strokeStyle = last ? '#ffffff' : prev ? '#ffb38a' : '#8a96a6'; cx.lineWidth = last ? 6 : prev ? 4 : 2.5; cx.setLineDash(prev ? [14, 9] : []); cx.beginPath();
       q.forEach(function(p, j){ var z = zp(p.lat, p.lon); j ? cx.lineTo(z[0], z[1]) : cx.moveTo(z[0], z[1]); }); cx.stroke(); cx.setLineDash([]);
       if (last || prev) q.forEach(function(p){ var z = zp(p.lat, p.lon); cx.fillStyle = CATC[catOf(p.kt)]; cx.beginPath(); cx.arc(z[0], z[1], last ? 8 : 6, 0, 7); cx.fill(); });
-      var lo = lonAtLat(a, PV[0]); if (lo !== null && (last || prev)){ var z2 = zp(PV[0], lo); label((last ? 'boletín ' : '') + a.num, z2[0] + (last ? 16 : -16), z2[1] + 34, last ? 28 : 24, last ? '#fff' : '#ffb38a', 800, last ? 'left' : 'right'); }
+      var lo = lonAtLat(a, PV[0]); if (lo !== null && (last || prev)){ var z2 = zp(PV[0], lo); label((last ? 'boletín / advisory ' : '') + a.num, z2[0] + (last ? 16 : -16), z2[1] + (last ? 34 : -30), last ? 26 : 24, last ? '#fff' : '#ffb38a', 800, last ? 'left' : 'right'); }
       cx.globalAlpha = 1; });
-    var pv = zp(PV[0], PV[1]); cx.fillStyle = '#ffd166'; cx.strokeStyle = '#000'; cx.lineWidth = 2; cx.beginPath(); cx.arc(pv[0], pv[1], 9, 0, 7); cx.fill(); cx.stroke(); label('Puerto Vallarta', pv[0] - 18, pv[1] - 4, 28, '#ffd166', 800, 'right');
+    var pv = zp(PV[0], PV[1]); cx.fillStyle = '#ffd166'; cx.strokeStyle = '#000'; cx.lineWidth = 2; cx.beginPath(); cx.arc(pv[0], pv[1], 9, 0, 7); cx.fill(); cx.stroke(); label('Puerto Vallarta', pv[0] + 18, pv[1] - 4, 28, '#ffd166', 800, 'left');
     cx.restore();
+    cx.fillStyle = 'rgba(11,14,19,.85)'; cx.fillRect(R.x, 0, R.w, 92);
     label('Trayectorias del NHC: boletín ' + HLAST.num + ' en blanco, ' + HPREV.num + ' en naranja, anteriores en gris', R.x + 30, 44, 22, '#fff', 700);
     label('NHC tracks: advisory ' + HLAST.num + ' in white, ' + HPREV.num + ' in orange, earlier ones in grey', R.x + 30, 74, 20, C.ink2, 600);
     if (t >= 18){ var a2 = ease((t - 18.4) / 0.8), gx = R.x + 40, gy = H - 330, gw = 620, gh = 270; cx.globalAlpha = a2;
@@ -874,8 +904,8 @@ scene({prog: 'forecast', id: 'f-why', dur: 30, title: ['Por qué cambia el pron�
           en: 'Simon is steered by weak currents: a high-pressure area to the east nudges it north. Small changes in that push decide whether it *moves inland* or *stays over the ocean*.'},
   {at: 10, es: 'Cada línea es un modelo de computadora (ciclo ' + FC.cycle.slice(6, 8) + '/' + FC.cycle.slice(8) + 'Z). Los modelos no coinciden en si Simon tocará tierra en Jalisco o solo rozará la costa (NHC, discusión ' + adv + '); en este ciclo, varios pasan al oeste de Vallarta, sobre el mar. Si entra a tierra se debilita mucho más rápido; si sigue sobre el mar, conserva más fuerza.',
            en: 'Each line is a computer model (cycle ' + FC.cycle.slice(8) + 'Z, ' + FC.cycle.slice(6, 8) + ' Oct). The models disagree on whether Simon will make landfall in Jalisco or just skirt the coast (NHC discussion ' + adv + '); in this cycle several pass west of Vallarta, over the ocean. Over land it weakens much faster; over the ocean it keeps more strength.'},
-  {at: 20, es: 'Por eso la fuerza depende de la trayectoria: si entra a la sierra se debilita rápido; si sigue sobre el mar, no. Cada boletín afina las dos cosas.',
-           en: 'That is why strength depends on the track: if it moves into the mountains it weakens fast; if it stays over the ocean, it doesn’t. Each advisory refines both.'}],
+  {at: 20, es: 'Por eso la fuerza depende de la trayectoria: si entra a la sierra se debilita más rápido; si se queda sobre el mar, junto a la costa, se debilita más despacio y podría quedar más fuerte de lo pronosticado. Cada boletín afina las dos cosas.',
+           en: 'That is why strength depends on the track: if it moves into the mountains it weakens faster; if it stays over the water along the coast, it weakens more slowly and could stay stronger than forecast. Each advisory refines both.'}],
   draw: function(t){
     var R = {x: VX + (VW - 1080) / 2, y: 0, w: 1080, h: 1080}, rb = LY.reg.bbox;
     function rp(la, lo){ return [R.x + (lo - rb[2]) / (rb[3] - rb[2]) * R.w, R.y + (rb[0] - la) / (rb[0] - rb[1]) * R.h]; }
@@ -888,28 +918,37 @@ scene({prog: 'forecast', id: 'f-why', dur: 30, title: ['Por qué cambia el pron�
     // official track on top
     cx.strokeStyle = '#fff'; cx.lineWidth = 6; cx.beginPath(); F.pts.forEach(function(p, q){ var pp = rp(p.lat, p.lon); q ? cx.lineTo(pp[0], pp[1]) : cx.moveTo(pp[0], pp[1]); }); cx.stroke();
     var e2 = rp(F.pts[Math.min(3, F.pts.length - 1)].lat, F.pts[Math.min(3, F.pts.length - 1)].lon); label('NHC', e2[0] + 14, e2[1], 26, '#fff', 800);
-    var pv = rp(PV[0], PV[1]); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(pv[0], pv[1], 7, 0, 7); cx.fill(); label('Puerto Vallarta', pv[0] - 14, pv[1] - 18, 26, '#fff', 700, 'right');
+    var pv = rp(PV[0], PV[1]); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(pv[0], pv[1], 7, 0, 7); cx.fill(); label('Puerto Vallarta', pv[0] + 14, pv[1] + 22, 26, '#fff', 700, 'left');
     // steering arrow in the first step
     if (t < 10){ var a = ease((t - 1) / 1.5); cx.globalAlpha = a; var c0 = rp(F.pts[0].lat, F.pts[0].lon), hx = R.x + R.w - 170, hy = c0[1] - 80;
-      cx.fillStyle = 'rgba(255,208,138,.18)'; cx.beginPath(); cx.arc(hx, hy, 120, 0, 7); cx.fill(); label('A', hx, hy, 80, '#ffd08a', 900, 'center'); label('Alta presión · High pressure', hx, hy + 90, 24, '#ffd08a', 700, 'center');
+      cx.fillStyle = 'rgba(255,208,138,.18)'; cx.beginPath(); cx.arc(hx, hy, 120, 0, 7); cx.fill(); label('A', hx, hy, 80, '#ffd08a', 900, 'center'); label('Alta presión · High pressure', hx, hy - 145, 24, '#ffd08a', 700, 'center');
       var sh = (t * 40) % 70;
       for (var q2 = 0; q2 < 3; q2++){ var x = c0[0] + 70 + q2 * 45, y0 = c0[1] + 120 - sh; cx.strokeStyle = '#ffd08a'; cx.fillStyle = '#ffd08a'; cx.lineWidth = 6; cx.beginPath(); cx.moveTo(x, y0 + 60); cx.lineTo(x, y0 - 60); cx.stroke();
         cx.beginPath(); cx.moveTo(x, y0 - 80); cx.lineTo(x - 14, y0 - 56); cx.lineTo(x + 14, y0 - 56); cx.fill(); }
       label('empuje hacia el norte · northward push', c0[0] + 140, c0[1] + 230, 22, '#ffd08a', 700, 'center'); cx.globalAlpha = 1; }
     // intensity guidance in the last step
     if (t >= 20){ var I = FC.ints || {}, gx = R.x + 40, gy = H - 330, gw = 560, gh = 240, a2 = ease((t - 20.3) / 0.8); cx.globalAlpha = a2;
-      cx.fillStyle = 'rgba(11,14,19,.9)'; roundRect(gx - 20, gy - 56, gw + 80, gh + 100, 14); cx.fill(); label('Fuerza pronosticada por cada modelo · Forecast strength by model', gx, gy - 28, 20, '#fff', 700, 'left', false);
+      cx.fillStyle = 'rgba(11,14,19,.9)'; roundRect(gx - 20, gy - 64, gw + 80, gh + 142, 14); cx.fill();
+      label('Fuerza: NHC boletín ' + adv + ' (blanco) y modelos', gx, gy - 40, 19, '#fff', 700, 'left', false); label('Strength: NHC advisory ' + adv + ' (white) and models', gx, gy - 16, 17, C.ink2, 600, 'left', false);
       [[34, 'TT/TS'], [64, 'Cat 1'], [96, 'Cat 3'], [113, 'Cat 4']].forEach(function(q){ var y = gy + gh - q[0] / 140 * gh; cx.strokeStyle = 'rgba(255,255,255,.15)'; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(gx, y); cx.lineTo(gx + gw, y); cx.stroke(); label(q[1], gx + gw + 6, y, 16, C.mute, 500, 'left', false); });
-      Object.keys(I).forEach(function(k, n){ var pts = I[k].pts.filter(function(p){ return p[0] <= 72; }); cx.strokeStyle = k === 'OFCI' ? '#fff' : MCOL[n % MCOL.length]; cx.lineWidth = k === 'OFCI' ? 5 : 2.5; cx.beginPath();
+      var tk = Object.keys(TRK).filter(function(k){ return k !== 'OFCL'; });   // same index list as the map
+      Object.keys(I).filter(function(k){ return k !== 'OFCI'; }).forEach(function(k){ var n = tk.indexOf(k), pts = I[k].pts.filter(function(p){ return p[0] <= 72; });
+        cx.strokeStyle = n >= 0 ? MCOL[n % MCOL.length] : 'rgba(190,200,215,.55)'; cx.lineWidth = 2.5; cx.beginPath();
         pts.forEach(function(p, q){ var x = gx + p[0] / 72 * gw, y = gy + gh - p[1] / 140 * gh; q ? cx.lineTo(x, y) : cx.moveTo(x, y); }); cx.stroke(); });
-      label('0 h', gx, gy + gh + 20, 16, C.mute, 500, 'left', false); label('72 h', gx + gw, gy + gh + 20, 16, C.mute, 500, 'right', false); cx.globalAlpha = 1; }
+      var c00 = Date.UTC(+FC.cycle.slice(0, 4), +FC.cycle.slice(4, 6) - 1, +FC.cycle.slice(6, 8), +FC.cycle.slice(8, 10));
+      var off = F.pts.map(function(p){ return [(p.t - c00) / 3600e3, p.kt]; }).filter(function(p){ return p[0] >= 0 && p[0] <= 72; });
+      cx.strokeStyle = '#fff'; cx.lineWidth = 5; cx.beginPath(); off.forEach(function(p, q){ var x = gx + p[0] / 72 * gw, y = gy + gh - p[1] / 140 * gh; q ? cx.lineTo(x, y) : cx.moveTo(x, y); }); cx.stroke();
+      var lp = off.filter(function(p){ return p[0] >= 24; })[0] || off[off.length - 1]; if (lp) label('NHC ' + adv, gx + lp[0] / 72 * gw + 10, gy + gh - lp[1] / 140 * gh - 16, 18, '#fff', 800, 'left');
+      label('0 h', gx, gy + gh + 20, 16, C.mute, 500, 'left', false); label('72 h', gx + gw, gy + gh + 20, 16, C.mute, 500, 'right', false);
+      label('Colores como en el mapa · gris: SHIPS, LGEM y consenso', gx, gy + gh + 44, 15, C.mute, 500, 'left', false); label('Colors match the map · gray: SHIPS, LGEM and consensus', gx, gy + gh + 64, 15, C.mute, 500, 'left', false);
+      cx.globalAlpha = 1; }
   }});
 
 scene({prog: 'forecast', id: 'f-when', dur: 24, title: ['¿Cuándo sabremos?', 'When will we know?'], steps: [
   {at: 0, es: 'El error del pronóstico se encoge conforme se acerca: 2 de cada 3 veces, el centro queda a menos de unos *' + Math.round(F.cone[36] * 1.852 / 5) * 5 + ' km* de la línea a 36 horas, y a menos de unos *' + Math.round(F.cone[12] * 1.852 / 5) * 5 + ' km* a 12 horas.',
           en: 'The forecast error shrinks as the storm gets closer: two times out of three, the center ends up within about *' + Math.round(F.cone[36] * 1.15078 / 5) * 5 + ' miles* of the line at 36 hours, and within about *' + Math.round(F.cone[12] * 1.15078 / 5) * 5 + ' miles* at 12 hours.'},
-  {at: 12, es: '*El domingo por la mañana* se verá si toca tierra o solo roza la costa. Aun 12 horas antes de pasar frente a Vallarta, el margen normal será de unos *' + Math.round(F.cone[12] * 1.852 / 5) * 5 + ' km*: más que la diferencia entre bahía y sierra. Para Vallarta, guíate por las probabilidades y los avisos, no por la línea.',
-           en: 'By *Sunday morning* we will see whether it makes landfall or just skirts the coast. Even 12 hours before it passes Vallarta, the normal margin will be about *' + Math.round(F.cone[12] * 1.15078 / 5) * 5 + ' miles*: more than the gap between bay and mountains. For Vallarta, go by the odds and the warnings, not the line.'}],
+  {at: 12, es: '*Durante el domingo* se verá si toca tierra o solo roza la costa (el NHC espera una de las dos el domingo). Aun 12 horas antes de pasar frente a Vallarta, el margen normal será de unos *' + Math.round(F.cone[12] * 1.852 / 5) * 5 + ' km*: más que la diferencia entre bahía y sierra. Para Vallarta, guíate por las probabilidades y los avisos, no por la línea.',
+           en: '*During Sunday* we will see whether it makes landfall or just skirts the coast (the NHC expects one or the other on Sunday). Even 12 hours before it passes Vallarta, the normal margin will be about *' + Math.round(F.cone[12] * 1.15078 / 5) * 5 + ' miles*: more than the gap between bay and mountains. For Vallarta, go by the odds and the warnings, not the line.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
     var x0 = VX + 120, x1 = W - 120, yc = 470, tp = F.pv.t, tnow = ms(FX.fx.t), X = function(tm){ return x0 + (tm - tnow) / (tp + 6 * 3600e3 - tnow) * (x1 - x0); };
@@ -919,23 +958,25 @@ scene({prog: 'forecast', id: 'f-when', dur: 24, title: ['¿Cuándo sabremos?', '
       if (h >= 12) for (var q = 0; q < hk.length - 1; q++) if (h >= hk[q] && h <= hk[q + 1]){ rr = F.cone[hk[q]] + (F.cone[hk[q + 1]] - F.cone[hk[q]]) * (h - hk[q]) / 12; } else {}
       if (h < 12) rr = F.cone[12] * h / 12 + 6 * (1 - h / 12);
       var a = ease((t - 1 - (36 - h) / 12) / 0.8), bh = rr * 1.852 * 3.2; cx.globalAlpha = a;
-      cx.fillStyle = 'rgba(127,181,255,.35)'; roundRect(X(tm) - 22, yc - bh, 44, bh * 2, 10); cx.fill(); cx.globalAlpha = a; label('±' + Math.round(rr * 1.852 / 5) * 5 + ' km', X(tm), yc - bh - 26, 22, '#cfe2ff', 700, 'center', false); label('±' + Math.round(rr * 1.15078 / 5) * 5 + ' mi', X(tm), yc + bh + 26, 20, C.ink2, 600, 'center', false);
-      var d = cst(iso(tm)); label(DS_ES[d.getUTCDay()] + ' ' + hrES(d), X(tm), yc + bh + 58, 18, C.mute, 500, 'center', false); cx.globalAlpha = 1; }
+      cx.fillStyle = 'rgba(127,181,255,.35)'; roundRect(X(tm) - 22, yc - bh, 44, bh * 2, 10); cx.fill(); cx.globalAlpha = a; label('±' + Math.round(rr * 1.852 / 5) * 5 + ' km', X(tm), yc - bh - 26, 22, '#cfe2ff', 700, 'center', false); label('±' + Math.round(rr * 1.15078 / 5) * 5 + ' mi', X(tm), yc + bh + 26, 20, C.ink2, 600, 'center');
+      var d = cst(iso(tm)); label(DS_ES[d.getUTCDay()] + ' ' + hrES(d), X(tm), yc + bh + 58, 18, C.mute, 500, 'center'); cx.globalAlpha = 1; }
     label('Qué tan lejos podría pasar el centro, visto desde cada momento', VX + 90, 96, 26, '#fff', 700, 'left', false);
     label('How far off the center could pass, seen from each moment', VX + 90, 132, 24, C.ink2, 600, 'left', false);
     label('Radios del cono del NHC 2026 (Pacífico oriental) · NHC 2026 eastern Pacific cone radii', VX + 90, 168, 20, C.mute, 500, 'left', false);
     var steps = (F.lf ? [[F.lf.t, 'Toca tierra · Landfall']] : F.nc ? [[F.nc.t, 'Junto a la costa · At the coast']] : []).concat([[tp, 'Pasa cerca de Vallarta · Passes near Vallarta']]);
     steps.forEach(function(st, k){ var a = ease((t - 12.5 - k) / 0.8); cx.globalAlpha = a; var x = X(st[0]); cx.fillStyle = k ? '#fff' : CATC[3]; cx.beginPath(); cx.arc(x, yc, 10, 0, 7); cx.fill();
-      var al = x > W - 320 ? 'right' : 'center', xl = al === 'right' ? x + 30 : x; cx.strokeStyle = k ? '#fff' : '#ffb38a'; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(x, yc + (k ? 110 : 14)); cx.lineTo(x, 770 + k * 50); cx.stroke();
+      var al = x > W - 320 ? 'right' : 'center', xl = al === 'right' ? x + 30 : x; cx.strokeStyle = k ? '#fff' : '#ffb38a'; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(x, k ? yc + 110 : 730); cx.lineTo(x, 770 + k * 50); cx.stroke();
       label(st[1], xl, 790 + k * 50, 24, k ? '#fff' : '#ffb38a', 700, al, false); cx.globalAlpha = 1; });
   }});
 
 var WARN = (F.sm.warnings || []).filter(function(w){ return /Roblito|Vallarta|Cabo Corrientes/.test(w); })[0] || null;
-scene({prog: 'forecast', id: 'f-likely', dur: 28, title: ['Lo más probable ahora', 'Most likely right now'], steps: [
+scene({prog: 'forecast', id: 'f-likely', dur: 40, title: ['Lo más probable ahora', 'Most likely right now'], steps: [
   {at: 0, es: (WARN ? 'Vallarta está en la *zona de prevención por huracán* (de ' + WARN.replace(' to ', ' a ') + '): se esperan condiciones de huracán en alguna parte de esa costa, no necesariamente aquí. Prepárate. ' : '') + 'Para Puerto Vallarta, el NHC da: viento sostenido de 63 km/h o más, *' + F.probs['34'] + '%*; de 93 km/h o más, *' + F.probs['50'] + '%*; de huracán (119 km/h o más), *' + F.probs['64'] + '%*.',
           en: (WARN ? 'Vallarta is inside the *hurricane warning* (' + WARN + '): hurricane conditions are expected somewhere along that coast, not necessarily here. Get ready. ' : '') + 'For Puerto Vallarta, the NHC gives: sustained wind of 39 mph or more, *' + F.probs['34'] + '%*; 58 mph or more, *' + F.probs['50'] + '%*; hurricane force (74 mph or more), *' + F.probs['64'] + '%*.'},
-  {at: 14, es: 'Lo más probable en Vallarta: viento de tormenta tropical con rachas, pero *el agua es el riesgo principal*: el SMN prevé lluvias torrenciales de 150 a 250 mm en la costa de Jalisco y olas de 6 a 8 m. La lluvia en la sierra llega a los ríos horas después.',
-           en: 'Most likely in Vallarta: tropical-storm-force wind with gusts, but *water is the main risk*: the SMN expects torrential rain of 6 to 10 inches on the Jalisco coast and 20 to 26 ft waves. Rain on the mountains reaches the rivers hours later.'}],
+  {at: 14, es: 'Lo más probable en Vallarta: viento de tormenta tropical con rachas, pero *el agua es el riesgo principal*. El SMN prevé de 150 a 250 mm en Jalisco (costa y este); el NHC, en total, *de ' + Math.round(RAIN_NHC.lo * 25.4 / 10) * 10 + ' a ' + Math.round(RAIN_NHC.hi * 25.4 / 10) * 10 + ' mm* en partes del suroeste de México y hasta *' + Math.round(RAIN_NHC.iso * 25.4 / 10) * 10 + ' mm* en puntos aislados de ' + RAIN_NHC.where[0] + '.',
+           en: 'Most likely in Vallarta: tropical-storm-force wind with gusts, but *water is the main risk*. The SMN expects 6 to 10 inches in Jalisco (coast and east); the NHC, storm totals of *' + RAIN_NHC.lo + ' to ' + RAIN_NHC.hi + ' inches* over parts of southwestern Mexico and up to *' + RAIN_NHC.iso + ' inches* in isolated spots in ' + RAIN_NHC.where[1] + '.'},
+  {at: 27, es: 'En el mar, el SMN prevé olas de 6 a 8 m en las costas de Jalisco y Colima. El NHC advierte *marea de tormenta peligrosa* en la costa cerca y al este de donde el centro toque tierra' + (F.pv.brg > 180 ? '; con la trayectoria del boletín ' + adv + ', Vallarta quedaría al este del centro' : '') + '. La lluvia en la sierra llega a los ríos horas después.',
+           en: 'At sea, the SMN expects 20 to 26 ft waves on the Jalisco and Colima coasts. The NHC warns of a *dangerous storm surge* along the coast near and east of where the center makes landfall' + (F.pv.brg > 180 ? '; on the advisory ' + adv + ' track, Vallarta would be east of the center' : '') + '. Rain on the mountains reaches the rivers hours later.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H); var x0 = VX + 100, w = VW - 200;
     label('NHC · probabilidad de viento en Puerto Vallarta · wind odds for Puerto Vallarta', x0, 120, 26, '#fff', 800, 'left', false);
@@ -944,20 +985,24 @@ scene({prog: 'forecast', id: 'f-likely', dur: 28, title: ['Lo más probable ahor
       var a = ease((t - 0.8 - k * 0.6) / 0.8), y = 220 + k * 170, v = F.probs[q[0]] || 0; cx.globalAlpha = a;
       cx.fillStyle = '#151b25'; roundRect(x0, y, w, 140, 16); cx.fill(); cx.fillStyle = q[3]; roundRect(x0, y + 84, Math.max(8, w * v / 100 * ease((t - 1 - k * 0.6) / 1.5)), 36, 8); cx.fill();
       cx.font = '900 56px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(v + '%', x0 + 24, y + 66); cx.font = '700 28px ' + FT; cx.fillText(q[2], x0 + 200, y + 40); cx.font = '500 24px ' + FT; cx.fillStyle = C.ink2; cx.fillText(q[1], x0 + 200, y + 72); cx.globalAlpha = 1; });
-    if (t >= 14){ var a2 = ease((t - 14.4) / 0.8); cx.globalAlpha = a2; var y2 = 740; cx.fillStyle = '#151b25'; roundRect(x0, y2, w, 230, 16); cx.fill();
-      cx.font = '700 30px ' + FD; cx.fillStyle = C.water; cx.fillText('SMN · aviso de ciclón tropical · Jalisco', x0 + 24, y2 + 48);
-      cx.font = '600 28px ' + FT; cx.fillStyle = '#fff'; cx.fillText('Lluvia 150–250 mm · Rain 6–10 in', x0 + 24, y2 + 100); cx.fillText('Olas 6–8 m · Waves 20–26 ft', x0 + 24, y2 + 146);
-      cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('Para toda la costa de Jalisco · For the whole Jalisco coast', x0 + 24, y2 + 192); cx.globalAlpha = 1; }
+    if (t >= 14){ var a2 = ease((t - 14.4) / 0.8), a3 = ease((t - 27.4) / 0.8); cx.globalAlpha = a2; var y2 = 724; cx.fillStyle = '#151b25'; roundRect(x0, y2, w, 300, 16); cx.fill(); cx.textBaseline = 'alphabetic';
+      cx.font = '700 30px ' + FD; cx.fillStyle = C.water; cx.fillText('Lluvia y mar · Rain and sea', x0 + 24, y2 + 46);
+      cx.font = '600 26px ' + FT; cx.fillStyle = '#fff'; cx.fillText('SMN (aviso ' + SMN_AV + '): lluvia de 150–250 mm en Jalisco (costa y este)', x0 + 24, y2 + 92);
+      cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('SMN: 6–10 in of rain in Jalisco (coast and east)', x0 + 24, y2 + 122);
+      cx.font = '600 26px ' + FT; cx.fillStyle = '#fff'; cx.fillText('NHC ' + adv + ': ' + Math.round(RAIN_NHC.lo * 25.4 / 10) * 10 + '–' + Math.round(RAIN_NHC.hi * 25.4 / 10) * 10 + ' mm en partes del SO de México; aislados, ' + Math.round(RAIN_NHC.iso * 25.4 / 10) * 10 + ' mm', x0 + 24, y2 + 170);
+      cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('NHC ' + adv + ': ' + RAIN_NHC.lo + '–' + RAIN_NHC.hi + ' in over parts of SW Mexico; isolated ' + RAIN_NHC.iso + ' in (storm totals)', x0 + 24, y2 + 200);
+      cx.globalAlpha = a2 * a3; cx.font = '600 26px ' + FT; cx.fillStyle = '#fff'; cx.fillText('Mar: olas de 6–8 m (SMN) · marea de tormenta peligrosa (NHC)', x0 + 24, y2 + 248);
+      cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('Sea: 20–26 ft waves (SMN) · dangerous storm surge (NHC)', x0 + 24, y2 + 278); cx.globalAlpha = 1; }
   }});
 
 scene({prog: 'forecast', id: 'f-myth', dur: 22, title: ['¿Vientos de 200 nudos? No', '200-knot winds? No'], steps: [
   {at: 0, es: 'Circulan cifras como “vientos de 200 nudos”. No es así. Simon tiene hoy *' + Math.round(F.sm.wind_kmh) + ' km/h* (' + Math.round(ADV.kt) + ' nudos), *sobre el mar y cerca del ojo*. Ningún ciclón medido ha llegado a 200 nudos sostenidos: el récord es de 185 nudos (Patricia, 2015, empatado con Nancy, 1961).',
           en: 'Figures like “200-knot winds” are circulating. That is not happening. Simon has *' + F.sm.wind_mph + ' mph* (' + Math.round(ADV.kt) + ' knots) today, *over the ocean, near the eye*. No measured tropical cyclone has reached 200 knots sustained: the record is 185 knots (Patricia, 2015, tied with Nancy, 1961).'},
-  {at: 12, es: 'Para Vallarta, las probabilidades del NHC ponen el viento sostenido máximo, a 50-50, en unos *' + kmh(V50) + ' km/h* (cálculo nuestro con sus datos), con rachas más fuertes; 1 de cada 5: ' + kmh(WC.v20_kt) + ' km/h o más; huracán: *' + P64 + '%*. Ojo con las unidades: km/h no son nudos. Y el viento no mide la lluvia ni los ríos.',
-           en: 'For Vallarta, the NHC odds put the peak sustained wind, at 50-50, around *' + mph(V50) + ' mph* (our calculation from their data), with stronger gusts; 1 in 5: ' + mph(WC.v20_kt) + ' mph or more; hurricane force: *' + P64 + '%*. Watch the units: km/h are not knots. And wind doesn’t measure rain or rivers.'}],
+  {at: 12, es: 'Con las probabilidades del NHC para Vallarta calculamos el viento sostenido máximo: a 50-50, unos *' + kmh(V50) + ' km/h*, con rachas más fuertes; 1 de cada 5, unos ' + Math.floor(WC.v20_kt * 1.852 / 5) * 5 + ' km/h o más. El NHC da *' + P64 + '%* para viento de huracán. Ojo con las unidades: km/h no son nudos. Y el viento no mide la lluvia ni los ríos.',
+           en: 'From the NHC odds for Vallarta we calculate the peak sustained wind: at 50-50, about *' + mph(V50) + ' mph*, with stronger gusts; 1 in 5, about ' + Math.floor(WC.v20_kt * 1.15078 / 5) * 5 + ' mph or more. The NHC gives *' + P64 + '%* for hurricane force. Watch the units: km/h are not knots. And wind doesn’t measure rain or rivers.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H); var x0 = VX + 100, w = VW - 200, base = 820, sc = 3.1;
-    var bars = [[200, '200 nudos (rumor)', '200 knots (rumor)', '#3a2a2a', true], [185, 'Patricia 2015 · récord', 'Patricia 2015 · record', '#d36bff'], [Math.round(ADV.kt), 'Simon hoy, sobre el mar', 'Simon today, over the ocean', CATC[catOf(ADV.kt)]], [V50, 'Vallarta, 50-50 (con datos NHC)', 'Vallarta, 50-50 (from NHC odds)', CATC[catOf(V50)]]];
+    var bars = [[200, '200 nudos (rumor)', '200 knots (rumor)', '#3a2a2a', true], [185, 'Patricia 2015 · récord', 'Patricia 2015 · record', '#d36bff'], [Math.round(ADV.kt), 'Simon hoy, sobre el mar', 'Simon today, over the ocean', CATC[catOf(ADV.kt)]], [V50, 'Vallarta, 50-50 (cálculo con datos NHC)', 'Vallarta, 50-50 (our calc., NHC odds)', CATC[catOf(V50)]]];
     bars.forEach(function(b, k){ var a = ease((t - 0.8 - k * 0.7) / 0.8), x = x0 + k * (w / 4) + 30, bw = w / 4 - 60, hh = b[0] * sc * a; cx.globalAlpha = Math.min(1, a * 1.2);
       cx.fillStyle = b[3]; roundRect(x, base - hh, bw, hh, 10); cx.fill(); if (b[4]){ cx.strokeStyle = '#ff6b6b'; cx.lineWidth = 6; cx.beginPath(); cx.moveTo(x - 10, base - hh - 10); cx.lineTo(x + bw + 10, base + 10); cx.stroke(); }
       label(Math.round(b[0]) + ' kt', x + bw / 2, base - hh - 30, 32, '#fff', 800, 'center', false); label(kmh(b[0]) + ' km/h · ' + mph(b[0]) + ' mph', x + bw / 2, base - hh - 64, 20, C.ink2, 600, 'center', false);
@@ -965,8 +1010,8 @@ scene({prog: 'forecast', id: 'f-myth', dur: 22, title: ['¿Vientos de 200 nudos?
   }});
 
 scene({prog: 'forecast', id: 'f-todo', dur: 16, title: ['Qué seguir', 'What to follow'], steps: [
-  {at: 0, es: 'Sigue los boletines del *SMN* y del *NHC* y las indicaciones de *Protección Civil* de Puerto Vallarta y Jalisco. El NHC publica un pronóstico completo cada 6 horas (3, 9, 15 y 21 h) y avances cada 3; *tus riesgos dependen de dónde estás*: río, ladera, costa o piso alto.',
-          en: 'Follow the *SMN* and *NHC* advisories and instructions from *Protección Civil* of Puerto Vallarta and Jalisco. The NHC issues a full forecast every 6 hours (3 and 9, am and pm, CST) and updates in between; *your risks depend on where you are*: river, slope, coast or high floor.'}],
+  {at: 0, es: 'Sigue los boletines del *SMN* y del *NHC* y las indicaciones de *Protección Civil* de Puerto Vallarta y Jalisco. El NHC publica un pronóstico completo cada 6 horas (3, 9, 15 y 21 h) y avisos intermedios entre ellos (0, 6, 12 y 18 h); *tus riesgos dependen de dónde estás*: río, ladera, costa o piso alto.',
+          en: 'Follow the *SMN* and *NHC* advisories and instructions from *Protección Civil* of Puerto Vallarta and Jalisco. The NHC issues a full forecast every 6 hours (3 and 9, am and pm, CST) and intermediate advisories in between (midnight, 6 am, noon and 6 pm); *your risks depend on where you are*: river, slope, coast or high floor.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
     [['SMN-CONAGUA', 'smn.conagua.gob.mx', C.water], ['NHC', 'nhc.noaa.gov', '#ffffff'], ['Protección Civil', 'Puerto Vallarta · Jalisco · 911', C.warm]].forEach(function(q, k){ var a = ease((t - 0.6 - k * 0.6) / 0.8), y = 240 + k * 190; cx.globalAlpha = a;
@@ -980,7 +1025,7 @@ scene({prog: 'forecast', id: 'credits', dur: 9, noPanel: true, steps: [{at: 0, e
   ['NHC: boletín, discusión y probabilidades de viento ' + adv + ' · advisory, discussion and wind probabilities', 'NHC: radios del cono 2026 · 2026 cone radii; mejor trayectoria y modelos (ATCF) · best track and model aids (ATCF)',
    'SMN-CONAGUA: aviso de ciclón tropical · tropical cyclone advisory', 'NOAA GOES-18 ABI: infrarrojo · infrared', 'NHC: reporte del huracán Patricia (2015) · Hurricane Patricia report'].forEach(function(s2, k){ cx.font = '500 28px ' + FT; cx.fillStyle = C.ink2; cx.fillText('· ' + s2, 140, 300 + k * 48); });
   cx.font = '700 36px ' + FD; cx.fillStyle = C.warm; cx.fillText('No es un pronóstico oficial. · Not an official forecast.', 140, 620);
-  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute; cx.fillText('Datos al ' + ASOF_ES + ' (hora del centro) · Data as of ' + ASOF_EN + ' CST', 140, 680); cx.globalAlpha = 1;
+  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute; cx.fillText('Datos: ' + DATA_ES + ' (hora del centro)', 140, 680); cx.fillText('Data: ' + DATA_EN + ' CST', 140, 716); cx.globalAlpha = 1;
 }});
 }
 
