@@ -216,6 +216,8 @@ def pws_wind(q):
         if p1 >= q >= p2 and p1 > p2: return v1 + (v2 - v1) * (p1 - q) / (p1 - p2)
     return None
 V50, V20 = pws_wind(0.5), pws_wind(0.2)
+P34 = (NHC.get('pv_probs') or {}).get('34', 0)
+if P34 < 50: V50 = 33.0          # below tropical-storm force at even odds: the NHC gives no lower threshold, so do not interpolate one
 VPK = max(wind(c, PVLL[0], PVLL[1], True)[0] for c in SCN['nhc']['track'][n_obs:])
 WIND_CAL = min(1.0, V50 / VPK) if V50 and VPK else 1.0
 print('wind calibration', dict(v50=round(V50 or 0, 1), v20=round(V20 or 0, 1), model_peak_pv=round(VPK, 1), factor=round(WIND_CAL, 3), probs=NHC.get('pv_probs')))
