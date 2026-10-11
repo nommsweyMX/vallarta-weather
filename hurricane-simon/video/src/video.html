@@ -101,7 +101,8 @@ var FX = (function(){
 })();
 var ADV = D.advisory;
 var RAIN_NHC = {lo: 10, hi: 20, iso: 30, where: ['Michoacán, Colima y Jalisco', 'Michoacán, Colima and Jalisco']};   // NHC TCP rainfall statement (inches), storm totals
-var SMN_AV = 28;   // SMN aviso quoted for rain, waves and surge
+var SMN_AV = 30;   // SMN aviso quoted for rain, waves and surge
+var SMN = {waves: [7, 9], wavesFt: [23, 30], surge: ['1.5', '2.5'], surgeFt: [5, 8]};   // SMN aviso 30: oleaje y marea de tormenta en costas de Jalisco y Colima
 function issuedES(){ var m = /^(\d{1,2})(\d{2}) ([AP])M/.exec(ADV.issued || ''); if (!m) return ''; var h = +m[1] % 12 + (m[3] === 'P' ? 12 : 0); return String(h).padStart(2, '0') + ':' + m[2]; }
 function issuedEN(){ var m = /^(\d{1,2})(\d{2}) ([AP])M/.exec(ADV.issued || ''); if (!m) return ''; var h = +m[1] % 12 || 12; return h + (m[2] !== '00' ? ':' + m[2] : '') + ' ' + m[3].toLowerCase() + 'm'; }
 var asofD = cst(FX.fx.t);
@@ -541,8 +542,8 @@ scene({id: 'coast', dur: 36, title: ['Agua 3: el mar', 'Water 3: the sea'], step
           en: '*Storm surge* is sea water pushed ashore by the wind. It gets farthest where the coast is low and the shelf is wide and shallow: in light blue, land under 13 ft. *It shows ground height, not a forecast.*'},
   {at: 12, es: 'Un estudio de la Universidad de Guadalajara (anexo del Atlas 2024) señala como más vulnerables a *Marina Vallarta*, la desembocadura del *Ameca* y el arroyo *Los Camarones*. En Kenna (2002), las olas pasaron sobre el malecón y dañaron hoteles.',
            en: 'A University of Guadalajara study (annexed to the 2024 atlas) names *Marina Vallarta*, the *Ameca* mouth and the *Los Camarones* creek as most vulnerable. In Kenna (2002), waves went over the boardwalk and damaged hotels.'},
-  {at: 26, es: 'Para Simon, el NHC advierte una *marea de tormenta peligrosa* en la franja costera inmediata, cerca y al este de donde el centro toque tierra, pero no da alturas para la bahía. El SMN (aviso ' + SMN_AV + ') prevé *de 1 a 2 m* en la costa de Colima.',
-           en: 'For Simon, the NHC warns of *dangerous storm surge* along the immediate coast near and to the east of where the center makes landfall, but gives no heights for the bay. The SMN (advisory ' + SMN_AV + ') expects *3 to 7 ft* on the Colima coast.'}],
+  {at: 26, es: 'Para Simon, el NHC advierte una *marea de tormenta peligrosa* en la franja costera inmediata, cerca y al este de donde el centro toque tierra, pero no da alturas para la bahía. El SMN (aviso ' + SMN_AV + ') prevé *de ' + SMN.surge[0] + ' a ' + SMN.surge[1] + ' m* en las costas de Jalisco y Colima.',
+           en: 'For Simon, the NHC warns of *dangerous storm surge* along the immediate coast near and to the east of where the center makes landfall, but gives no heights for the bay. The SMN (advisory ' + SMN_AV + ') expects *' + SMN.surgeFt[0] + ' to ' + SMN.surgeFt[1] + ' ft* on the Jalisco and Colima coasts.'}],
   draw: function(t){
     var R = cityBase(t); overlay('lowcoast_city', R, 0.75 * ease((t - 0.5) / 1.2));
     COAST.forEach(function(c, k){ pin('city', R, c.la, c.lo, c.n, k === 3 ? '#ffd166' : '#5ae6ff', c.side || 'r', ease((t - 12.3 - k * 0.6) / 0.8), c.s); });
@@ -975,8 +976,8 @@ scene({prog: 'forecast', id: 'f-likely', dur: 40, title: ['Lo más probable ahor
           en: (WARN ? 'Vallarta is inside the *hurricane warning* (' + WARN + '): hurricane conditions are expected somewhere along that coast, not necessarily here. Get ready. ' : '') + 'For Puerto Vallarta, the NHC gives: sustained wind of 39 mph or more, *' + F.probs['34'] + '%*; 58 mph or more, *' + F.probs['50'] + '%*; hurricane force (74 mph or more), *' + F.probs['64'] + '%*.'},
   {at: 14, es: 'Lo más probable en Vallarta: viento de tormenta tropical con rachas, pero *el agua es el riesgo principal*. El SMN prevé de 150 a 250 mm en Jalisco (costa y este); el NHC, en total, *de ' + Math.round(RAIN_NHC.lo * 25.4 / 10) * 10 + ' a ' + Math.round(RAIN_NHC.hi * 25.4 / 10) * 10 + ' mm* en partes del suroeste de México y hasta *' + Math.round(RAIN_NHC.iso * 25.4 / 10) * 10 + ' mm* en puntos aislados de ' + RAIN_NHC.where[0] + '.',
            en: 'Most likely in Vallarta: tropical-storm-force wind with gusts, but *water is the main risk*. The SMN expects 6 to 10 inches in Jalisco (coast and east); the NHC, storm totals of *' + RAIN_NHC.lo + ' to ' + RAIN_NHC.hi + ' inches* over parts of southwestern Mexico and up to *' + RAIN_NHC.iso + ' inches* in isolated spots in ' + RAIN_NHC.where[1] + '.'},
-  {at: 27, es: 'En el mar, el SMN prevé olas de 6 a 8 m en las costas de Jalisco y Colima. El NHC advierte *marea de tormenta peligrosa* en la costa cerca y al este de donde el centro toque tierra' + (F.pv.brg > 180 ? '; con la trayectoria del boletín ' + adv + ', Vallarta quedaría al este del centro' : '') + '. La lluvia en la sierra llega a los ríos horas después.',
-           en: 'At sea, the SMN expects 20 to 26 ft waves on the Jalisco and Colima coasts. The NHC warns of a *dangerous storm surge* along the coast near and east of where the center makes landfall' + (F.pv.brg > 180 ? '; on the advisory ' + adv + ' track, Vallarta would be east of the center' : '') + '. Rain on the mountains reaches the rivers hours later.'}],
+  {at: 27, es: 'En el mar, el SMN (aviso ' + SMN_AV + ') prevé olas de ' + SMN.waves[0] + ' a ' + SMN.waves[1] + ' m y marea de tormenta de ' + SMN.surge[0] + ' a ' + SMN.surge[1] + ' m en las costas de Jalisco y Colima. El NHC advierte *marea de tormenta peligrosa* en la costa cerca y al este de donde el centro toque tierra' + (F.pv.brg > 180 ? '; con la trayectoria del boletín ' + adv + ', Vallarta quedaría al este del centro' : '') + '. La lluvia en la sierra llega a los ríos horas después.',
+           en: 'At sea, the SMN (advisory ' + SMN_AV + ') expects ' + SMN.wavesFt[0] + ' to ' + SMN.wavesFt[1] + ' ft waves and a ' + SMN.surgeFt[0] + ' to ' + SMN.surgeFt[1] + ' ft storm surge on the Jalisco and Colima coasts. The NHC warns of a *dangerous storm surge* along the coast near and east of where the center makes landfall' + (F.pv.brg > 180 ? '; on the advisory ' + adv + ' track, Vallarta would be east of the center' : '') + '. Rain on the mountains reaches the rivers hours later.'}],
   draw: function(t){
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H); var x0 = VX + 100, w = VW - 200;
     label('NHC · probabilidad de viento en Puerto Vallarta · wind odds for Puerto Vallarta', x0, 120, 26, '#fff', 800, 'left', false);
@@ -991,8 +992,8 @@ scene({prog: 'forecast', id: 'f-likely', dur: 40, title: ['Lo más probable ahor
       cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('SMN: 6–10 in of rain in Jalisco (coast and east)', x0 + 24, y2 + 122);
       cx.font = '600 26px ' + FT; cx.fillStyle = '#fff'; cx.fillText('NHC ' + adv + ': ' + Math.round(RAIN_NHC.lo * 25.4 / 10) * 10 + '–' + Math.round(RAIN_NHC.hi * 25.4 / 10) * 10 + ' mm en partes del SO de México; aislados, ' + Math.round(RAIN_NHC.iso * 25.4 / 10) * 10 + ' mm', x0 + 24, y2 + 170);
       cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('NHC ' + adv + ': ' + RAIN_NHC.lo + '–' + RAIN_NHC.hi + ' in over parts of SW Mexico; isolated ' + RAIN_NHC.iso + ' in (storm totals)', x0 + 24, y2 + 200);
-      cx.globalAlpha = a2 * a3; cx.font = '600 26px ' + FT; cx.fillStyle = '#fff'; cx.fillText('Mar: olas de 6–8 m (SMN) · marea de tormenta peligrosa (NHC)', x0 + 24, y2 + 248);
-      cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('Sea: 20–26 ft waves (SMN) · dangerous storm surge (NHC)', x0 + 24, y2 + 278); cx.globalAlpha = 1; }
+      cx.globalAlpha = a2 * a3; cx.font = '600 26px ' + FT; cx.fillStyle = '#fff'; cx.fillText('Mar (SMN): olas de ' + SMN.waves[0] + '–' + SMN.waves[1] + ' m, marea de tormenta de ' + SMN.surge[0] + '–' + SMN.surge[1] + ' m', x0 + 24, y2 + 248);
+      cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText('Sea (SMN): ' + SMN.wavesFt[0] + '–' + SMN.wavesFt[1] + ' ft waves, ' + SMN.surgeFt[0] + '–' + SMN.surgeFt[1] + ' ft storm surge', x0 + 24, y2 + 278); cx.globalAlpha = 1; }
   }});
 
 scene({prog: 'forecast', id: 'f-myth', dur: 22, title: ['¿Vientos de 200 nudos? No', '200-knot winds? No'], steps: [

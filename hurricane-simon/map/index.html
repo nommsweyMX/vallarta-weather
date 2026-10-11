@@ -57,6 +57,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
 [data-lang="both"] .bi > .es{display:block}
 [data-lang="both"] .bi > .en + .es::before{content:none}
 [data-lang="both"] .card .bi > .es, [data-lang="both"] .alert p .bi > .es{margin-top:6px}
+[data-lang="both"] .big .bi > .es{margin-top:4px;font-weight:700;font-style:normal;color:var(--ink2)}
 [data-lang="both"] h1 .es, [data-lang="both"] h2 .es, [data-lang="both"] h3 .es{font-weight:500;font-style:normal;color:var(--muted)}
 [data-lang="both"] .mono .es, [data-lang="both"] .eyebrow .es, [data-lang="both"] .chip .es, [data-lang="both"] .seg .es, [data-lang="both"] .tag .es, [data-lang="both"] .val .es, [data-lang="both"] .when .es{font-style:normal}
 
@@ -80,12 +81,14 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
 .hero{padding-block:24px 8px}
 .hero h1{font-size:clamp(28px,4.6vw,46px);line-height:1.06;font-weight:900;letter-spacing:-.01em}
 .hero .lede{max-width:78ch;color:var(--ink2);margin:12px 0 0}
-.now{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+[hidden]{display:none!important}
+.now{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
 @media (max-width:900px){.now{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
 .card h3{font-size:17px;font-weight:700;margin:2px 0 6px}
 .card p{margin:6px 0 0;color:var(--ink2)}
 .big{font-family:var(--display);font-weight:900;font-size:clamp(20px,2.4vw,26px);line-height:1.15}
+.now .big{font-size:clamp(19px,2vw,23px)}
 .sw{display:inline-block;width:22px;height:0;border-top:3px solid var(--ext);vertical-align:middle;margin-right:6px}
 .sw.nhc{border-top:3px dashed var(--nhc)}
 .sw.obs{border-top:3px dotted var(--obs)}
@@ -195,7 +198,7 @@ footer{padding-block:22px 40px;color:var(--muted);font-size:13px;border-top:1px 
   <h2 id="ph2"></h2>
   <p class="sub" id="psub"></p>
   <div class="ctl">
-    <div class="seg" role="group" id="scen-seg"></div>
+    <div class="seg" role="group" id="scen-seg" hidden></div>
     <button class="btn" type="button" id="play" aria-pressed="false"></button>
     <div class="seg" role="group" id="speed-seg"></div>
     <div class="seg" role="group" id="loop-seg"></div>
@@ -370,8 +373,8 @@ function buildHead(){
   document.getElementById('asof').innerHTML = L('GOES-18 latest image ' + fp[0] + ' CST · NHC advisory ' + A.num + ', ' + ti[0] + ' CST', 'GOES-18 última imagen ' + fp[1] + ' (hora del centro) · boletín ' + A.num + ' del NHC, ' + ti[1]);
   document.getElementById('h1').innerHTML = L('Simon and Vallarta, street by street', 'Simon y Vallarta, calle por calle');
   var e = closest('ext', PV[0], PV[1]), n = closest('nhc', PV[0], PV[1]), le = landfall('ext'), ln = landfall('nhc');
-  document.getElementById('lede').innerHTML = L('The eye is tracked on GOES-18 every 10 minutes. The map follows the NHC’s official track; you can switch to a straight-line extrapolation of the satellite motion to compare. The storm carries today’s satellite rain pattern, scaled to the SMN rain forecast, and the wind at each place is scaled to the NHC’s wind speed probabilities for Puerto Vallarta. Units here are miles, mph and inches; switch to Español for metric.',
-    'Seguimos el ojo en GOES-18 cada 10 minutos. El mapa sigue la trayectoria oficial del NHC; puedes cambiar a una extrapolación en línea recta del movimiento en el satélite para comparar. La tormenta lleva el patrón de lluvia que hoy mide el satélite, ajustado al pronóstico de lluvia del SMN, y el viento en cada lugar se ajusta a las probabilidades de viento del NHC para Puerto Vallarta. Aquí las unidades son métricas (km, km/h y mm); en inglés se usan millas, mph y pulgadas.');
+  document.getElementById('lede').innerHTML = L('The eye is tracked on GOES-18 every 10 minutes. The map follows the NHC’s official track, as issued. The storm carries today’s satellite rain pattern, scaled to the SMN rain forecast, and the wind at each place is scaled to the NHC’s wind speed probabilities for Puerto Vallarta. Units here are miles, mph and inches; switch to Español for metric.',
+    'Seguimos el ojo en GOES-18 cada 10 minutos. El mapa sigue la trayectoria oficial del NHC, tal como se publicó. La tormenta lleva el patrón de lluvia que hoy mide el satélite, ajustado al pronóstico de lluvia del SMN, y el viento en cada lugar se ajusta a las probabilidades de viento del NHC para Puerto Vallarta. Aquí las unidades son métricas (km, km/h y mm); en inglés se usan millas, mph y pulgadas.');
   var html = '';
   html += '<div class="card"><div class="eyebrow">' + L('Observed now', 'Observado ahora') + ' · ' + tL(fx.t) + '</div><div class="big">' + LB('Eye ' + fmt(g[0] / 1.609) + ' mi ' + COMP_EN[Math.round(g[1] / 22.5) % 16] + ' of Vallarta', 'Ojo a ' + fmtE(g[0]) + ' km al ' + COMP_ES[Math.round(g[1] / 22.5) % 16] + ' de Vallarta') + '</div>';
   var mv = nhcMotion(A, ti);
@@ -413,7 +416,6 @@ function buildHead(){
     return '<div class="card"><div class="eyebrow"><span class="sw ' + sw + '"></span>' + ttl + '</div><div class="big">' + big + '</div><p>' + LB(en, es) + '</p></div>';
   }
   html += sc('nhc', L('NHC forecast track (official)', 'Trayectoria del NHC (oficial)'), 'nhc', n, ln);
-  html += sc('ext', L('Satellite extrapolation (comparison)', 'Extrapolación de satélite (comparación)'), '', e, le);
   document.getElementById('now').innerHTML = html;
 }
 
@@ -540,7 +542,7 @@ function drawSat(){
   ring(cc.r34, 'rgba(255,230,120,.9)'); if (dPV > 150) ring(cc.r64, 'rgba(255,90,90,.95)');
   c.fillStyle = '#fff'; c.strokeStyle = '#000'; c.lineWidth = 1; c.beginPath(); c.arc(cp[0], cp[1], 4, 0, 7); c.fill(); c.stroke();
   var cnm = catName(cc.v), ktxt = T('center: ', 'centro: ') + cnm[0] + (dPV > 150 ? ' · ' + T(fmt(cc.v * 1.15078) + ' mph', fmtE(cc.v * 1.852) + ' km/h') : '');   // always labelled as the center's strength
-  c.font = '700 11px "Red Hat Text", system-ui, sans-serif'; c.lineWidth = 3; c.strokeStyle = 'rgba(0,0,0,.85)'; var kx = dPV > 150 ? cp[0] - 20 : cp[0] - 8; c.textAlign = dPV > 150 ? 'left' : 'right'; c.strokeText(ktxt, kx, cp[1] + 22); c.fillStyle = CATCOL[cnm[1]]; c.fillText(ktxt, kx, cp[1] + 22); c.textAlign = 'left';
+  c.font = '700 11px "Red Hat Text", system-ui, sans-serif'; c.lineWidth = 3; c.strokeStyle = 'rgba(0,0,0,.85)'; var kw = c.measureText(ktxt).width, kx = dPV > 150 ? Math.max(4, Math.min(R.w - 4 - kw, cp[0] - 20)) : Math.max(4 + kw, cp[0] - 8); c.textAlign = dPV > 150 ? 'left' : 'right'; c.strokeText(ktxt, kx, cp[1] + 22); c.fillStyle = CATCOL[cnm[1]]; c.fillText(ktxt, kx, cp[1] + 22); c.textAlign = 'left';
   // Vallarta and the map extent
   var v = LY.views.city.bbox, a = rpx(v[0], v[2]), b = rpx(v[1], v[3]);
   c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1; c.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1]);
@@ -818,10 +820,10 @@ function readouts(){
     var sd = b.scen[S.scen], cum = sd.cum[i], chips = '';
     Object.keys(sd.lv).forEach(function(k){ var lv = sd.lv[k][i]; if (lv > 0) chips += lvChip(L(TNAME[k][0], TNAME[k][1]), lv); });
     h += '<div class="ro"><div class="nm">' + L(b.hood[0], b.hood[1]) + ' · ' + L(b.name[0], b.name[1]) + '</div><div class="st">' + L(b.story[0], b.story[1]) + '</div><div class="vals">'
-      + '<span class="k">' + L('Wind here', 'Viento aquí') + '</span><span class="val">' + U.wind(sd.vb[i]) + ' · ' + L('gusts ', 'ráfagas ') + U.wind(sd.gb[i]) + ' · ' + L('from ', 'del ') + comp(sd.frm[i]) + '</span>'
-      + '<span class="k">' + L('Rain', 'Lluvia') + '</span><span class="val">' + U.rate(sd.rate[i]) + '</span>'
-      + '<span class="k">' + L('Since now', 'Desde ahora') + '</span><span class="val">' + (i < NOBS ? '—' : U.depth(cum)) + '</span>'
-      + '<span class="k">' + L('Simon’s center', 'Centro de Simon') + '</span><span class="val">' + U.dist(sd.km[i]) + '</span>'
+      + '<span class="k">' + LB('Wind here', 'Viento aquí') + '</span><span class="val">' + U.wind(sd.vb[i]) + ' · ' + L('gusts ', 'ráfagas ') + U.wind(sd.gb[i]) + ' · ' + L('from ', 'del ') + comp(sd.frm[i]) + '</span>'
+      + '<span class="k">' + LB('Rain', 'Lluvia') + '</span><span class="val">' + U.rate(sd.rate[i]) + '</span>'
+      + '<span class="k">' + LB('Since now', 'Desde ahora') + '</span><span class="val">' + (i < NOBS ? '—' : U.depth(cum)) + '</span>'
+      + '<span class="k">' + LB('Simon’s center', 'Centro de Simon') + '</span><span class="val">' + U.dist(sd.km[i]) + '</span>'
       + '</div><div>' + (chips || '<span class="lv" data-lv="0">' + L('no threat yet', 'sin amenaza aún') + '</span>') + '</div></div>';
   });
   document.getElementById('read').innerHTML = h;
@@ -952,8 +954,8 @@ function texts(){
   var M = D.motion;
   var P1 = L('<b>The eye.</b> Every GOES-18 band-13 infrared image (one-minute mesoscale sector, one image every 10 minutes) was searched for the eye: the warm spot inside the cold eyewall. Its position was corrected for parallax, since from the satellite’s angle a 9-mile-high cloud top appears about 8 miles out of place. A straight line through the last ' + fmt(M.hours, 1) + ' hours of fixes gives the heading and speed (scatter about ' + fmt(M.resid_km / 1.609, 1) + ' mi).',
     '<b>El ojo.</b> En cada imagen infrarroja (banda 13) de GOES-18, del sector de mesoescala de un minuto, una cada 10 minutos, se buscó el ojo: el punto cálido dentro de la pared fría. La posición se corrigió por paralaje, porque desde el ángulo del satélite un tope de nube a 14 km de altura aparece desplazado unos 13 km. Una recta por las posiciones de las últimas ' + fmtE(M.hours, 1) + ' horas da el rumbo y la velocidad (dispersión de unos ' + fmtE(M.resid_km, 1) + ' km).');
-  var P2 = L('<b>The extrapolation.</b> The eye is carried forward on that line at that speed, with no turns, which is what “if it keeps doing what it’s doing” means. Its strength is never allowed above the NHC forecast for the same hour; once the center crosses the coastline it also fades at the standard inland-decay rate (Kaplan & DeMaria), which is likely too slow over mountains this steep. The NHC track is the official forecast as issued and is not an average.',
-    '<b>La extrapolación.</b> El ojo se lleva hacia adelante sobre esa recta a esa velocidad, sin giros: eso significa “si sigue como va”. Su fuerza nunca supera la del pronóstico del NHC para la misma hora; cuando el centro cruza la costa, además se debilita al ritmo estándar de decaimiento sobre tierra (Kaplan y DeMaria), que en montañas tan abruptas probablemente se queda corto. La trayectoria del NHC es el pronóstico oficial tal como se publicó; no es un promedio.');
+  var P2 = L('<b>The track.</b> The map follows the NHC forecast track as issued (the official forecast, not an average), with the center interpolated between its forecast points. After the last satellite image, that image is moved along the track and faded as the forecast weakens the storm: a schematic, not a cloud forecast. The strength shown for the center is the NHC’s, at the center; it is not the wind in Vallarta.',
+    '<b>La trayectoria.</b> El mapa sigue la trayectoria pronosticada por el NHC tal como se publicó (el pronóstico oficial, no un promedio); entre sus puntos de pronóstico el centro se interpola. Después de la última imagen de satélite, esa imagen se desplaza sobre la trayectoria y se atenúa conforme el pronóstico debilita la tormenta: es un esquema, no un pronóstico de nubes. La fuerza que se indica es la del NHC en el centro; no es el viento en Vallarta.');
   var P3 = L('<b>Rain.</b> GOES-18 rain-rate estimates from the last 2 hours (' + D.rain.scans.length + ' scans) were stacked around the eye and carried along each track. This is the method of NOAA’s tropical rainfall potential (TRaP). Rates are scaled down as the storm weakens, following the intensity relation in NOAA’s R-CLIPER model. Satellite estimates run high in intense cores, so the whole field is scaled (×' + (D.rain.cal || 1).toFixed(2) + ') so that the wettest 24 hours at these three sites match the top of the SMN forecast for coastal Jalisco (6–10 in). Mountains wring out extra rain this method cannot see. For comparison, the NHC calls for 10–20 in over portions of southwestern Mexico, locally 30 in.',
     '<b>Lluvia.</b> Las estimaciones de intensidad de lluvia de GOES-18 de las últimas 2 horas (' + D.rain.scans.length + ' barridos) se apilaron alrededor del ojo y se llevan sobre cada trayectoria. Es el método del potencial de lluvia tropical de NOAA (TRaP). La intensidad baja conforme la tormenta se debilita, según la relación del modelo R-CLIPER de NOAA. El satélite sobrestima en núcleos intensos, así que todo el campo se escala (×' + (D.rain.cal || 1).toFixed(2) + ') para que las 24 horas más lluviosas en estos tres sitios coincidan con el máximo del pronóstico del SMN para la costa de Jalisco (150–250 mm). Las montañas exprimen lluvia adicional que este método no ve. Para comparar, el NHC pronostica 250–500 mm en partes del suroeste de México, y hasta 760 mm en puntos aislados.');
   var PPw = D.wind_cal && D.wind_cal.probs, AMb = B.filter(function(b){ return b.id === 'amapas'; })[0];
