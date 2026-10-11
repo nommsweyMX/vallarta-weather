@@ -19,7 +19,7 @@ cut = frag.index('</style>') + len('</style>')
 head, body = frag[:cut], frag[cut:]
 doc = ('<!doctype html>\n<html lang="en" data-lang="both">\n<head>\n<meta charset="utf-8">\n'
        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-       '<meta name="description" content="Hurricane Simon over Puerto Vallarta: observed GOES-18 satellite loop, extrapolated wind and rain on a street map, and when the wind, flood and landslide threats reach three buildings. English (imperial) and Spanish (metric).">\n'
+       '<meta name="description" content="Hurricane Simon and Puerto Vallarta: GOES-18 satellite loop, the official NHC track, wind matched to NHC wind probabilities and rain to the SMN forecast on a street map, and when the wind, flood and landslide threats may reach three buildings. English (imperial) and Spanish (metric).">\n'
        + head + '\n</head>\n<body>\n' + body + '\n</body>\n</html>\n')
 open(os.path.join(ROOT, 'index.html'), 'w', encoding='utf-8').write(doc)
 if len(sys.argv) > 1:   # hosted copy: the sibling page is published separately, so link to it directly

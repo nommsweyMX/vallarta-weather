@@ -54,8 +54,9 @@ function tES(iso){ var d = roundH(iso); return DAY_ES[d.getUTCDay()] + ' ~' + hr
 function tEN(iso){ var d = roundH(iso); return DAY_EN[d.getUTCDay()] + ' ~' + hrEN(d); }
 function hES(iso){ return '~' + hrES(roundH(iso)); }
 function hEN(iso){ return '~' + hrEN(roundH(iso)); }
+function span2h(w){ if (!w) return null; var a = ms(w[0]), b = ms(w[1]); if (b - a < 7200e3){ var m = (a + b) / 2; a = m - 3600e3; b = m + 3600e3; } return [new Date(a).toISOString().slice(0, 16) + 'Z', new Date(b).toISOString().slice(0, 16) + 'Z']; }
 // 'el domingo ~22:00' / 'la medianoche del domingo al lunes'; 'Sunday ~10 pm' / 'around midnight Sunday night'
-function whenES(iso){ var d = roundH(iso); if (d.getUTCHours() === 0) return 'la medianoche del ' + DAY_ES[(d.getUTCDay() + 6) % 7] + ' al ' + DAY_ES[d.getUTCDay()]; return 'el ' + DAY_ES[d.getUTCDay()] + ' ~' + hrES(d); }
+function whenES(iso){ var d = roundH(iso); if (d.getUTCHours() === 0) return 'hacia la medianoche del ' + DAY_ES[(d.getUTCDay() + 6) % 7] + ' al ' + DAY_ES[d.getUTCDay()]; return 'el ' + DAY_ES[d.getUTCDay()] + ' ~' + hrES(d); }
 function whenEN(iso){ var d = roundH(iso); if (d.getUTCHours() === 0) return 'around midnight ' + DAY_EN[(d.getUTCDay() + 6) % 7] + ' night'; return DAY_EN[d.getUTCDay()] + ' ~' + hrEN(d); }
 // onsets: floor to the half hour, so a start is never shown later than computed
 function floorHH(iso){ return new Date(Math.floor(ms(iso) / 1800e3) * 1800e3 - 6 * 3600e3); }
@@ -93,7 +94,7 @@ var FX = (function(){
   var shift = ['nhc'].map(function(k){ var s = B.amapas.scen[k]; for (var i = NOBS; i < N; i++) if (s.frm[i] >= 180 && s.frm[i] <= 300 && s.v[i] > 30) return i; return null; }).filter(function(x){ return x !== null; });
   return {fx: fx, km: g[0], brg: g[1], kmh: M.kmh, dir: M.dir_to, c1: c1, c2: c2, shift: shift.length ? TIMES[Math.min.apply(null, shift)] : null,
           vAt: Math.max(ce.v, cn.v), vAtMin: Math.min(ce.v, cn.v), cat: D.advisory.kt >= 113 ? 4 : 3,
-          wind2: win('amapas', 'wind', 2), wind3: win('amapas', 'wind', 3), windows3: (function(){ var w = win('amapas', 'windows', 3) || win('amapas', 'windows', 2); return w && ms(w[1]) - ms(w[0]) >= 3600e3 ? w : null; })(), amPkDir: (function(){ var s = B.amapas.scen.nhc, k = NOBS; for (var i = NOBS; i < N; i++) if (s.gb[i] > s.gb[k]) k = i; return s.frm[k]; })(), rate2: win('amapas', 'rate', 2), rate3: [win('amapas', 'rate', 3), win('pitillal', 'rate', 3)],
+          wind2: win('amapas', 'wind', 2), wind3: win('amapas', 'wind', 3), windows3: (function(){ var w = win('amapas', 'windows', 3) || win('amapas', 'windows', 2); return w && ms(w[1]) - ms(w[0]) >= 3600e3 ? w : null; })(), toa: (D.wind_cal || {}).toa34 || null, dirIn: (function(){ var t = (D.wind_cal || {}).toa34, s = B.amapas.scen.nhc, i = t ? TIMES.indexOf(t.likely.slice(0, 15) + '0Z') : -1; if (i < 0 && t){ var best = NOBS; for (var k = NOBS; k < N; k++) if (Math.abs(ms(TIMES[k]) - ms(t.likely)) < Math.abs(ms(TIMES[best]) - ms(t.likely))) best = k; i = best; } return s.frm[i >= 0 ? i : NOBS]; })(), amPkDir: (function(){ var s = B.amapas.scen.nhc, k = NOBS; for (var i = NOBS; i < N; i++) if (s.gb[i] > s.gb[k]) k = i; return s.frm[k]; })(), rate2: win('amapas', 'rate', 2), rate3: [win('amapas', 'rate', 3), win('pitillal', 'rate', 3)],
           slide2: win('amapas', 'slide', 2), cuale3: win('ezapata', 'river', 3), pit3: win('pitillal', 'river', 3), run3p: win('pitillal', 'runoff', 3) || win('pitillal', 'runoff', 2), run3z: win('ezapata', 'runoff', 3),
           gustPk: (function(){ var g = B.amapas.scen.nhc.gb, m = 0, s0 = null, e0 = null; for (var i = NOBS; i < N; i++) m = Math.max(m, g[i]); for (var j = NOBS; j < N; j++) if (g[j] >= 0.85 * m){ if (s0 === null) s0 = j; e0 = j; } return s0 === null ? null : [TIMES[s0], TIMES[e0], e0 === N - 1]; })(),
           totMin: Math.min(B.amapas.scen.nhc.total, B.pitillal.scen.nhc.total), totMax: Math.max(B.amapas.scen.nhc.total, B.pitillal.scen.nhc.total)};
@@ -242,13 +243,13 @@ scene({id: 'title', dur: 8, steps: [{at: 0, es: '', en: ''}], noPanel: true, dra
 scene({id: 'now', dur: 26, title: ['Simon y estos riesgos', 'Simon and these risks'], steps: [
   {at: 0, es: 'Imágenes reales del satélite GOES-18 de las últimas 4 horas. El ojo está a unos *' + fE(kmE) + ' km al ' + dirS + '* de Vallarta y avanza lentamente hacia el norte. Es un huracán fuerte (categoría ' + FX.cat + ').',
             en: 'Real GOES-18 satellite images from the last 4 hours. The eye is about *' + fN(miE) + ' miles ' + dirE + '* of Vallarta, moving slowly north. It is a strong hurricane (Category ' + FX.cat + ').'},
-  {at: 11, es: 'El NHC prevé que su centro pase cerca de Vallarta ' + whenES(TIMES[CN.i]).replace(/^(el |la )/, '$1*') + '*, rozando o cruzando la costa y debilitándose. En Vallarta, el NHC da *' + P34 + '%* de probabilidad de viento de tormenta tropical y *' + P64 + '%* de viento de huracán. Lo principal: *el agua y las laderas*; en la costa, *las olas*.',
-             en: 'The NHC expects its center to pass near Vallarta *' + whenEN(TIMES[CN.i]) + '*, skirting or crossing the coast and weakening. For Vallarta, the NHC gives a *' + P34 + '%* chance of tropical-storm-force wind and *' + P64 + '%* for hurricane-force wind. The main risks: *water and slopes*; on the coast, *waves*.'}],
+  {at: 11, es: 'El NHC prevé que su centro pase cerca de Vallarta ' + whenES(TIMES[CN.i]).replace(/^(el |hacia la )/, '$1*') + '*, ' + (track('nhc', CN.i).lon < PV[1] - 0.03 ? 'sobre la bahía, a unos ' + Math.round(CN.km / 5) * 5 + ' km al oeste,' : 'a unos ' + Math.round(CN.km / 5) * 5 + ' km,') + ' debilitándose. En Vallarta, el NHC da *' + P34 + '%* de probabilidad de viento de tormenta tropical, *' + P50 + '%* de 93 km/h o más y *' + P64 + '%* de viento de huracán. Lo principal: *el agua y las laderas*; en la costa, *las olas*.',
+             en: 'The NHC expects its center to pass near Vallarta *' + whenEN(TIMES[CN.i]) + '*, ' + (track('nhc', CN.i).lon < PV[1] - 0.03 ? 'over the bay about ' + Math.round(CN.km / 1.609 / 5) * 5 + ' miles to the west,' : 'about ' + Math.round(CN.km / 1.609 / 5) * 5 + ' miles away,') + ' weakening. For Vallarta, the NHC gives a *' + P34 + '%* chance of tropical-storm-force wind, *' + P50 + '%* for 58 mph or more and *' + P64 + '%* for hurricane force. The main risks: *water and slopes*; on the coast, *waves*.'}],
   draw: function(t){
     var R = {x: VX + (VW - 1080) / 2, y: 0, w: 1080, h: 1080};
     if (t < 11){ satDraw(R, Math.floor(t * 5) % IRF.length, null, 0, {tracks: ease((t - 6) / 2)}); label(t < 11 ? 'OBSERVADO · OBSERVED' : '', R.x + 30, 50, 24, '#5ff0b4', 700); }
     else { var f = ease((t - 11.5) / 12), i = Math.round(NOW + 1 + f * (N - 2 - NOW)); satDraw(R, 0, 'nhc', i, {tracks: 1}); var d = cst(TIMES[i]);
-      var cc = track('nhc', i), cl = catLabel(cc.v); label('En el centro: ' + cl[0].toLowerCase() + ' · At the center: ' + cl[1].toLowerCase(), R.x + 30, 92, 22, C.ink2, 700);
+      var cc = track('nhc', i), cl = catLabel(cc.v), dPV = geo(PV[0], PV[1], cc.lat, cc.lon)[0]; label(dPV > 150 ? 'En el centro: ' + cl[0].toLowerCase() + ' · At the center: ' + cl[1].toLowerCase() : 'Centro: ' + cl[0].toLowerCase() + ', no es el viento en Vallarta · Center: ' + cl[1].toLowerCase() + ', not Vallarta’s wind', R.x + 30, 92, 22, C.ink2, 700);
       label('En Vallarta (NHC): ' + P34 + '% tormenta tropical · ' + P64 + '% huracán · In Vallarta: ' + P34 + '% TS · ' + P64 + '% hurricane', R.x + 30, H - 40, 21, '#fff', 700);
       label('PRONÓSTICO NHC · NHC FORECAST  ' + DS_ES[d.getUTCDay()] + ' ' + hrES(d) + ' · ' + DS_EN[d.getUTCDay()] + ' ' + hrEN(d), R.x + 30, 50, 24, '#fff', 700);
       label('Nubes de hoy, desplazadas y atenuadas: un esquema, no un pronóstico de nubes', R.x + 30, 132, 20, C.ink2, 500); label('Today’s clouds, shifted and faded: a schematic, not a cloud forecast', R.x + 30, 160, 20, C.ink2, 500); }
@@ -309,10 +310,10 @@ var DROPS = (function(){ var rnd = seeded(7), a = []; for (var k = 0; k < 900; k
 scene({id: 'mountains', dur: 34, title: ['Las montañas cambian la tormenta', 'How the mountains change the storm'], steps: [
   {at: 0, es: 'Así se ve Vallarta de perfil: de la playa a *' + fE(Math.round(topM / 10) * 10) + ' m de altura en sólo ' + r(topKm) + ' km*. Esta sierra decide adónde va la lluvia.',
           en: 'This is Vallarta in profile: from the beach to *' + fN(Math.round(topM * 3.281 / 10) * 10) + ' ft in just ' + r(topKm / 1.609) + ' miles*. These mountains decide where the rain goes.'},
-  {at: 10, es: 'Antes de que pase el ojo, el viento viene *de tierra (noreste)*: baja de la sierra hacia el mar, en rachas.' + (FX.rate2 ? ' Pero las bandas de lluvia ya descargan fuerte desde el *' + oES(FX.rate2[0]) + '*, también en la sierra: los ríos pueden crecer *antes* de que pase el ojo.' : ''),
-           en: 'Before the eye passes, the wind blows *from the land (northeast)*: down the mountains toward the sea, in gusts.' + (FX.rate2 ? ' But the rain bands already pour from *' + oEN(FX.rate2[0]) + '*, on the mountains too: the rivers can rise *before* the eye passes.' : '')},
-  {at: 19, es: 'Después del ojo, el viento gira y llega *del mar (suroeste)*' + (FX.shift ? ', desde el ' + tES(FX.shift) : '') + '. Empuja aire húmedo cuesta arriba: al subir se enfría y suelta *más lluvia en la sierra que en la playa*. Esa agua baja después por los ríos.',
-           en: 'After the eye, the wind turns and comes *off the sea (southwest)*' + (FX.shift ? ', from ' + tEN(FX.shift) : '') + '. It pushes moist air up the slopes: rising air cools and wrings out *more rain on the mountains than at the beach*. That water then comes down the rivers.'}],
+  {at: 10, es: 'Mientras el centro se acerca desde el sur, el viento viene *de tierra (del ' + C16S[ci(FX.dirIn)] + ')*: baja de la sierra hacia el mar, en rachas.' + (FX.rate2 ? ' Pero las bandas de lluvia ya descargan fuerte desde el *' + oES(FX.rate2[0]) + '*, también en la sierra: los ríos pueden crecer *antes* de que pase el centro.' : ''),
+           en: 'As the center approaches from the south, the wind blows *from the land (from the ' + C16EN[ci(FX.dirIn)] + ')*: down the mountains toward the sea, in gusts.' + (FX.rate2 ? ' But the rain bands already pour from *' + oEN(FX.rate2[0]) + '*, on the mountains too: the rivers can rise *before* the center passes.' : '')},
+  {at: 19, es: 'Cuando el centro pasa y se aleja, el viento gira y llega *del mar (suroeste)*' + (FX.shift ? ', desde el ' + tES(FX.shift) : '') + '. Empuja aire húmedo cuesta arriba: al subir se enfría y suelta *más lluvia en la sierra que en la playa*. Esa agua baja después por los ríos.',
+           en: 'Once the center passes and moves away, the wind turns and comes *off the sea (southwest)*' + (FX.shift ? ', from ' + tEN(FX.shift) : '') + '. It pushes moist air up the slopes: rising air cools and wrings out *more rain on the mountains than at the beach*. That water then comes down the rivers.'}],
   draw: function(t){
     var x0 = VX + 90, x1 = W - 70, yb = 800, yt = 250, kmMax = 40, hMax = 2400;
     var X = function(km){ return x0 + km / kmMax * (x1 - x0); }, Y = function(m){ return yb - Math.max(m, 0) / hMax * (yb - yt); };
@@ -352,7 +353,7 @@ scene({id: 'mountains', dur: 34, title: ['Las montañas cambian la tormenta', 'H
         var ang = Math.atan2(y4 - y3, X(km4) - X(km3)); cx.beginPath(); cx.moveTo(X(km4) + Math.cos(ang) * 14, y4 + Math.sin(ang) * 14); cx.lineTo(X(km4) + Math.cos(ang + 2.5) * 16, y4 + Math.sin(ang + 2.5) * 16); cx.lineTo(X(km4) + Math.cos(ang - 2.5) * 16, y4 + Math.sin(ang - 2.5) * 16); cx.fill(); cx.restore();
       }
       label(ph === 1 ? 'Viento del noreste · Northeast wind' : 'Viento del suroeste · Southwest wind', VX + 70, 120, 34, ph === 1 ? '#ffd57a' : '#9fe0ff', 700);
-      label(ph === 1 ? 'antes del ojo · before the eye' : 'después del ojo · after the eye', VX + 70, 166, 26, C.ink2, 500);
+      label(ph === 1 ? 'mientras se acerca el centro · as the center approaches' : 'cuando el centro ya pasó · after the center passes', VX + 70, 166, 26, C.ink2, 500);
     }
     // water returning down the valley in the last seconds
     if (t > 27){ var wa = ease((t - 27) / 2); cx.save(); cx.globalAlpha = wa; cx.strokeStyle = '#5eb4ff'; cx.lineWidth = 7; cx.setLineDash([22, 16]); cx.lineDashOffset = t * 60;
@@ -564,8 +565,8 @@ scene({id: 'waves', dur: 42, title: ['Olas: el fondo de la bahía decide', 'Wave
 
 // wind and height
 scene({id: 'wind', dur: 30, title: ['Viento: altura y terreno', 'Wind: height and terrain'], steps: [
-  {at: 0, es: 'El viento aumenta con la altura y en cimas y laderas de cara al viento: el NHC advierte que ahí puede ser *hasta 30% más fuerte*. Un piso 8 recibe más viento que la calle.',
-          en: 'Wind gets stronger with height and on hilltops and windward slopes: the NHC warns it can be *up to 30% stronger* there. An 8th floor gets more wind than the street.'},
+  {at: 0, es: 'El viento aumenta con la altura y en cimas y laderas de cara al viento: en avisos de otros huracanes, el NHC ha advertido que ahí puede ser *hasta 30% más fuerte*. Un piso 8 recibe más viento que la calle.',
+          en: 'Wind gets stronger with height and on hilltops and windward slopes: in advisories for other hurricanes, the NHC has warned it can be *up to 30% stronger* there. An 8th floor gets more wind than the street.'},
   {at: 11, es: 'Entre edificios altos el viento se encañona y hace remolinos. En la calle el peligro mayor es lo que vuela o cae: tinacos, láminas, vidrios, ramas y cables. En Lidia (2023) cayeron árboles y techos.',
            en: 'Between tall buildings the wind funnels and swirls. On the street the biggest danger is what flies or falls: water tanks, roofing sheets, glass, branches and power lines. In Lidia (2023) trees and roofs came down.'},
   {at: 21, es: 'Las casas con *techo de lámina* son las más expuestas. Si de pronto hay calma al pasar el ojo, *no salgas*: el viento regresa del lado contrario.',
@@ -576,13 +577,13 @@ scene({id: 'wind', dur: 30, title: ['Viento: altura y terreno', 'Wind: height an
     cx.fillStyle = '#2a3a2a'; cx.beginPath(); cx.moveTo(VX + 760, g0); cx.lineTo(VX + 1000, g0 - 380); cx.lineTo(VX + 1160, g0 - 400); cx.lineTo(W, g0); cx.closePath(); cx.fill();
     cx.fillStyle = '#3a414c'; roundRect(x0 + 140, g0 - 120, 120, 120, 4); cx.fill(); roundRect(x0 + 380, g0 - 340, 140, 340, 4); cx.fill(); cx.fillStyle = '#4a5260'; roundRect(x0 + 290, g0 - 300, 70, 300, 4); cx.fill(); roundRect(x0 + 540, g0 - 300, 70, 300, 4); cx.fill();
     cx.fillStyle = '#1c232e'; cx.fillRect(VX, g0, VW, H - g0);
-    items.forEach(function(it, k){ var a = ease((t - 0.8 - k * 0.6) / 0.8), xs = [x0 + 40, x0 + 200, x0 + 450, VX + 1040][k], y = g0 - it[3] - 40, len = 70 + it[2] * 170 * a;
+    items.forEach(function(it, k){ var a = ease((t - 0.8 - k * 0.6) / 0.8), xs = [x0 + 40, x0 + 200, x0 + 450, VX + 960][k], y = g0 - it[3] - 40, len = 70 + it[2] * 170 * a;
       cx.globalAlpha = a; cx.strokeStyle = it[2] >= 1.2 ? C.t4 : it[2] >= 0.95 ? C.t3 : C.t2; cx.fillStyle = cx.strokeStyle; cx.lineWidth = 10; cx.lineCap = 'round';
       cx.beginPath(); cx.moveTo(xs - len / 2, y); cx.lineTo(xs + len / 2, y); cx.stroke(); cx.beginPath(); cx.moveTo(xs + len / 2 + 18, y); cx.lineTo(xs + len / 2 - 6, y - 16); cx.lineTo(xs + len / 2 - 6, y + 16); cx.fill();
       label(it[0] + ' · ' + it[1], xs, y - 40, 22, '#fff', 700, 'center', false); label('×' + it[2].toFixed(2), xs, y + 36, 22, C.ink2, 600, 'center', false); cx.globalAlpha = 1; });
-    label('Viento relativo al de mar abierto a 10 m (factores de exposición ASCE 7; NHC: hasta +30% en cimas)', VX + 60, 120, 22, '#fff', 700, 'left', false);
-    label('Wind relative to open water at 33 ft (ASCE 7 exposure factors; NHC: up to +30% on hilltops)', VX + 60, 154, 20, C.ink2, 600, 'left', false);
-    if (t > 11){ var a2 = ease((t - 11.3) / 0.8); cx.globalAlpha = a2; for (var q = 0; q < 3; q++){ var xx = x0 + 300 + q * 40 + (t * 50 % 60), yy = g0 - 160 + Math.sin(t * 3 + q) * 40; cx.strokeStyle = '#9fe0ff'; cx.lineWidth = 4; cx.beginPath(); cx.arc(xx, yy, 18 + q * 6, 0, 4.5); cx.stroke(); } label('remolinos · swirls', x0 + 345, g0 - 230, 20, '#9fe0ff', 700, 'center', false); cx.globalAlpha = 1; }
+    label('Viento relativo al de mar abierto a 10 m (factores de exposición ASCE 7)', VX + 60, 110, 22, '#fff', 700, 'left', false); label('NHC, en avisos de otros huracanes: hasta +30% en cimas · NHC, other hurricanes: up to +30% on hilltops', VX + 60, 178, 19, C.ink2, 600, 'left', false);
+    label('Wind relative to open water at 33 ft (ASCE 7 exposure factors)', VX + 60, 144, 20, C.ink2, 600, 'left', false);
+    if (t > 11){ var a2 = ease((t - 11.3) / 0.8); cx.globalAlpha = a2; for (var q = 0; q < 3; q++){ var xx = x0 + 300 + q * 40 + (t * 50 % 60), yy = g0 - 160 + Math.sin(t * 3 + q) * 40; cx.strokeStyle = '#9fe0ff'; cx.lineWidth = 4; cx.beginPath(); cx.arc(xx, yy, 18 + q * 6, 0, 4.5); cx.stroke(); } label('remolinos · swirls', x0 + 345, g0 - 300, 20, '#9fe0ff', 700, 'center', false); cx.globalAlpha = 1; }
   }});
 
 // one scene per building: zoomed map, the wind arrow and the threat strips running through Sunday
@@ -633,9 +634,9 @@ bscene({id: 'amapas', view: 'zr', dur: 26, overlays: [['atlas_slide_zr', 0.45], 
   rows: [['wind', 'Viento', 'Wind'], ['windows', 'Ventanas N', 'N windows'], ['rate', 'Lluvia', 'Rain'], ['slide', 'Deslave', 'Landslide']],
   labels: [['AMAPAS', 20.5984, -105.2415, 26], ['Río Cuale', 20.6066, -105.2320, 22, '#8cc4ff']],
   steps: [
-    {at: 0, es: FX.windows3 ? 'En un piso alto el viento es más fuerte que en la calle. Antes del ojo sopla del noreste y *golpea las ventanas que dan al norte*. Horas de más riesgo: *' + spanES(FX.windows3[0], FX.windows3[1]) + '*. En esas horas, *quédate en un cuarto o pasillo interior*, lejos de las ventanas, o baja a un piso más bajo.'
+    {at: 0, es: FX.windows3 ? 'En un piso alto el viento es más fuerte que en la calle. Mientras el centro se acerca, sopla del noreste y *golpea las ventanas que dan al norte*. Horas de más riesgo: *' + spanES(span2h(FX.windows3)[0], span2h(FX.windows3)[1]) + '*. En esas horas, *quédate en un cuarto o pasillo interior*, lejos de las ventanas, o baja a un piso más bajo.'
           : 'En un piso alto el viento es más fuerte que en la calle. Con la trayectoria actual, el viento fuerte llega del *' + C16S[ci(FX.amPkDir)] + '*: tus ventanas al norte quedan del lado protegido. Aun así, ' + (FX.wind2 ? '*' + spanES(FX.wind2[0], FX.wind2[1]) + '*, ' : 'durante la tormenta, ') + '*aléjate de las ventanas*: el viento lanza objetos que rompen vidrios.',
-            en: FX.windows3 ? 'Up high the wind is stronger than at street level. Before the eye it blows from the northeast and *hits the north-facing windows*. Riskiest hours: *' + spanEN(FX.windows3[0], FX.windows3[1]) + '*. During those hours *stay in an interior room or hallway*, away from windows, or move to a lower floor.'
+            en: FX.windows3 ? 'Up high the wind is stronger than at street level. As the center approaches it blows from the northeast and *hits the north-facing windows*. Riskiest hours: *' + spanEN(span2h(FX.windows3)[0], span2h(FX.windows3)[1]) + '*. During those hours *stay in an interior room or hallway*, away from windows, or move to a lower floor.'
           : 'Up high the wind is stronger than at street level. On the current track the strong wind comes from the *' + C16EN[ci(FX.amPkDir)] + '*: your north windows are on the sheltered side. Even so, ' + (FX.wind2 ? '*' + spanEN(FX.wind2[0], FX.wind2[1]) + '*, ' : 'during the storm, ') + '*stay away from windows*: the wind throws objects that break glass.'},
     {at: 13, es: 'El Atlas 2024 incluye tu zona entre las que pueden recibir material de deslaves; hay *' + AT.near.amapas_500m + ' deslaves registrados a menos de 500 m*, y en 2021 uno en Amapas obligó a evacuar a 20 personas. Las laderas pueden *cortar la calle*: no salgas a revisar durante la tormenta.',
              en: 'The 2024 atlas includes your area among those that can receive landslide debris; *' + AT.near.amapas_500m + ' landslides were logged within 1,600 ft*, and in 2021 one in Amapas forced 20 people out. Slopes can *cut off the street*: don’t go out to check during the storm.'}]});
@@ -645,8 +646,8 @@ bscene({id: 'ezapata', view: 'zr', dur: 26, overlays: [['atlas_slide_zr', 0.35],
   steps: [
     {at: 0, es: 'Los edificios altos frenan el viento constante, pero lo vuelven *racheado y arremolinado*: pueden caer *tinacos, calentadores, vidrios y láminas* de los pisos altos. Además estás en ladera: CENAPRED califica tu zona con susceptibilidad *alta* a deslaves, y hay *' + AT.near.frodriguez_500m + ' deslaves registrados a menos de 500 m*.',
             en: 'Taller buildings block the steady wind but make it *gusty and swirling*: *water tanks, water heaters, glass and sheet-metal roofing* can fall from upper floors. You are also on a slope: CENAPRED rates your area *high* for landslide susceptibility, and *' + AT.near.frodriguez_500m + ' landslides were logged within 1,600 ft*.'},
-    {at: 13, es: 'Estás en alto: es poco probable que el agua llegue a tu piso. Pero en Nora (2021) el Cuale se desbordó hacia calles de Emiliano Zapata, y esta vez el río *puede ponerse peligroso desde el ' + oES(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. Si pasa el ojo y el viento se calma, *no salgas*: el viento regresa.',
-             en: 'You are up high: water is unlikely to reach your floor. But in Nora (2021) the Cuale overflowed into streets of Emiliano Zapata, and this time the river *may turn dangerous from ' + oEN(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. If the eye passes and the wind drops, *stay inside*: the wind comes back.'}]});
+    {at: 13, es: 'Estás en alto: es poco probable que el agua llegue a tu piso. Pero en Nora (2021) el Cuale se desbordó hacia calles de Emiliano Zapata, y esta vez el río *puede ponerse peligroso desde el ' + oES(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. Si de pronto el viento se calma, *no salgas*: puede ser el centro pasando cerca, y el viento regresa.',
+             en: 'You are up high: water is unlikely to reach your floor. But in Nora (2021) the Cuale overflowed into streets of Emiliano Zapata, and this time the river *may turn dangerous from ' + oEN(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. If the wind suddenly drops, *stay inside*: it may be the center passing nearby, and the wind comes back.'}]});
 bscene({id: 'pitillal', view: 'pit', dur: 32, overlays: [['atlas_flood_pit', 0.8]], ovLabel: ['Modelo de inundación de CENAPRED, crecida de 100 años', 'CENAPRED flood model, 100-year flood', '#8cc4ff'], title: ['El Pitillal · casa de 2 pisos, a nivel de calle', 'El Pitillal · 2-story house, street level'],
   rows: [['rate', 'Lluvia', 'Rain'], ['runoff', 'Calles', 'Streets'], ['river', 'Río Pitillal', 'Pitillal River'], ['wind', 'Viento', 'Wind']],
   labels: [['EL PITILLAL', 20.6540, -105.2050, 28], ['Río Pitillal', 20.6492, -105.2156, 22, '#8cc4ff']],
@@ -655,8 +656,8 @@ bscene({id: 'pitillal', view: 'pit', dur: 32, overlays: [['atlas_flood_pit', 0.8
             en: 'Here the main risk is *water*: the street and the Pitillal River, 525 ft away; in blue, the area CENAPRED’s flood model marks as flood-prone. Streets may flood from ' + oEN(FX.run3p ? FX.run3p[0] : TIMES[N - 1]) + '; the river may turn dangerous from ' + oEN(FX.pit3 ? FX.pit3[0] : TIMES[N - 1]) + ' and *stay high on Monday* even as the rain eases.'},
     {at: 11, es: 'No es la primera vez: en 2021 (Nora) el Pitillal arrastró casas y se evacuó la colonia Río Pitillal; en 2023, dos días después de Lidia, la calle Corregidora, en el centro de El Pitillal, se inundó y la corriente arrastró autos.',
              en: 'It has happened before: in 2021 (Nora) the Pitillal swept away homes and the Río Pitillal neighborhood was evacuated; in 2023, two days after Lidia, calle Corregidora in central El Pitillal flooded and the current carried cars away.'},
-    {at: 21, es: '*Sube documentos y medicinas* antes del domingo en la tarde. Si Protección Civil pide evacuar, *sal de inmediato*. Si el agua sube en la calle, corta la luz *antes* de que entre (nunca parado en agua) y sube al segundo piso. *Nunca cruces agua en movimiento.*',
-             en: '*Move documents and medicine upstairs* before Sunday afternoon. If Protección Civil calls for evacuation, *go right away*. If water rises in the street, shut off the power *before* it gets in (never while standing in water) and go upstairs. *Never cross moving water.*'}]});
+    {at: 21, es: '*Sube documentos y medicinas* esta noche o temprano el domingo' + (FX.toa ? ': el viento de tormenta tropical puede empezar desde el ' + oES(FX.toa.early) : '') + '. Si Protección Civil pide evacuar, *sal de inmediato*. Si el agua sube en la calle, corta la luz *antes* de que entre (nunca parado en agua) y sube al segundo piso. *Nunca cruces agua en movimiento.*',
+             en: '*Move documents and medicine upstairs* tonight or early Sunday' + (FX.toa ? ': tropical-storm-force wind could start as early as ' + oEN(FX.toa.early) : '') + '. If Protección Civil calls for evacuation, *go right away*. If water rises in the street, shut off the power *before* it gets in (never while standing in water) and go upstairs. *Never cross moving water.*'}]});
 
 // summary timeline
 scene({id: 'timeline', dur: 20, title: ['Domingo y lunes, hora por hora (estimado)', 'Sunday and Monday, hour by hour (estimate)'], steps: [
@@ -666,7 +667,7 @@ scene({id: 'timeline', dur: 20, title: ['Domingo y lunes, hora por hora (estimad
     cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
     var x0 = VX + 470, x1 = W - 70, y0 = 190, i0 = TL0, X = function(i){ return x0 + (i - i0) / (N - 1 - i0) * (x1 - x0); };
     var rows = [
-      ['Viento de tormenta tropical', 'Tropical-storm winds', FX.wind2, C.t2],
+      ['Viento de tormenta tropical', 'Tropical-storm winds · NHC: ' + P34 + '%', FX.toa && FX.wind2 ? [FX.toa.likely.slice(0, 15) + '0Z', FX.wind2[1], FX.wind2[2], FX.toa.early.slice(0, 15) + '0Z'] : FX.wind2, C.t2],
       ['Ráfagas más fuertes', 'Strongest gusts', FX.gustPk, C.t4],
       ['Lluvia fuerte', 'Heavy rain', FX.rate2, '#7f6bff'],
       ['Paso del centro', 'Center passes', [TIMES[FX.c1.i], TIMES[FX.c2.i]], '#ffffff'],
@@ -679,6 +680,7 @@ scene({id: 'timeline', dur: 20, title: ['Domingo y lunes, hora por hora (estimad
       cx.globalAlpha = a; cx.font = '700 25px ' + FT; cx.fillStyle = '#fff'; cx.textAlign = 'right'; cx.textBaseline = 'alphabetic'; cx.fillText(rw[0], x0 - 20, y + 22);
       cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText(rw[1], x0 - 20, y + 52); cx.textAlign = 'left';
       cx.fillStyle = '#1a212c'; cx.fillRect(x0, y, x1 - x0, 46);
+      if (rw[2] && rw[2][3]){ var se = Math.max(i0, TIMES.indexOf(rw[2][3])), sl = TIMES.indexOf(rw[2][0]); if (se >= 0 && sl > se){ cx.fillStyle = rw[3]; cx.globalAlpha = a * 0.35; cx.fillRect(X(se), y, X(sl) - X(se), 46); cx.globalAlpha = a; } }
       if (rw[2]){ var s = Math.max(i0, TIMES.indexOf(rw[2][0])), e = TIMES.indexOf(rw[2][1]); if (e - s < 6){ s -= 3; e += 3; } cx.fillStyle = rw[3]; cx.globalAlpha = a * 0.9; cx.fillRect(X(s), y, Math.max(6, X(e) - X(s)), 46);
         if (rw[2][2] === true){ cx.beginPath(); cx.moveTo(x1 + 6, y + 6); cx.lineTo(x1 + 30, y + 23); cx.lineTo(x1 + 6, y + 40); cx.closePath(); cx.fill(); } }
       cx.globalAlpha = 1;
@@ -690,7 +692,8 @@ scene({id: 'timeline', dur: 20, title: ['Domingo y lunes, hora por hora (estimad
     label('Trayectoria oficial del NHC. Viento: el caso 50-50 de sus probabilidades; puede ser más fuerte o más débil.', VX + 90, H - 118, 19, C.ink2, 500, 'left', false);
     label('Official NHC track. Wind: the 50-50 case of its odds; it may be stronger or weaker.', VX + 90, H - 92, 19, C.ink2, 500, 'left', false);
     label('Las barras que llegan al borde siguen · Bars reaching the edge continue', VX + 90, H - 66, 19, C.mute, 500, 'left', false);
-    label('Viento y lluvia: Amapas, 8.º piso · Wind and rain: Amapas, 8th floor', VX + 90, H - 40, 20, C.mute, 500, 'left', false);
+    label('Inicio: hora más probable del NHC; franja clara, lo más temprano · Start: NHC most likely time; light band, earliest', VX + 90, H - 40, 17, C.mute, 500, 'left', false);
+    label('Viento y lluvia: Amapas, 8.º piso · Wind and rain: Amapas, 8th floor', VX + 90, H - 14, 17, C.mute, 500, 'left', false);
   }});
 
 scene({id: 'todo', dur: 22, title: ['Qué hacer', 'What to do'], steps: [
@@ -782,7 +785,7 @@ scene({prog: 'forecast', id: 'f-history', dur: 22, title: ['De dónde viene', 'W
 scene({prog: 'forecast', id: 'f-forecast', dur: 30, title: ['A dónde va', 'Where it is going'], steps: [
   {at: 0, es: 'Pronóstico oficial del NHC (boletín ' + adv + '): ' + (F.lf ? 'toca la costa de Jalisco el *' + tES(iso(F.lf.t)) + '* como *' + catLabel(F.lf.kt)[0].toLowerCase() + '*' : F.nc ? 'llega junto a la costa de Jalisco el *' + tES(iso(F.nc.t)) + '* como *' + catLabel(F.nc.kt)[0].toLowerCase() + '*; puede tocar tierra o solo rozar la costa' : 'se acerca a la costa de Jalisco') + '. El cono muestra dónde puede estar el centro: 2 de cada 3 veces queda dentro.',
           en: 'Official NHC forecast (advisory ' + adv + '): ' + (F.lf ? 'it reaches the Jalisco coast *' + tEN(iso(F.lf.t)) + '* as a *' + catLabel(F.lf.kt)[1] + '*' : F.nc ? 'it reaches the Jalisco coastline *' + tEN(iso(F.nc.t)) + '* as a *' + catLabel(F.nc.kt)[1] + '*; it may make landfall or just skirt the coast' : 'it nears the Jalisco coast') + '. The cone shows where the center may be: it stays inside 2 times out of 3.'},
-  {at: 10, es: 'Al rozar o cruzar la sierra pierde fuerza rápido: el aire seco que baja de las montañas lo desarma. Su centro pasaría a unos *' + Math.round(F.pv.km / 5) * 5 + ' km de Vallarta* ' + whenES(iso(F.pv.t)).replace(/^(el |la )/, '$1*') + '*, ya debilitado. Pero el viento en Vallarta no es el del centro: el NHC da *' + P34 + '%* de probabilidad de viento de tormenta tropical y *' + P64 + '%* de viento de huracán.',
+  {at: 10, es: 'Al rozar o cruzar la sierra pierde fuerza rápido: el aire seco que baja de las montañas lo desarma. Su centro pasaría a unos *' + Math.round(F.pv.km / 5) * 5 + ' km de Vallarta* ' + whenES(iso(F.pv.t)).replace(/^(el |hacia la )/, '$1*') + '*, ya debilitado. Pero el viento en Vallarta no es el del centro: el NHC da *' + P34 + '%* de probabilidad de viento de tormenta tropical y *' + P64 + '%* de viento de huracán.',
            en: 'As it skirts or crosses the mountains it weakens fast: dry air sinking off the mountains disrupts it. Its center would pass about *' + Math.round(F.pv.km / 1.609 / 5) * 5 + ' miles from Vallarta* *' + whenEN(iso(F.pv.t)) + '*, already weakened. But the wind in Vallarta is not the wind at the center: the NHC gives a *' + P34 + '%* chance of tropical-storm-force wind and *' + P64 + '%* for hurricane-force wind.'},
   {at: 20, es: 'El lunes sigue hacia el norte, junto a la costa de Nayarit o tierra adentro, cada vez más débil; el martes se disipa. La imagen de satélite se *atenúa* conforme se debilita: es un esquema, no un pronóstico de nubes.',
            en: 'On Monday it keeps heading north along the Nayarit coast or inland, weaker and weaker; on Tuesday it falls apart. The satellite image *fades* as it weakens: a schematic, not a cloud forecast.'}],

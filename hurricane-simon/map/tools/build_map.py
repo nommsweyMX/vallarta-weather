@@ -161,7 +161,7 @@ def series(b, k):
     s = SCN[k]['track']; out = dict(rate=[], cum=[], v=[], g=[], frm=[], km=[], vb=[], gb=[], basin=[], lv={})
     for i, (t, c) in enumerate(zip(times, s)):
         land = True
-        v, g, frm, km, brg = wind(c, b['lat'], b['lon'], land); v, g = v * WIND_CAL, g * WIND_CAL
+        v, g, frm, km, brg = wind(c, b['lat'], b['lon'], land); v, g = capw(v, g)
         fs, gr = exposure(b, frm)
         r = rain(c, b['lat'], b['lon'], rscale(c, i))
         out['rate'].append(r); out['v'].append(v * KMH); out['g'].append(g * KMH); out['frm'].append(frm); out['km'].append(km)
@@ -205,8 +205,9 @@ def onsets(lv):
 R2 = lambda a, n=1: [round(float(x), n) for x in a]
 # Wind: the parametric field around the interpolated NHC line is the wind if the centre follows that line exactly at the
 # forecast strength. The NHC wind speed probabilities fold in the track, size and intensity errors and the weakening over the
-# mountains. Scale the wind so that its peak at Puerto Vallarta on the NHC track equals the median of those probabilities
-# (the most likely peak sustained wind there), and keep the 1-in-5 value for the text.
+# mountains. Cap the open-exposure wind near Puerto Vallarta at the 50-50 value of those probabilities (the even-odds peak
+# sustained wind there), so the NHC wind radii still set when the wind arrives but the peak matches the odds. The 1-in-5
+# value is kept for the text.
 PVLL = (20.6100, -105.2345)
 def pws_wind(q):
     """wind (kt) exceeded with probability q at Puerto Vallarta, from the NHC cumulative probabilities for 34, 50 and 64 kt."""
@@ -219,8 +220,25 @@ V50, V20 = pws_wind(0.5), pws_wind(0.2)
 P34 = (NHC.get('pv_probs') or {}).get('34', 0)
 if P34 < 50: V50 = 33.0          # below tropical-storm force at even odds: the NHC gives no lower threshold, so do not interpolate one
 VPK = max(wind(c, PVLL[0], PVLL[1], True)[0] for c in SCN['nhc']['track'][n_obs:])
-WIND_CAL = min(1.0, V50 / VPK) if V50 and VPK else 1.0
-print('wind calibration', dict(v50=round(V50 or 0, 1), v20=round(V20 or 0, 1), model_peak_pv=round(VPK, 1), factor=round(WIND_CAL, 3), probs=NHC.get('pv_probs')))
+VCAP = V50 if V50 else 999.0
+def capw(v, g): return (VCAP, g * VCAP / v) if v > VCAP else (v, g)
+# NHC-style arrival of tropical-storm-force wind at Puerto Vallarta from the PWS onset bins: earliest reasonable = 10% of the
+# 5-day total, most likely = 50% of it (linear within each bin)
+def toa34():
+    o = NHC.get('onset34')
+    if not o or not o.get('all'): return None
+    edges = [0, 12, 24, 36, 48, 72, 96, 120]; k = o['all'].index(o['op']) if o['op'] in o['all'] else 0
+    base = P(o['start']) - dt.timedelta(hours=edges[k]); tot = float(sum(o['all']))
+    if tot <= 0: return None
+    def at(q):
+        c = 0.0
+        for j, op in enumerate(o['all']):
+            if op and c + op >= q * tot: return F(base + dt.timedelta(hours=edges[j] + (edges[j + 1] - edges[j]) * (q * tot - c) / op))
+            c += op
+        return None
+    return dict(early=at(0.1), likely=at(0.5), total=int(tot))
+TOA34 = toa34()
+print('wind calibration', dict(v50=round(V50 or 0, 1), v20=round(V20 or 0, 1), model_peak_pv=round(VPK, 1), cap=round(VCAP, 1), probs=NHC.get('pv_probs'), toa34=TOA34))
 # Satellite rain rates near the eyewall, carried along the track, give about twice the SMN forecast. Scale the field so the
 # wettest 24 h at any site, on either track, stays within the SMN's upper bound for the coast.
 SMN_MAX24 = 250.0
@@ -255,6 +273,6 @@ json.dump(dict(
     scen={k: dict(track=trk(v['track']), landfall=v['landfall']) for k, v in SCN.items()},
     nhc_track=[dict(t=p['t'], lat=p['lat'], lon=p['lon'], kt=p['kt'], note=p.get('note')) for p in tr],
     basins={k: {kk: vv for kk, vv in v.items() if kk != 'cells'} for k, v in BASINS.items()},
-    wind_cal=dict(factor=round(WIND_CAL, 3), v50_kt=round(V50, 1) if V50 else None, v20_kt=round(V20, 1) if V20 else None, model_peak_pv_kt=round(VPK, 1), probs=NHC.get('pv_probs'), pws=NHC.get('pws_advisory')),
+    wind_cal=dict(cap_kt=round(VCAP, 1), toa34=TOA34, v50_kt=round(V50, 1) if V50 else None, v20_kt=round(V20, 1) if V20 else None, model_peak_pv_kt=round(VPK, 1), probs=NHC.get('pv_probs'), pws=NHC.get('pws_advisory')),
     bldg=B, V0=V0, G0=G0, th=dict(wind=WIND_TH, rate=RATE_TH, runoff=RUN_TH, river=RIVER_TH)), open(OUT, 'w'), separators=(',', ':'))
 print('wrote', OUT, os.path.getsize(OUT), 'landfall', {k: v['landfall'] for k, v in SCN.items()})
