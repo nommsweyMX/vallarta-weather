@@ -248,8 +248,57 @@ function gModels(){ header(5, L('Los modelos: cuáles han acertado y qué dicen 
          '*Reading it:* the forecasts that have tracked Simon best (' + b0 + ' and ' + b1 + ') keep the center' + bestKmTxt + ' ' + bestDir + ' of Vallarta. ' + mid + ' No single model decides: the NHC gives Vallarta *' + PP['64'] + '%* for hurricane-force wind and *' + PP['34'] + '%* for tropical-storm force.'), 40, yb + 56, W - 80, 21, 28, C.ink2);
   var ns = []; rk.forEach(function(k){ [12, 24, 36].forEach(function(t){ var q = MD.skill[k].taus[String(t)]; if (q && q.n_trk_recent) ns.push(q.n_trk_recent); }); }); var nLo = ns.length ? Math.min.apply(null, ns) : 0, nHi = ns.length ? Math.max.apply(null, ns) : 0;
   footer([L('Modelos del ciclo ' + FC.cycle.slice(6, 8) + '/' + FC.cycle.slice(8) + 'Z (NHC/ATCF). Error: contra la trayectoria oficial observada; «últimos 2 días» promedia solo ' + nLo + ' a ' + nHi + ' pronósticos por modelo y plazo, así que el orden puede cambiar. Viento en Vallarta: estructura de viento del NHC sobre la línea de cada modelo, sin la corrección por probabilidades.', 'Models from the ' + FC.cycle.slice(8) + 'Z ' + FC.cycle.slice(6, 8) + ' Oct cycle (NHC/ATCF). Error: against the observed official track; “last 2 days” averages only ' + nLo + ' to ' + nHi + ' forecasts per model and lead time, so the order can change. Vallarta wind: the NHC wind structure on each model’s line, without the odds-based correction.')]); }
-var GRAPHICS = {wind: gWind, rain: gRain, flood: gFlood, timing: gTiming, models: gModels};
-window.render = function(g, lang){ LANG = lang || 'es'; document.documentElement.lang = LANG; cx.setTransform(1, 0, 0, 1, 0, 0); GRAPHICS[g](); };
+// ====================== 6. ONE-PAGE BILINGUAL SUMMARY (three places) ======================
+function inLang(l, fn){ var keep = LANG; LANG = l; try { return fn(); } finally { LANG = keep; } }
+function bi(x, y, w, es, en, size){ var sz = size || 21; var h = rich(es, x, y, w, sz, sz + 7, '#ffffff'); h += rich(en, x, y + h, w, sz - 2, sz + 5, C.ink2); return h + 6; }
+var SUM_NAMES = {amapas: ['D Terrace', 'Amapas, 8.º piso, ventanas al norte · 8th floor, north-facing windows'], ezapata: ['Casa Francisca', 'Emiliano Zapata, Francisca Rodríguez 336, 3.er piso · 3rd floor'], pitillal: ['El Pitillal (Macroplaza)', 'Cinco de Mayo y Calle España, casa de 2 pisos · 2-story house']};
+function gSummary(){ var HS = 1800; cv.height = HS; cx.fillStyle = C.bg; cx.fillRect(0, 0, W, HS);
+  text('SIMON · PUERTO VALLARTA', 40, 44, 22, C.accent, 700, 'left', FM); text(inLang('es', advLine) + ' · ' + inLang('en', advLine).replace(/^NHC advisory \d+ · /, ''), W - 40, 44, 19, C.mute, 500, 'right', FM);
+  text('Qué esperar en tu edificio · What to expect at your building', 40, 98, fitText('Qué esperar en tu edificio · What to expect at your building', W - 80, 46), C.ink, 800, 'left', FD);
+  var am = SITES[0], ez = SITES[1], pi = SITES[2];
+  var odds = ['NHC para Puerto Vallarta: *' + PP['34'] + '%* viento de tormenta tropical · *' + PP['50'] + '%* de 93 km/h o más · *' + PP['64'] + '%* huracán', 'NHC for Puerto Vallarta: *' + PP['34'] + '%* tropical-storm-force wind · *' + PP['50'] + '%* for 58 mph or more · *' + PP['64'] + '%* hurricane'];
+  var y = 134; y += bi(40, y, W - 80, odds[0], odds[1], 21);
+  // worst stretch (same rule as graphic 4)
+  var pr = pi.river && (pi.river.dangerous || pi.river.elevated), ends = [am.rain.heavy && am.rain.heavy[1], ez.river && ez.river.dangerous && ez.river.dangerous[1], pr && pr[1], am.wind.worst && am.wind.worst[1]].filter(Boolean).sort();
+  var w0 = am.rain.heavy ? am.rain.heavy[0] : am.wind.peak_t, w1 = ends[ends.length - 1];
+  y += 10; cx.fillStyle = '#2a1a1a'; roundRect(40, y, W - 80, 134, 14); cx.fill(); cx.fillStyle = C.t3; roundRect(40, y, 10, 134, 5); cx.fill();
+  var wes = 'Lo peor: ' + inLang('es', function(){ return dhl(w0, 60) + ' a ' + dhl(w1, 60); }), wen = 'The worst: ' + inLang('en', function(){ return dhl(w0, 60) + ' to ' + dhl(w1, 60); });
+  text(wes, 68, y + 34, fitText(wes, W - 130, 34), '#fff', 800, 'left', FD); text(wen, 68, y + 72, 24, C.ink2, 700, 'left', FD);
+  text(inLang('es', function(){ return 'El centro pasaría a ~' + dist(am.closest.km) + ' al ' + c16l((MD.now.OFCL.sites.pv.closest.brg + 180) % 360) + ' hacia ' + dh(am.closest.t); }) + ' · ' + inLang('en', function(){ return 'center ~' + dist(am.closest.km) + ' ' + c16l((MD.now.OFCL.sites.pv.closest.brg + 180) % 360) + ' around ' + dh(am.closest.t); }), 68, y + 106, 19, C.ink2, 500, 'left', FT);
+  y += 134 + 18;
+  var toa = WC.toa34;
+  SITES.forEach(function(s, k){ var w = s.wind, r = s.rain, nm = SUM_NAMES[s.id];
+    var top = y; cx.fillStyle = '#151b25'; roundRect(40, top, W - 80, 10, 14); // placeholder, resized below
+    var yy = top + 24; text(nm[0], 68, yy, 30, SITE_COL[s.id], 800, 'left', FD); yy += 30; text(nm[1], 68, yy, 19, C.ink2, 500, 'left', FT); yy += 34;
+    var W0 = 68, WW = W - 136;
+    // WHEN
+    var whenES = inLang('es', function(){ return '*Cuándo:* viento fuerte con rachas *' + spanW(w.worst) + '*, lo más fuerte hacia *' + dh(s.closest.t) + '*. Lluvia más fuerte *' + span(r.wettest6[0], r.wettest6[1]) + '*.' + (s.river && s.river.dangerous ? ' *Río ' + (s.id === 'pitillal' ? 'Pitillal' : 'Cuale') + ' peligroso ' + span(s.river.dangerous[0], s.river.dangerous[1]) + '*.' : s.river && s.river.elevated ? ' Río ' + (s.id === 'pitillal' ? 'Pitillal' : 'Cuale') + ' crecido desde *' + dh(s.river.elevated[0]) + '*.' : '') + (s.id === 'pitillal' && s.streets && s.streets.some ? ' Agua en calles desde *' + dh(s.streets.some[0]) + '*.' : ''); });
+    var whenEN = inLang('en', function(){ return '*When:* strong, gusty wind *' + spanW(w.worst) + '*, strongest around *' + dh(s.closest.t) + '*. Heaviest rain *' + span(r.wettest6[0], r.wettest6[1]) + '*.' + (s.river && s.river.dangerous ? ' *' + (s.id === 'pitillal' ? 'Pitillal' : 'Cuale') + ' River dangerous ' + span(s.river.dangerous[0], s.river.dangerous[1]) + '*.' : s.river && s.river.elevated ? ' ' + (s.id === 'pitillal' ? 'Pitillal' : 'Cuale') + ' River high from *' + dh(s.river.elevated[0]) + '*.' : '') + (s.id === 'pitillal' && s.streets && s.streets.some ? ' Water on streets from *' + dh(s.streets.some[0]) + '*.' : ''); });
+    yy += bi(W0, yy, WW, whenES, whenEN);
+    // MAX
+    var maxES = inLang('es', function(){ return '*Máximo:* viento sostenido ~*' + spd(w.peak_vb_kmh) + '*, rachas ~*' + spd(w.peak_gb_kmh) + '*, del ' + c8(w.dir_at_peak) + '. Lluvia total ~*' + rain(r.total_mm) + '*.'; });
+    var maxEN = inLang('en', function(){ return '*Max:* sustained ~*' + spd(w.peak_vb_kmh) + '*, gusts ~*' + spd(w.peak_gb_kmh) + '*, from the ' + c8(w.dir_at_peak) + '. Rain total ~*' + rain(r.total_mm) + '*.'; });
+    yy += bi(W0, yy, WW, maxES, maxEN);
+    // WORST IMPACT
+    var slideES = s.slide && s.slide.possible ? inLang('es', function(){ return ' Deslaves posibles desde *' + dh(s.slide.possible[0]) + '*: pueden cortar la calle.'; }) : '';
+    var slideEN = s.slide && s.slide.possible ? inLang('en', function(){ return ' Landslides possible from *' + dh(s.slide.possible[0]) + '*: they can cut off the street.'; }) : '';
+    var impES, impEN;
+    if (s.id === 'amapas'){ impES = '*Peor impacto:* rachas en piso alto y objetos que vuelan: cuarto interior, lejos de las ventanas.' + slideES; impEN = '*Worst impact:* gusts on a high floor and flying debris: interior room, away from windows.' + slideEN; }
+    else if (s.id === 'ezapata'){ impES = '*Peor impacto:* el Cuale crecido en las calles de abajo (no en tu piso): no bajes ni cruces agua. Rachas arremolinadas entre edificios: cosas que caen.' + slideES; impEN = '*Worst impact:* the Cuale high in the streets below (not your floor): don’t go down or cross water. Swirling gusts between buildings: falling objects.' + slideEN; }
+    else { impES = '*Peor impacto:* agua en la calle y el río a 160 m: sube documentos y medicinas, corta la luz antes de que entre agua, nunca cruces agua en movimiento.'; impEN = '*Worst impact:* water in the street and the river 525 ft away: move documents and medicine upstairs, cut the power before water gets in, never cross moving water.'; }
+    yy += bi(W0, yy, WW, impES, impEN);
+    var hgt = yy - top + 6; cx.fillStyle = C.bg; cx.fillRect(40, top, W - 80, 12);   // clear placeholder
+    // redraw: background behind text (draw the panel first, then the text again)
+    cx.save(); cx.globalCompositeOperation = 'destination-over'; cx.fillStyle = '#151b25'; roundRect(40, top, W - 80, hgt, 14); cx.fill(); cx.restore();
+    cx.fillStyle = SITE_COL[s.id]; roundRect(40, top, 10, hgt, 5); cx.fill();
+    y = top + hgt + 14; });
+  var fy = Math.max(y + 6, HS - 150);
+  cx.fillStyle = '#121720'; cx.fillRect(0, fy, W, HS - fy);
+  wrap('Cifras de los tres sitios con las probabilidades de viento del NHC y la lluvia del SMN para Jalisco (aviso ' + SMN_AV + ': más de 250 mm). Horas aproximadas: pueden moverse con cada boletín.', 40, fy + 26, W - 80, 17, 22, C.mute, 500);
+  wrap('Site figures from the NHC wind odds and the SMN rain for Jalisco (advisory ' + SMN_AV + ': over 10 in). Approximate times: they can shift with each advisory.', 40, fy + 72, W - 80, 17, 22, C.mute, 500);
+  text('No es un pronóstico oficial · Not an official forecast · SMN · NHC · Protección Civil · 911', 40, HS - 24, 19, C.ink2, 700, 'left', FT); }
+var GRAPHICS = {wind: gWind, rain: gRain, flood: gFlood, timing: gTiming, models: gModels, summary: gSummary};
+window.render = function(g, lang){ LANG = lang || 'es'; document.documentElement.lang = LANG; if (cv.height !== H) cv.height = H; cx.setTransform(1, 0, 0, 1, 0, 0); GRAPHICS[g](); };
 window.READY = READY;
 var q = new URLSearchParams(location.search); if (q.get('g')) READY.then(function(){ window.render(q.get('g'), q.get('lang') || 'es'); });
 </script></body></html>
