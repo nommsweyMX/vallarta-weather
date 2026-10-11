@@ -6,7 +6,7 @@ const fs = require('fs'), path = require('path');
   const browser = await chromium.launch(); const page = await (await browser.newContext({ viewport: { width: 1080, height: 1620 }, deviceScaleFactor: scale })).newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await page.goto('file://' + file); await page.evaluate(() => window.READY);
-  for (const g of ['wind', 'rain', 'flood', 'timing', 'models', 'summary']) for (const lang of (g === 'summary' ? ['es', 'en', 'bi'] : ['es', 'en'])) {
+  for (const g of (process.env.ONLY ? process.env.ONLY.split(',') : ['wind', 'rain', 'flood', 'timing', 'models', 'summary', 'verify'])) for (const lang of (g === 'summary' ? ['es', 'en', 'bi'] : ['es', 'en'])) {
     await page.evaluate(([g, l]) => window.render(g, l), [g, lang]);
     const el = await page.$('#cv'); const name = `simon_${g}_${lang}`;
     await el.screenshot({ path: path.join(out, name + '.png') });
