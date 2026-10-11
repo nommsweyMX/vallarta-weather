@@ -20,16 +20,19 @@ DISCLAIMER_EN = f'Data as of {asof_en}, NHC advisory {adv}. This is NOT an offic
 
 if prog == 'forecast':
     title = 'Huracán Simon: el pronóstico para Puerto Vallarta, sin exagerar | Hurricane Simon: the Puerto Vallarta forecast, without the hype'
-    es = ('Dónde estuvo Simon, a dónde va según el NHC, por qué cambia el pronóstico, cuándo sabremos con más certeza por dónde pasa y qué es lo más probable para Vallarta. '
-          'También: por qué no habrá “vientos de 200 nudos” (ningún huracán medido los ha tenido; el récord es Patricia, 2015, con 185). '
-          'La imagen de satélite se atenúa conforme el pronóstico debilita la tormenta: es un esquema, no un pronóstico de nubes.')
-    en = ('Where Simon has been, where the NHC expects it to go, why the forecast keeps changing, when we will know its path with more certainty, and what is most likely for Vallarta. '
-          'Also: why there will be no “200-knot winds” (no measured hurricane has had them; the record is Patricia, 2015, at 185). '
-          'The satellite image fades as the forecast weakens the storm: a schematic, not a cloud forecast.')
+    pr = (mp.get('wind_cal') or {}).get('probs') or {}
+    odds_es = f" Con el boletín {adv}, el NHC da para Puerto Vallarta {pr.get('34')}% de probabilidad de viento sostenido de 63 km/h o más, {pr.get('50')}% de 93 km/h o más y {pr.get('64')}% de viento de huracán." if pr else ''
+    odds_en = f" With advisory {adv}, the NHC gives Puerto Vallarta a {pr.get('34')}% chance of sustained wind of 39 mph or more, {pr.get('50')}% for 58 mph or more and {pr.get('64')}% for hurricane force." if pr else ''
+    es = ('Dónde estuvo Simon, a dónde va según el NHC, cómo ha cambiado el pronóstico boletín por boletín, por qué cambia, cuándo sabremos con más certeza por dónde pasa y qué es lo más probable para Vallarta.' + odds_es + ' '
+          'También: por qué no habrá “vientos de 200 nudos” (ningún ciclón medido los ha tenido sostenidos; el récord es de 185 nudos, Patricia 2015, empatado con Nancy 1961). '
+          'La fuerza que se muestra en el mapa es la del centro del huracán, no la de Vallarta. La imagen de satélite se atenúa conforme el pronóstico debilita la tormenta: es un esquema, no un pronóstico de nubes.')
+    en = ('Where Simon has been, where the NHC expects it to go, how the forecast has changed advisory by advisory, why it changes, when we will know its path with more certainty, and what is most likely for Vallarta.' + odds_en + ' '
+          'Also: why there will be no “200-knot winds” (no measured tropical cyclone has had them sustained; the record is 185 knots, Patricia 2015, tied with Nancy 1961). '
+          'The strength shown on the map is at the hurricane’s center, not in Vallarta. The satellite image fades as the forecast weakens the storm: a schematic, not a cloud forecast.')
     src = ['National Hurricane Center (NHC): public advisory, forecast discussion and wind speed probabilities, advisory ' + adv,
            'NHC: 2026 cone of uncertainty radii (eastern North Pacific); best track and model guidance (ATCF)',
            'SMN-CONAGUA: tropical cyclone advisory for Jalisco (rain, waves and wind on the coast)',
-           'NOAA GOES-18 ABI: infrared band 13 (mesoscale and full disk)', 'NHC Tropical Cyclone Report: Hurricane Patricia (2015)']
+           'NOAA GOES-18 ABI: infrared band 13 (mesoscale and full disk)', 'NHC Tropical Cyclone Report: Hurricane Patricia (2015); WMO Weather and Climate Extremes Archive', 'NHC advisory archive for Simon (forecast tracks and Puerto Vallarta wind probabilities by advisory)']
     tags = 'huracán Simon, pronóstico, Puerto Vallarta, Jalisco, Nayarit, NHC, SMN, cono de incertidumbre, Hurricane Simon, hurricane forecast, Puerto Vallarta hurricane, Patricia'
 else:
     title = 'Puerto Vallarta: por qué tu zona está en riesgo (huracán Simon) | Puerto Vallarta: why your area is at risk (Hurricane Simon)'
