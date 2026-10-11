@@ -239,15 +239,15 @@ def toa34():
     return dict(early=at(0.1), likely=at(0.5), total=int(tot))
 TOA34 = toa34()
 print('wind calibration', dict(v50=round(V50 or 0, 1), v20=round(V20 or 0, 1), model_peak_pv=round(VPK, 1), cap=round(VCAP, 1), probs=NHC.get('pv_probs'), toa34=TOA34))
-# The satellite rain pattern carried along the track misses the rain the onshore wind wrings out of the sierra, and near the
-# eyewall it runs high. Scale the field so the wettest 24 h at any site, on either track, equals the SMN's upper bound for
-# the coast: the threat timelines then follow the official rain forecast for Jalisco, up or down.
+# Near the eyewall the satellite rain rates run high: cap the field so the wettest 24 h at any site stays within the SMN's
+# upper bound for the coast. It is never scaled up: on 11 Oct the bay sat in easterly downslope flow with no rain while the
+# regional forecasts still said torrential, and the satellite pattern was right.
 SMN_MAX24 = 250.0
 def max24(b, k):
     mm = np.array([rain(c, b['lat'], b['lon'], rscale(c, i)) for i, c in enumerate(SCN[k]['track'])]) * DT_H; mm[:n_obs] = 0
     n = int(round(24 / DT_H)); c = np.concatenate([[0], np.cumsum(mm)])
     return float((c[n:] - c[:-n]).max()) if len(mm) >= n else float(c[-1])
-RAIN_RAW24 = max(max24(b, k) for b in B for k in SCN); RAIN_CAL = SMN_MAX24 / RAIN_RAW24 if RAIN_RAW24 > 0 else 1.0
+RAIN_RAW24 = max(max24(b, k) for b in B for k in SCN); RAIN_CAL = min(1.0, SMN_MAX24 / RAIN_RAW24) if RAIN_RAW24 > 0 else 1.0   # only ever scaled DOWN: with the center to the south-west the bay sits in downslope (easterly) flow and the satellite pattern is the better guide
 FIELD = FIELD * RAIN_CAL
 print('rain calibration', round(RAIN_CAL, 3))
 for b in B:
