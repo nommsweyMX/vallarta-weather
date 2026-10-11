@@ -161,7 +161,7 @@ def series(b, k):
     s = SCN[k]['track']; out = dict(rate=[], cum=[], v=[], g=[], frm=[], km=[], vb=[], gb=[], basin=[], lv={})
     for i, (t, c) in enumerate(zip(times, s)):
         land = True
-        v, g, frm, km, brg = wind(c, b['lat'], b['lon'], land)
+        v, g, frm, km, brg = wind(c, b['lat'], b['lon'], land); v, g = v * WIND_CAL, g * WIND_CAL
         fs, gr = exposure(b, frm)
         r = rain(c, b['lat'], b['lon'], rscale(c, i))
         out['rate'].append(r); out['v'].append(v * KMH); out['g'].append(g * KMH); out['frm'].append(frm); out['km'].append(km)
@@ -203,6 +203,22 @@ def onsets(lv):
     return res
 
 R2 = lambda a, n=1: [round(float(x), n) for x in a]
+# Wind: the parametric field around the interpolated NHC line is the wind if the centre follows that line exactly at the
+# forecast strength. The NHC wind speed probabilities fold in the track, size and intensity errors and the weakening over the
+# mountains. Scale the wind so that its peak at Puerto Vallarta on the NHC track equals the median of those probabilities
+# (the most likely peak sustained wind there), and keep the 1-in-5 value for the text.
+PVLL = (20.6100, -105.2345)
+def pws_wind(q):
+    """wind (kt) exceeded with probability q at Puerto Vallarta, from the NHC cumulative probabilities for 34, 50 and 64 kt."""
+    pr = NHC.get('pv_probs') or {}
+    pts = [(20.0, 1.0)] + [(float(k), pr.get(str(k), 0) / 100) for k in (34, 50, 64)] + [(90.0, 0.0)]
+    for (v1, p1), (v2, p2) in zip(pts, pts[1:]):
+        if p1 >= q >= p2 and p1 > p2: return v1 + (v2 - v1) * (p1 - q) / (p1 - p2)
+    return None
+V50, V20 = pws_wind(0.5), pws_wind(0.2)
+VPK = max(wind(c, PVLL[0], PVLL[1], True)[0] for c in SCN['nhc']['track'][n_obs:])
+WIND_CAL = min(1.0, V50 / VPK) if V50 and VPK else 1.0
+print('wind calibration', dict(v50=round(V50 or 0, 1), v20=round(V20 or 0, 1), model_peak_pv=round(VPK, 1), factor=round(WIND_CAL, 3), probs=NHC.get('pv_probs')))
 # Satellite rain rates near the eyewall, carried along the track, give about twice the SMN forecast. Scale the field so the
 # wettest 24 h at any site, on either track, stays within the SMN's upper bound for the coast.
 SMN_MAX24 = 250.0
@@ -237,5 +253,6 @@ json.dump(dict(
     scen={k: dict(track=trk(v['track']), landfall=v['landfall']) for k, v in SCN.items()},
     nhc_track=[dict(t=p['t'], lat=p['lat'], lon=p['lon'], kt=p['kt'], note=p.get('note')) for p in tr],
     basins={k: {kk: vv for kk, vv in v.items() if kk != 'cells'} for k, v in BASINS.items()},
+    wind_cal=dict(factor=round(WIND_CAL, 3), v50_kt=round(V50, 1) if V50 else None, v20_kt=round(V20, 1) if V20 else None, model_peak_pv_kt=round(VPK, 1), probs=NHC.get('pv_probs'), pws=NHC.get('pws_advisory')),
     bldg=B, V0=V0, G0=G0, th=dict(wind=WIND_TH, rate=RATE_TH, runoff=RUN_TH, river=RIVER_TH)), open(OUT, 'w'), separators=(',', ':'))
 print('wrote', OUT, os.path.getsize(OUT), 'landfall', {k: v['landfall'] for k, v in SCN.items()})
