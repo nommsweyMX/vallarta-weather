@@ -1,0 +1,13 @@
+{
+ "grades": {"flood": ["Alto", "High"], "slide": ["Alto", "High"], "cyclone": ["Medio", "Medium"], "source": "CENAPRED, Indicadores Municipales (Marco Geoestadístico 2020)"},
+ "inventory": {"n": 165, "years": "2017–2023", "aug": 47, "sep": 53},
+ "catch": {"pitillal": 370.68, "cuale": 268.68},
+ "near": {"amapas_500m": 15, "frodriguez_500m": 6},
+ "smn_change": {"from": "50–75", "to": "150–250", "hours": 6},
+ "sources": [
+  "Atlas de Peligros y Riesgos Puerto Vallarta 2024 (Protección Civil y Bomberos, vía CENAPRED)",
+  "CENAPRED: Atlas Nacional de Riesgos (susceptibilidad de laderas, modelo de inundación de Puerto Vallarta, indicadores municipales)",
+  "SMN-CONAGUA: avisos de ciclón tropical y reseñas de Nora (2021) y Lidia (2023)",
+  "Flores Navarro (2021), Universidad de Guadalajara, anexo del Atlas 2024"
+ ]
+}

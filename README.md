@@ -6,6 +6,12 @@ in plain words for regular humans, with the full science underneath.
 
 > ¿WHY-arta? · Educational, not official guidance. In an emergency, Protección Civil rules.
 
+**Hurricane Simon (Oct 2026):** [`hurricane-simon/`](hurricane-simon/) is an animated, bilingual
+hour-by-hour rain forecast for three Puerto Vallarta addresses (worst case, model average, best
+case), Sat 10 Oct 12:00 to Mon 12 Oct 12:00 CST. On Pages it lives at `/vallarta-weather/hurricane-simon/`.
+[`hurricane-simon/map/`](hurricane-simon/map/) is the satellite-driven street map: the observed GOES-18 loop,
+extrapolated wind and rain over the city, and when each threat reaches three specific buildings.
+
 ## Publish (GitHub Pages)
 
 `index.html` at the repo root is the atlas, ready for Pages:

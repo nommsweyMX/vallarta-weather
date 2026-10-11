@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Simon y Vallarta · video</title>
+<style>
+__FONT_CSS__
+html,body{margin:0;background:#0b0e13}
+canvas{display:block}
+</style>
+</head>
+<body>
+<canvas id="cv" width="1920" height="1080"></canvas>
+<script type="application/json" id="map-data">__MAP_JSON__</script>
+<script type="application/json" id="layers-data">__LAYERS_JSON__</script>
+<script type="application/json" id="video-data">__VIDEO_JSON__</script>
+<script type="application/json" id="atlas-data">__ATLAS_JSON__</script>
+<script type="application/json" id="img-data">__IMG_JSON__</script>
+<script>
+'use strict';
+// A calm bilingual explainer: Spanish (metric) above English (imperial). render(t) draws the frame at t seconds.
+var D = JSON.parse(document.getElementById('map-data').textContent);
+var LY = JSON.parse(document.getElementById('layers-data').textContent);
+var VD = JSON.parse(document.getElementById('video-data').textContent);
+var AT = JSON.parse(document.getElementById('atlas-data').textContent);
+var IMS = JSON.parse(document.getElementById('img-data').textContent);
+var cv = document.getElementById('cv'), cx = cv.getContext('2d');
+var W = 1920, H = 1080, PW = 760, VX = PW, VW = W - PW;      // left text panel, right visual
+var C = {bg: '#0b0e13', panel: '#10141b', ink: '#f2f4f7', ink2: '#b9c3cf', mute: '#8792a0', line: '#2a313b', accent: '#7fb5ff', warm: '#ffc45c', ext: '#ffffff', nhc: '#ff9d5c',
+         t1: '#e9c75a', t2: '#e5a823', t3: '#e27a2e', t4: '#ff6b5a', water: '#5eb4ff', slope: '#e08a3c'};
+var FT = '"Red Hat Text", sans-serif', FD = '"Red Hat Display", sans-serif', FM = '"Red Hat Mono", monospace';
+
+// ---------- images ----------
+var IMG = {};
+function loadAll(){ return Promise.all(Object.keys(IMS).map(function(k){ return new Promise(function(res){ var im = new Image(); im.onload = function(){ IMG[k] = im; res(); }; im.onerror = function(){ res(); }; im.src = IMS[k]; }); })); }
+
+// ---------- formatting ----------
+var TIMES = D.times, NOBS = D.n_obs, NOW = NOBS - 1, N = TIMES.length;
+function ms(iso){ return Date.parse(iso.replace('Z', ':00Z')); }
+function cst(iso){ return new Date(ms(iso) - 6 * 3600e3); }
+var DAY_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'], DAY_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+var DS_ES = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'], DS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function hrES(d){ return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); }
+function hrEN(d){ var h = d.getUTCHours(), m = d.getUTCMinutes(); if (h === 0 && m === 0) return 'midnight'; if (h === 12 && m === 0) return 'noon'; return (h % 12 || 12) + (m ? ':' + String(m).padStart(2, '0') : '') + (h < 12 ? ' am' : ' pm'); }
+function roundH(iso){ var t = ms(iso); return new Date(Math.round(t / 3600e3) * 3600e3 - 6 * 3600e3); }   // nearest hour, CST
+function tES(iso){ var d = roundH(iso); return DAY_ES[d.getUTCDay()] + ' ~' + hrES(d); }
+function tEN(iso){ var d = roundH(iso); return DAY_EN[d.getUTCDay()] + ' ~' + hrEN(d); }
+function hES(iso){ return '~' + hrES(roundH(iso)); }
+function hEN(iso){ return '~' + hrEN(roundH(iso)); }
+var fE = function(x, d){ return Number(x).toLocaleString('es-MX', {maximumFractionDigits: d || 0, minimumFractionDigits: d || 0}); };
+var fN = function(x, d){ return Number(x).toLocaleString('en-US', {maximumFractionDigits: d || 0, minimumFractionDigits: d || 0}); };
+function geo(la1, lo1, la2, lo2){
+  var r = Math.PI / 180, p1 = la1 * r, p2 = la2 * r, dl = (lo2 - lo1) * r;
+  var d = 2 * 6371 * Math.asin(Math.sqrt(Math.pow(Math.sin((p2 - p1) / 2), 2) + Math.cos(p1) * Math.cos(p2) * Math.pow(Math.sin(dl / 2), 2)));
+  var b = Math.atan2(Math.sin(dl) * Math.cos(p2), Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl)) / r;
+  return [d, (b + 360) % 360];
+}
+var C16E = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'], C16S = ['norte', 'nor-noreste', 'noreste', 'este-noreste', 'este', 'este-sureste', 'sureste', 'sur-sureste', 'sur', 'sur-suroeste', 'suroeste', 'oeste-suroeste', 'oeste', 'oeste-noroeste', 'noroeste', 'nor-noroeste'];
+var C16EN = ['north', 'north-northeast', 'northeast', 'east-northeast', 'east', 'east-southeast', 'southeast', 'south-southeast', 'south', 'south-southwest', 'southwest', 'west-southwest', 'west', 'west-northwest', 'northwest', 'north-northwest'];
+function ci(d){ return Math.round(((d % 360) + 360) % 360 / 22.5) % 16; }
+function track(k, i){ var t = D.scen[k].track[i]; return {lat: t[0], lon: t[1], v: t[2]}; }
+
+// ---------- facts computed from the data (both tracks, so every time is a range) ----------
+var PV = [20.6100, -105.2345];
+var B = {}; D.bldg.forEach(function(b){ B[b.id] = b; });
+function win(id, key, th){       // earliest start, latest end of level >= th over both tracks
+  var s = null, e = null;
+  ['ext', 'nhc'].forEach(function(k){ var a = B[id].scen[k].lv[key]; if (!a) return; for (var i = NOBS; i < N; i++) if (a[i] >= th){ if (s === null || i < s) s = i; break; } for (var j = N - 1; j >= NOBS; j--) if (a[j] >= th){ if (e === null || j > e) e = j; break; } });
+  return s === null ? null : [TIMES[s], TIMES[e], e === N - 1];
+}
+function closestPV(k){ var best = {km: 1e9}; for (var i = NOBS; i < N; i++){ var c = track(k, i), g = geo(PV[0], PV[1], c.lat, c.lon); if (g[0] < best.km) best = {km: g[0], i: i, v: c.v}; } return best; }
+var FX = (function(){
+  var fx = D.fixes[D.fixes.length - 1], g = geo(PV[0], PV[1], fx.lat, fx.lon), M = D.motion, ce = closestPV('ext'), cn = closestPV('nhc');
+  var c1 = ce.i < cn.i ? ce : cn, c2 = ce.i < cn.i ? cn : ce;
+  // wind turning onshore (from the SW quadrant) at Amapas after the centre passes
+  var shift = ['ext', 'nhc'].map(function(k){ var s = B.amapas.scen[k]; for (var i = NOBS; i < N; i++) if (s.frm[i] >= 180 && s.frm[i] <= 300 && s.v[i] > 30) return i; return null; }).filter(function(x){ return x !== null; });
+  return {fx: fx, km: g[0], brg: g[1], kmh: M.kmh, dir: M.dir_to, c1: c1, c2: c2, shift: shift.length ? TIMES[Math.min.apply(null, shift)] : null,
+          vAt: Math.max(ce.v, cn.v), vAtMin: Math.min(ce.v, cn.v), cat: D.advisory.kt >= 113 ? 4 : 3,
+          wind2: win('amapas', 'wind', 2), wind3: win('amapas', 'wind', 3), windows3: win('amapas', 'windows', 3), rate3: [win('amapas', 'rate', 3), win('pitillal', 'rate', 3)],
+          slide2: win('amapas', 'slide', 2), cuale3: win('ezapata', 'river', 3), pit3: win('pitillal', 'river', 3), run3p: win('pitillal', 'runoff', 3), run3z: win('ezapata', 'runoff', 3),
+          totMin: Math.min(B.amapas.scen.ext.total, B.pitillal.scen.ext.total, B.amapas.scen.nhc.total, B.pitillal.scen.nhc.total), totMax: Math.max(B.amapas.scen.ext.total, B.pitillal.scen.ext.total, B.amapas.scen.nhc.total, B.pitillal.scen.nhc.total)};
+})();
+var ADV = D.advisory;
+function issuedES(){ var m = /^(\d{1,2})(\d{2}) ([AP])M/.exec(ADV.issued || ''); if (!m) return ''; var h = +m[1] % 12 + (m[3] === 'P' ? 12 : 0); return String(h).padStart(2, '0') + ':' + m[2]; }
+function issuedEN(){ var m = /^(\d{1,2})(\d{2}) ([AP])M/.exec(ADV.issued || ''); if (!m) return ''; var h = +m[1] % 12 || 12; return h + (m[2] !== '00' ? ':' + m[2] : '') + ' ' + m[3].toLowerCase() + 'm'; }
+var asofD = cst(FX.fx.t);
+var ASOF_ES = DS_ES[asofD.getUTCDay()] + ' ' + asofD.getUTCDate() + ' oct, ' + hrES(asofD), ASOF_EN = DS_EN[asofD.getUTCDay()] + ' Oct ' + asofD.getUTCDate() + ', ' + hrEN(asofD);
+
+// ---------- text drawing ----------
+// Rich text: *bold* segments. Returns the height used.
+function para(text, x, y, w, size, lh, color, bold, alpha){
+  var words = []; String(text).split(/(\*[^*]+\*)/).forEach(function(seg){ if (!seg) return; var b = seg[0] === '*' && seg[seg.length - 1] === '*', body = b ? seg.slice(1, -1) : seg, glue = !b && words.length && !/^\s/.test(body);
+    body.split(/ +/).forEach(function(wd, k){ if (!wd) return; if (k === 0 && glue){ words[words.length - 1].parts.push({t: wd, b: b || bold}); return; } words.push({parts: [{t: wd, b: b || bold}]}); }); });
+  var lines = [[]], lw = 0, sp;
+  cx.font = '400 ' + size + 'px ' + FT; sp = cx.measureText(' ').width;
+  words.forEach(function(wd){
+    var ww = 0; wd.parts.forEach(function(pt){ cx.font = (pt.b ? '700 ' : '400 ') + size + 'px ' + FT; pt.w = cx.measureText(pt.t).width; ww += pt.w; });
+    if (lw + ww > w && lines[lines.length - 1].length){ lines.push([]); lw = 0; }
+    lines[lines.length - 1].push({parts: wd.parts, w: ww}); lw += ww + sp;
+  });
+  cx.save(); cx.globalAlpha = alpha === undefined ? 1 : alpha; cx.fillStyle = color; cx.textBaseline = 'alphabetic';
+  lines.forEach(function(ln, i){ var xx = x; ln.forEach(function(wd){ wd.parts.forEach(function(pt){ cx.font = (pt.b ? '700 ' : '400 ') + size + 'px ' + FT; cx.fillText(pt.t, xx, y + size + i * lh); xx += pt.w; }); xx += sp; }); });
+  cx.restore();
+  return lines.length * lh;
+}
+function label(t, x, y, size, color, weight, align, halo){
+  cx.save(); cx.font = (weight || 600) + ' ' + size + 'px ' + FT; cx.textAlign = align || 'left'; cx.textBaseline = 'middle';
+  if (halo !== false){ cx.lineWidth = size / 3.4; cx.strokeStyle = 'rgba(8,10,14,.85)'; cx.lineJoin = 'round'; cx.strokeText(t, x, y); }
+  cx.fillStyle = color; cx.fillText(t, x, y); cx.restore();
+}
+function ease(x){ x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+
+// text panel: eyebrow title, Spanish block, English block, footer
+function panel(sc, t){
+  cx.fillStyle = C.panel; cx.fillRect(0, 0, PW, H);
+  cx.fillStyle = C.line; cx.fillRect(PW - 1, 0, 1, H);
+  var x = 64, w = PW - 128, y = 76;
+  var si = 0; sc.steps.forEach(function(s, k){ if (t >= s.at) si = k; });
+  var step = sc.steps[si], a = si === 0 ? ease(t / 0.7) : ease((t - step.at - 0.35) / 0.5);
+  if (si > 0 && t - step.at < 0.35){ step = sc.steps[si - 1]; a = 1 - ease((t - sc.steps[si].at) / 0.35); }
+  if (sc.title){
+    cx.font = '700 22px ' + FM; cx.fillStyle = C.accent; cx.textBaseline = 'alphabetic'; cx.fillText(sc.title[0].toUpperCase(), x, y);
+    cx.font = '500 22px ' + FM; cx.fillStyle = C.mute; cx.fillText(sc.title[1].toUpperCase(), x, y + 32); y += 74;
+  }
+  var hEs = para(step.es, x, y, w, 35, 47, C.ink, false, a);
+  y += hEs + 26; cx.fillStyle = C.line; cx.fillRect(x, y, 80, 2); y += 26;
+  para(step.en, x, y, w, 29, 39, C.ink2, false, a);
+  // footer
+  cx.font = '500 17px ' + FM; cx.fillStyle = C.mute; cx.textBaseline = 'alphabetic';
+  cx.fillText('Datos: ' + ASOF_ES + ' · No es pronóstico oficial', x, H - 74);
+  cx.fillText('Data: ' + ASOF_EN + ' CST · Not an official forecast', x, H - 46);
+}
+
+// ---------- map drawing ----------
+function fitRect(iw, ih, pad){ var s = Math.min((VW - 2 * pad) / iw, (H - 2 * pad) / ih); var w = iw * s, h = ih * s; return {x: VX + (VW - w) / 2, y: (H - h) / 2, w: w, h: h, s: s}; }
+function path(a, R, sc){ cx.moveTo(R.x + a[0] * sc, R.y + a[1] * sc); for (var j = 2; j < a.length; j += 2) cx.lineTo(R.x + a[j] * sc, R.y + a[j + 1] * sc); }
+var staticCache = {};
+function mapStatic(view, R){
+  var key = view + R.w; if (staticCache[key]) return staticCache[key];
+  var v = LY.views[view], oc = document.createElement('canvas'); oc.width = Math.round(R.w); oc.height = Math.round(R.h);
+  var c = oc.getContext('2d'), s = oc.width / v.w; c.drawImage(IMG['base_' + view + '_dark'], 0, 0, oc.width, oc.height);
+  c.setTransform(s, 0, 0, s, 0, 0); c.lineJoin = c.lineCap = 'round'; var ly = v.layers, city = view === 'city';
+  c.fillStyle = '#16304a'; ly.water.forEach(function(a){ if (a.length > 6){ c.beginPath(); c.moveTo(a[0], a[1]); for (var j = 2; j < a.length; j += 2) c.lineTo(a[j], a[j + 1]); c.closePath(); c.fill(); } });
+  if (ly.bldg.length) ly.bldg.forEach(function(b){ c.fillStyle = b[0] >= 6 ? '#59616d' : b[0] >= 3 ? '#454c56' : '#343a43'; c.beginPath(); c.moveTo(b[1], b[2]); for (var j = 3; j < b.length; j += 2) c.lineTo(b[j], b[j + 1]); c.closePath(); c.fill(); });
+  c.strokeStyle = '#3d77a8'; c.lineWidth = city ? 1.4 : 5; ly.rivers.forEach(function(a){ c.beginPath(); c.moveTo(a[0], a[1]); for (var j = 2; j < a.length; j += 2) c.lineTo(a[j], a[j + 1]); c.stroke(); });
+  var wd = city ? [2.2, 1.7, 1.2, 0.5, 0.45, 0.35] : [6, 5, 4, 3, 2, 1.2], col = ['#c8b27a', '#a99e86', '#8d949c', '#5e656e', '#4d535b', '#454a51'];
+  for (var k = 5; k >= 0; k--) ly.roads[k].forEach(function(a){ c.strokeStyle = col[k]; c.lineWidth = wd[k]; c.beginPath(); c.moveTo(a[0], a[1]); for (var j = 2; j < a.length; j += 2) c.lineTo(a[j], a[j + 1]); c.stroke(); });
+  c.strokeStyle = '#4f87b8'; c.lineWidth = city ? 1 : 2; ly.coast.forEach(function(a){ c.beginPath(); c.moveTo(a[0], a[1]); for (var j = 2; j < a.length; j += 2) c.lineTo(a[j], a[j + 1]); c.stroke(); });
+  if (!city){ c.font = '500 ' + (13 / s * (R.w / 1000)) + 'px ' + FT; }
+  staticCache[key] = oc; return oc;
+}
+function mpx(view, R, la, lo){ var v = LY.views[view], b = v.bbox; return [R.x + (lo - b[2]) / (b[3] - b[2]) * R.w, R.y + (b[0] - la) / (b[0] - b[1]) * R.h]; }
+function overlay(key, R, a){ if (!IMG[key] || a <= 0) return; cx.save(); cx.globalAlpha = Math.min(1, a); cx.drawImage(IMG[key], R.x, R.y, R.w, R.h); cx.restore(); }
+function marker(x, y, t, color, name, side){
+  var p = 0.5 + 0.5 * Math.sin(t * 3);
+  cx.save(); cx.strokeStyle = color; cx.globalAlpha = 0.6 * (1 - p); cx.lineWidth = 3; cx.beginPath(); cx.arc(x, y, 14 + 18 * p, 0, 7); cx.stroke(); cx.restore();
+  cx.fillStyle = color; cx.strokeStyle = '#0b0e13'; cx.lineWidth = 3; cx.beginPath(); cx.arc(x, y, 10, 0, 7); cx.fill(); cx.stroke();
+  if (name) label(name, x + (side === 'l' ? -20 : 20), y, 26, '#fff', 700, side === 'l' ? 'right' : 'left');
+}
+
+// ---------- satellite ----------
+var IRF = D.ir.frames;
+function satDraw(R, frame, shiftK, i, opts){
+  opts = opts || {};
+  var s = R.w / LY.reg.w, rb = LY.reg.bbox;
+  cx.save(); cx.beginPath(); cx.rect(R.x, R.y, R.w, R.h); cx.clip();
+  if (IMG.reg_base) cx.drawImage(IMG.reg_base, R.x, R.y, R.w, R.h);
+  function rp(la, lo){ return [R.x + (lo - rb[2]) / (rb[3] - rb[2]) * R.w, R.y + (rb[0] - la) / (rb[0] - rb[1]) * R.h]; }
+  if (shiftK){
+    var c0 = track(shiftK, NOW), c1 = track(shiftK, i), p0 = rp(c0.lat, c0.lon), p1 = rp(c1.lat, c1.lon), ex = D.ir.ext && IMG[D.ir.ext.file];
+    cx.globalAlpha = 0.92; if (ex) cx.drawImage(ex, R.x + p1[0] - p0[0], R.y + p1[1] - p0[1], R.w, R.w * D.ir.ext.ny / LY.reg.h); cx.globalAlpha = 1;
+  } else if (IMG[IRF[frame]]) cx.drawImage(IMG[IRF[frame]], R.x, R.y, R.w, R.h);
+  cx.fillStyle = 'rgba(255,214,120,.6)'; LY.reg.coast.forEach(function(p){ cx.fillRect(R.x + p[0] * s, R.y + p[1] * s, 1.6, 1.6); });
+  if (opts.tracks){
+    ['nhc', 'ext'].forEach(function(k){ cx.save(); cx.setLineDash(k === 'nhc' ? [14, 10] : []); cx.strokeStyle = k === 'nhc' ? C.nhc : C.ext; cx.lineWidth = 3.5; cx.globalAlpha = opts.tracks; cx.beginPath();
+      for (var j = NOW; j < N; j += 3){ var c = track(k, j), p = rp(c.lat, c.lon); j === NOW ? cx.moveTo(p[0], p[1]) : cx.lineTo(p[0], p[1]); } cx.stroke(); cx.restore(); });
+  }
+  cx.fillStyle = '#5ff0b4'; D.fixes.forEach(function(f){ var p = rp(f.lat, f.lon); cx.beginPath(); cx.arc(p[0], p[1], 2.6, 0, 7); cx.fill(); });
+  if (!opts.nopv){ var pv = rp(PV[0], PV[1]); cx.fillStyle = '#fff'; cx.strokeStyle = '#000'; cx.lineWidth = 2; cx.beginPath(); cx.arc(pv[0], pv[1], 7, 0, 7); cx.fill(); cx.stroke();
+  label('Puerto Vallarta', pv[0] + 16, pv[1] - 4, 28, '#fff', 700); }
+  if (opts.center !== false){ var cc = shiftK ? track(shiftK, i) : null, fx = D.fixes[D.fixes.length - 1], p = cc ? rp(cc.lat, cc.lon) : rp(fx.lat, fx.lon);
+    cx.strokeStyle = '#fff'; cx.lineWidth = 3; cx.beginPath(); cx.arc(p[0], p[1], 9, 0, 7); cx.stroke(); }
+  cx.restore();
+}
+
+// ---------- scenes ----------
+var SC = [];
+function scene(o){ SC.push(o); }
+var r = function(x){ return Math.round(x); };
+var kmE = r(FX.km), miE = r(FX.km / 1.609), spdK = r(FX.kmh), spdM = r(FX.kmh / 1.609);
+var dirS = C16S[ci(FX.brg)], dirE = C16EN[ci(FX.brg)];
+var LANDFIRST = ['ext', 'nhc'].every(function(k){ var lf = D.scen[k].landfall; return lf && TIMES.indexOf(lf) >= 0 && TIMES.indexOf(lf) < closestPV(k).i; });
+
+scene({id: 'title', dur: 8, steps: [{at: 0, es: '', en: ''}], noPanel: true, draw: function(t){
+  var R = {x: 0, y: (H - W) / 2, w: W, h: W}, k = Math.floor(t * 7) % IRF.length;
+  satDraw(R, k, null, 0, {center: false, nopv: true});
+  var g = cx.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(11,14,19,.96)'); g.addColorStop(0.55, 'rgba(11,14,19,.78)'); g.addColorStop(1, 'rgba(11,14,19,.15)'); cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+  var a = ease(t / 1.2);
+  cx.globalAlpha = a; cx.textBaseline = 'alphabetic';
+  cx.font = '900 92px ' + FD; cx.fillStyle = C.ink; cx.fillText('Huracán Simon y Puerto Vallarta', 110, 330);
+  cx.font = '500 58px ' + FD; cx.fillStyle = C.warm; cx.fillText('Lo que importa es dónde estás', 110, 420);
+  cx.font = '700 54px ' + FD; cx.fillStyle = C.ink2; cx.fillText('Hurricane Simon and Puerto Vallarta', 110, 560);
+  cx.font = '500 42px ' + FD; cx.fillStyle = '#d9b46a'; cx.fillText('What matters is where you are', 110, 628);
+  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute;
+  cx.fillText('Datos al ' + ASOF_ES + ' (hora del centro) · Data as of ' + ASOF_EN + ' CST', 110, 760);
+  cx.fillText('No es un pronóstico oficial: sigue a Protección Civil · Not an official forecast: follow Protección Civil', 110, 806);
+  cx.globalAlpha = 1;
+}});
+
+scene({id: 'now', dur: 22, title: ['Dónde está Simon', 'Where Simon is now'], steps: [
+  {at: 0, es: 'Imágenes reales del satélite GOES-18 de las últimas 4 horas. El ojo está a unos *' + fE(kmE) + ' km al ' + dirS + '* de Vallarta y avanza hacia el norte a unos *' + spdK + ' km/h*. Es un huracán fuerte (categoría ' + FX.cat + ').',
+            en: 'Real GOES-18 satellite images from the last 4 hours. The eye is about *' + fN(miE) + ' miles ' + dirE + '* of Vallarta, moving north at about *' + spdM + ' mph*. It is a strong hurricane (Category ' + FX.cat + ').'},
+  {at: 11, es: 'Si sigue así, el centro pasaría cerca de Vallarta el *domingo entre ' + hES(TIMES[FX.c1.i]).replace('~', '') + ' y ' + hES(TIMES[FX.c2.i]).replace('~', '') + '*' + (LANDFIRST ? ', ya sobre tierra y más débil' : '') + '. La trayectoria oficial del NHC (naranja) coincide. Aún puede moverse decenas de kilómetros.',
+             en: 'If it keeps going like this, the center would pass near Vallarta *Sunday between ' + hEN(TIMES[FX.c1.i]).replace('~', '') + ' and ' + hEN(TIMES[FX.c2.i]).replace('~', '') + '*' + (LANDFIRST ? ', over land and weaker by then' : '') + '. The official NHC track (orange) agrees. It can still shift by tens of miles.'}],
+  draw: function(t){
+    var R = {x: VX + (VW - 1080) / 2, y: 0, w: 1080, h: 1080};
+    if (t < 11){ satDraw(R, Math.floor(t * 5) % IRF.length, null, 0, {tracks: ease((t - 6) / 2)}); label(t < 11 ? 'OBSERVADO · OBSERVED' : '', R.x + 30, 50, 24, '#5ff0b4', 700); }
+    else { var f = ease((t - 11.5) / 9), i = Math.round(NOW + f * (N - 1 - NOW)); satDraw(R, 0, 'ext', i, {tracks: 1}); var d = cst(TIMES[i]);
+      label('EXTRAPOLADO · EXTRAPOLATED  ' + DS_ES[d.getUTCDay()] + ' ' + hrES(d) + ' · ' + DS_EN[d.getUTCDay()] + ' ' + hrEN(d), R.x + 30, 50, 24, '#fff', 700); }
+  }});
+
+var WATERFACT = AT && AT.water_fact ? AT.water_fact : null;
+scene({id: 'category', dur: 30, title: ['Más allá de la categoría', 'Beyond the category'], steps: [
+  {at: 0, es: '“Categoría ' + FX.cat + '” describe el *viento más fuerte sobre el mar*, cerca del ojo. No dice cuánta lluvia caerá en la sierra, cuánto crecerán los ríos ni qué laderas pueden deslavarse.' + (WATERFACT ? ' ' + WATERFACT.es : ''),
+          en: '“Category ' + FX.cat + '” describes the *strongest wind over the sea*, near the eye. It doesn’t tell you how much rain will fall on the mountains, how high the rivers will rise or which slopes may slide.' + (WATERFACT ? ' ' + WATERFACT.en : '')},
+  {at: 10, es: 'Los mapas oficiales lo confirman: CENAPRED califica a Puerto Vallarta con peligro *' + AT.grades.flood[0].toLowerCase() + ' por inundaciones y por deslaves*, y *' + AT.grades.cyclone[0].toLowerCase() + ' por ciclones*.',
+           en: 'Official maps agree: CENAPRED rates Puerto Vallarta *' + AT.grades.flood[1].toLowerCase() + ' for flooding and landslides*, and *' + AT.grades.cyclone[1].toLowerCase() + ' for tropical cyclones*.'},
+  {at: 19, es: 'Los titulares alarmistas no te dicen qué hacer en tu calle, y las cifras cambian: el 10 de octubre el SMN pasó de ' + AT.smn_change.from + ' mm a ' + AT.smn_change.to + ' mm para Jalisco en ' + AT.smn_change.hours + ' horas. *Lo que no cambia son los riesgos de tu lugar.*',
+           en: 'Alarming headlines don’t tell you what to do on your street, and the numbers change: on Oct 10 the SMN went from 2–3 in to 6–10 in for Jalisco in ' + AT.smn_change.hours + ' hours. *What doesn’t change is the risk where you are.*'}],
+  draw: function(t){
+    cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
+    var x0 = VX + 90, a = ease(t / 1);
+    cx.globalAlpha = a; cx.fillStyle = '#1b2230'; roundRect(x0, 120, VW - 180, 200, 18); cx.fill();
+    cx.font = '900 72px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText('Categoría ' + FX.cat + ' · Category ' + FX.cat, x0 + 44, 226);
+    cx.font = '500 30px ' + FT; cx.fillStyle = C.ink2; cx.fillText('viento máximo sobre el mar · peak wind over the sea', x0 + 46, 282); cx.globalAlpha = 1;
+    if (t >= 10){ gradesGraphic(x0, t); return; }
+    var cards = [['Lluvia en la sierra', 'Rain on the mountains', C.water], ['Ríos que crecen', 'Rising rivers', '#4fd1c5'], ['Laderas que se deslavan', 'Sliding slopes', C.slope], ['Viento a la altura de tu piso', 'Wind at your floor', '#b9a7ff']];
+    cx.font = '600 26px ' + FM; cx.fillStyle = C.mute; cx.globalAlpha = ease((t - 1.5) / 1); cx.fillText('LO QUE DECIDE TU RIESGO · WHAT DECIDES YOUR RISK', x0, 400); cx.globalAlpha = 1;
+    cards.forEach(function(cd, k){
+      var aa = ease((t - 2 - k * 0.8) / 0.8), y = 440 + k * 140, cw = VW - 180;
+      cx.globalAlpha = aa; cx.fillStyle = '#151b25'; roundRect(x0, y, cw, 118, 14); cx.fill(); cx.fillStyle = cd[2]; roundRect(x0, y, 12, 118, 6); cx.fill();
+      cx.font = '700 40px ' + FD; cx.fillStyle = '#fff'; cx.fillText(cd[0], x0 + 40, y + 54); cx.font = '500 30px ' + FT; cx.fillStyle = C.ink2; cx.fillText(cd[1], x0 + 40, y + 96); cx.globalAlpha = 1;
+    });
+  }});
+function gradesGraphic(x0, t){
+  var rows = [['Inundaciones', 'Flooding', AT.grades.flood, 4, C.water], ['Deslaves', 'Landslides', AT.grades.slide, 4, C.slope], ['Ciclones tropicales', 'Tropical cyclones', AT.grades.cyclone, 3, '#b9a7ff']];
+  var a0 = ease((t - 10.2) / 0.8), cw = VW - 180;
+  cx.globalAlpha = a0; cx.font = '600 26px ' + FM; cx.fillStyle = C.mute; cx.textBaseline = 'alphabetic';
+  cx.fillText('CENAPRED · PUERTO VALLARTA', x0, 380); cx.font = '500 22px ' + FT; cx.fillText('Grado de peligro · Hazard grade (Indicadores Municipales, 2020)', x0, 414); cx.globalAlpha = 1;
+  rows.forEach(function(rw, k){ var a = ease((t - 10.6 - k * 0.6) / 0.8), y = 450 + k * 132; cx.globalAlpha = a;
+    cx.fillStyle = '#151b25'; roundRect(x0, y, cw, 112, 14); cx.fill();
+    cx.font = '700 36px ' + FD; cx.fillStyle = '#fff'; cx.fillText(rw[0], x0 + 30, y + 48); cx.font = '500 26px ' + FT; cx.fillStyle = C.ink2; cx.fillText(rw[1], x0 + 30, y + 86);
+    var bx = x0 + 470, bw = cw - 500; for (var q = 0; q < 5; q++){ cx.fillStyle = q < rw[3] ? rw[4] : '#252d3a'; roundRect(bx + q * (bw / 5), y + 30, bw / 5 - 8, 26, 5); cx.fill(); }
+    cx.font = '800 28px ' + FD; cx.fillStyle = '#fff'; cx.fillText(rw[2][0] + ' · ' + rw[2][1], bx, y + 94); cx.globalAlpha = 1; });
+  if (t >= 19){ var a2 = ease((t - 19.4) / 0.8), y2 = 870; cx.globalAlpha = a2; cx.fillStyle = '#1b2230'; roundRect(x0, y2, cw, 120, 14); cx.fill();
+    cx.font = '600 22px ' + FM; cx.fillStyle = C.mute; cx.fillText('SMN · JALISCO · 10 OCT', x0 + 30, y2 + 38);
+    cx.font = '800 40px ' + FD; cx.fillStyle = '#fff'; cx.fillText(AT.smn_change.from + ' mm  →  ' + AT.smn_change.to + ' mm', x0 + 30, y2 + 88);
+    cx.font = '500 26px ' + FT; cx.fillStyle = C.ink2; cx.textAlign = 'right'; cx.fillText('en ' + AT.smn_change.hours + ' horas · in ' + AT.smn_change.hours + ' hours', x0 + cw - 30, y2 + 86); cx.textAlign = 'left'; cx.globalAlpha = 1; }
+}
+function roundRect(x, y, w, h, r){ cx.beginPath(); cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
+
+// cross-section
+var PR = VD.profile, topM = PR.top_m, topKm = PR.top_km - PR.coast_km;
+function seeded(n){ var s = n * 9301 + 49297; return function(){ s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+var DROPS = (function(){ var rnd = seeded(7), a = []; for (var k = 0; k < 900; k++) a.push([rnd(), rnd(), rnd()]); return a; })();
+scene({id: 'mountains', dur: 34, title: ['Las montañas cambian la tormenta', 'How the mountains change the storm'], steps: [
+  {at: 0, es: 'Así se ve Vallarta de perfil: de la playa a *' + fE(Math.round(topM / 10) * 10) + ' m de altura en sólo ' + r(topKm) + ' km*. Esta sierra decide adónde va la lluvia.',
+          en: 'This is Vallarta in profile: from the beach to *' + fN(Math.round(topM * 3.281 / 10) * 10) + ' ft in just ' + r(topKm / 1.609) + ' miles*. These mountains decide where the rain goes.'},
+  {at: 10, es: 'Antes de que pase el ojo, el viento viene *de tierra (noreste)*: baja de la sierra hacia el mar, en rachas.',
+           en: 'Before the eye passes, the wind blows *from the land (northeast)*: down the mountains toward the sea, in gusts.'},
+  {at: 19, es: 'Después del ojo, el viento gira y llega *del mar (suroeste)*' + (FX.shift ? ', desde el ' + tES(FX.shift) : '') + '. Empuja aire húmedo cuesta arriba: al subir se enfría y suelta *más lluvia en la sierra que en la playa*. Esa agua baja después por los ríos.',
+           en: 'After the eye, the wind turns and comes *off the sea (southwest)*' + (FX.shift ? ', from ' + tEN(FX.shift) : '') + '. It pushes moist air up the slopes: rising air cools and wrings out *more rain on the mountains than at the beach*. That water then comes down the rivers.'}],
+  draw: function(t){
+    var x0 = VX + 90, x1 = W - 70, yb = 800, yt = 250, kmMax = 40, hMax = 2400;
+    var X = function(km){ return x0 + km / kmMax * (x1 - x0); }, Y = function(m){ return yb - Math.max(m, 0) / hMax * (yb - yt); };
+    var sky = cx.createLinearGradient(0, 0, 0, yb); sky.addColorStop(0, '#121a26'); sky.addColorStop(1, '#1a2533'); cx.fillStyle = sky; cx.fillRect(VX, 0, VW, H);
+    // phase: 0 intro, 1 NE downslope, 2 SW upslope
+    var ph = t < 10 ? 0 : t < 19 ? 1 : 2;
+    // clouds over the slopes in phase 2
+    if (ph === 2){ var ca = ease((t - 19) / 3); for (var k = 0; k < 40; k++){ var km = 6 + k * 0.8, el = PR.elev[Math.min(PR.elev.length - 1, Math.round(km * 10))]; cx.fillStyle = 'rgba(200,210,225,' + (0.08 + 0.12 * Math.min(1, el / 1500)) * ca + ')'; cx.beginPath(); cx.ellipse(X(km), Y(el) - 120 - 40 * Math.sin(k), 70, 40, 0, 0, 7); cx.fill(); } }
+    // rain: denser where the ground is higher and on the windward side in phase 2
+    var rainA = ph === 0 ? 0.25 : ph === 1 ? 0.35 : 0.35 + 0.65 * ease((t - 20) / 3);
+    cx.strokeStyle = 'rgba(126,186,255,.55)'; cx.lineWidth = 2;
+    DROPS.forEach(function(d){
+      var km = d[0] * kmMax, el = PR.elev[Math.min(PR.elev.length - 1, Math.round(km * 10))], wgt = ph === 2 ? 0.25 + Math.min(1, Math.max(0, el) / 1200) : 0.45;
+      if (d[2] > rainA * wgt) return;
+      var y = ((d[1] + t * 0.9) % 1) * (Y(el) - 180) + 180, x = X(km) + (ph === 2 ? 1 : -1) * (y - 180) * 0.12;
+      if (y > Y(el) - 4) return; cx.beginPath(); cx.moveTo(x, y); cx.lineTo(x + (ph === 2 ? 5 : -5), y + 22); cx.stroke();
+    });
+    // terrain
+    cx.beginPath(); cx.moveTo(X(0), yb + 120);
+    PR.km.forEach(function(km, k){ cx.lineTo(X(km), Y(PR.elev[k])); }); cx.lineTo(X(kmMax), yb + 120); cx.closePath();
+    var g = cx.createLinearGradient(0, yt, 0, yb); g.addColorStop(0, '#6b5f52'); g.addColorStop(1, '#2f3a30'); cx.fillStyle = g; cx.fill();
+    cx.fillStyle = '#163452'; cx.fillRect(X(0), yb, X(PR.coast_km) - X(0), 120); cx.fillStyle = '#1d4468'; cx.fillRect(X(0), yb - 2, X(PR.coast_km) - X(0), 4);
+    // labels
+    label('Bahía de Banderas', X(0.4), yb + 50, 26, '#8cc4ff', 600);
+    label('Vallarta', X(PR.coast_km + 0.3), yb - 40, 26, '#fff', 700);
+    var tk = PR.top_km; label(fE(topM) + ' m · ' + fN(Math.round(topM * 3.281)) + ' ft', X(tk), Y(topM) - 34, 26, '#fff', 700, 'center');
+    cx.fillStyle = '#fff'; cx.beginPath(); cx.moveTo(X(tk), Y(topM) - 12); cx.lineTo(X(tk) - 10, Y(topM) - 26); cx.lineTo(X(tk) + 10, Y(topM) - 26); cx.fill();
+    // distance axis
+    cx.font = '500 20px ' + FM; cx.fillStyle = C.mute; cx.textAlign = 'center';
+    cx.fillStyle = '#0b0e13'; cx.fillRect(VX, yb + 120, VW, H - yb - 120); cx.fillStyle = C.mute;
+    for (var km2 = 0; km2 < kmMax; km2 += 10){ cx.textAlign = km2 === 0 ? 'left' : km2 === kmMax ? 'right' : 'center'; cx.fillText(km2 + ' km · ' + r(km2 / 1.609) + ' mi', X(km2), yb + 160); } cx.textAlign = 'left';
+    label('Perfil del terreno, de la bahía hacia el este; altura exagerada', VX + 90, 1010, 21, C.mute, 500, 'left', false);
+    label('Terrain profile from the bay eastward; height exaggerated', VX + 90, 1040, 21, C.mute, 500, 'left', false);
+    // wind arrows
+    if (ph >= 1){
+      var dirn = ph === 1 ? -1 : 1, aa = ease((t - (ph === 1 ? 10 : 19)) / 1.2);
+      for (var k2 = 0; k2 < 9; k2++){
+        var km3 = ((k2 / 9 + (t * 0.035) * dirn) % 1 + 1) % 1 * kmMax, el3 = PR.elev[Math.min(PR.elev.length - 1, Math.round(km3 * 10))], y3 = Y(el3) - 70;
+        var km4 = km3 + 2.4 * dirn, el4 = PR.elev[Math.max(0, Math.min(PR.elev.length - 1, Math.round(km4 * 10)))], y4 = Y(el4) - 70;
+        cx.save(); cx.globalAlpha = aa; cx.strokeStyle = ph === 1 ? '#ffd57a' : '#9fe0ff'; cx.fillStyle = cx.strokeStyle; cx.lineWidth = 6; cx.lineCap = 'round';
+        cx.beginPath(); cx.moveTo(X(km3), y3); cx.lineTo(X(km4), y4); cx.stroke();
+        var ang = Math.atan2(y4 - y3, X(km4) - X(km3)); cx.beginPath(); cx.moveTo(X(km4) + Math.cos(ang) * 14, y4 + Math.sin(ang) * 14); cx.lineTo(X(km4) + Math.cos(ang + 2.5) * 16, y4 + Math.sin(ang + 2.5) * 16); cx.lineTo(X(km4) + Math.cos(ang - 2.5) * 16, y4 + Math.sin(ang - 2.5) * 16); cx.fill(); cx.restore();
+      }
+      label(ph === 1 ? 'Viento del noreste · Northeast wind' : 'Viento del suroeste · Southwest wind', VX + 70, 120, 34, ph === 1 ? '#ffd57a' : '#9fe0ff', 700);
+      label(ph === 1 ? 'antes del ojo · before the eye' : 'después del ojo · after the eye', VX + 70, 166, 26, C.ink2, 500);
+    }
+    // water returning down the valley in the last seconds
+    if (t > 27){ var wa = ease((t - 27) / 2); cx.save(); cx.globalAlpha = wa; cx.strokeStyle = '#5eb4ff'; cx.lineWidth = 7; cx.setLineDash([22, 16]); cx.lineDashOffset = t * 60;
+      cx.beginPath(); for (var km5 = 24; km5 >= PR.coast_km; km5 -= 0.2){ var e5 = PR.elev[Math.round(km5 * 10)]; km5 === 24 ? cx.moveTo(X(km5), Y(e5) + 6) : cx.lineTo(X(km5), Y(e5) + 6); } cx.stroke(); cx.restore();
+      label('el agua baja a los ríos · water runs down to the rivers', X(12), Y(PR.elev[120]) + 60, 26, '#8cc4ff', 600, 'center'); }
+  }});
+
+// catchments
+var BA = VD.basins, CA = {pit: BA.pitillal.area_km2, cua: BA.cuale.area_km2};
+scene({id: 'catchments', dur: 24, title: ['De la sierra a tu calle', 'From the mountains to your street'], steps: [
+  {at: 0, es: 'La lluvia de la sierra baja por cientos de arroyos hacia dos ríos que cruzan la ciudad. Según el Atlas de Riesgos 2024, el *Pitillal* recoge *' + fE(Math.round(AT.catch.pitillal)) + ' km²* y el *Cuale* *' + fE(Math.round(AT.catch.cuale)) + ' km²*.',
+          en: 'Rain on the mountains runs down hundreds of streams into two rivers that cross the city. Per the 2024 risk atlas, the *Pitillal* drains *' + fN(AT.catch.pitillal / 2.59) + ' sq mi* and the *Cuale* *' + fN(AT.catch.cuale / 2.59) + ' sq mi*.'},
+  {at: 12, es: 'El Atlas advierte que la lluvia en la montaña puede saturar los ríos *en minutos*, y un estudio de la cuenca del Cuale calcula *unas 3 horas* para que llegue el agua de toda la cuenca. En Nora, un edificio junto al Cuale se derrumbó *horas después* de que el centro se alejó.',
+           en: 'The atlas warns that mountain rain can overload the rivers *within minutes*, and a study of the Cuale basin puts the time for water from the whole basin to arrive at *about 3 hours*. In Nora, a building by the Cuale collapsed *hours after* the center had moved away.'}],
+  draw: function(t){
+    var v = VD.view, R = fitRect(v.w, v.h, 0), s = R.w / v.w;
+    cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H);
+    if (IMG.catch_base) cx.drawImage(IMG.catch_base, R.x, R.y, R.w, R.h);
+    var ba = ease((t - 1) / 2); cx.globalAlpha = ba; ['pitillal', 'cuale'].forEach(function(k){ if (IMG['basin_' + k]) cx.drawImage(IMG['basin_' + k], R.x, R.y, R.w, R.h); }); cx.globalAlpha = 1;
+    // channels with water pulses moving downstream
+    VD.channels.forEach(function(ch, k){
+      var inB = !!ch.b, wdt = ch.a > 100 ? 4.5 : ch.a > 20 ? 3 : 1.6;
+      cx.strokeStyle = inB ? 'rgba(94,180,255,.85)' : 'rgba(94,180,255,.35)'; cx.lineWidth = wdt; cx.beginPath(); path(ch.p, R, s); cx.stroke();
+      if (inB && t > 3){ cx.save(); cx.strokeStyle = '#d8f0ff'; cx.lineWidth = wdt + 1.5; cx.setLineDash([6, 40]); cx.lineDashOffset = -(t - 3) * 70 - k * 13; cx.beginPath(); path(ch.p, R, s); cx.stroke(); cx.restore(); }
+    });
+    // outlets and places
+    var po = BA.pitillal.oxy, co = BA.cuale.oxy;
+    label('Río Pitillal · ' + fE(Math.round(AT.catch.pitillal)) + ' km² / ' + fN(AT.catch.pitillal / 2.59) + ' sq mi', R.x + po[0] * s + 24, R.y + po[1] * s - 30, 28, '#ffd08a', 700);
+    label('Río Cuale · ' + fE(Math.round(AT.catch.cuale)) + ' km² / ' + fN(AT.catch.cuale / 2.59) + ' sq mi', R.x + co[0] * s + 24, R.y + co[1] * s + 34, 28, '#a9dcff', 700);
+    var bb = VD.view.bbox, mp = function(la, lo){ return [R.x + (lo - bb[2]) / (bb[3] - bb[2]) * R.w, R.y + (bb[0] - la) / (bb[0] - bb[1]) * R.h]; };
+    [['pitillal', 'El Pitillal'], ['ezapata', 'E. Zapata'], ['amapas', 'Amapas']].forEach(function(q, k){ var b = B[q[0]], p = mp(b.lat, b.lon); marker(p[0], p[1], t + k, '#fff', null); });
+    label('Bahía de Banderas', R.x + 30, R.y + 470, 30, '#8cc4ff', 600);
+    if (t > 12){ var la = ease((t - 12) / 1); cx.globalAlpha = la; cx.fillStyle = 'rgba(11,14,19,.82)'; roundRect(R.x + R.w - 520, R.y + R.h - 170, 480, 130, 14); cx.fill();
+      cx.font = '900 44px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText('minutos → ~3 h', R.x + R.w - 490, R.y + R.h - 104);
+      cx.font = '500 24px ' + FT; cx.fillStyle = C.ink2; cx.fillText('sube en minutos, sigue por horas', R.x + R.w - 490, R.y + R.h - 72); cx.fillText('rises in minutes, keeps coming for hours', R.x + R.w - 490, R.y + R.h - 44); cx.globalAlpha = 1; }
+  }});
+
+// history: the category did not predict what happened (Nora 2021 vs Lidia 2023, from the 2024 risk atlas)
+scene({id: 'history', dur: 24, title: ['Ya pasó antes', 'It has happened before'], steps: [
+  {at: 0, es: 'En 2021, *Nora era apenas categoría 1*, pero la lluvia en la sierra desbordó el Pitillal y el Cuale: cayó el puente del Cuale y el agua arrastró casas junto al Pitillal. Se consideró la peor inundación de esos ríos en 50 años.',
+          en: 'In 2021 *Nora was only a Category 1*, but rain on the mountains overflowed the Pitillal and Cuale rivers: the Cuale bridge collapsed and water swept away homes along the Pitillal. It was considered the worst flooding on those rivers in 50 years.'},
+  {at: 12, es: 'En 2023, *Lidia tocó tierra como categoría 4*: tiró árboles y techos. Lo peor del agua llegó *dos días después*, cuando una tormenta cayó sobre suelos y canales ya llenos. *La categoría no predijo qué pasaría en cada colonia.*',
+           en: 'In 2023 *Lidia made landfall as a Category 4*: it brought down trees and roofs. The worst water came *two days later*, when a storm hit already-full soils and canals. *The category did not predict what would happen in each neighborhood.*'}],
+  draw: function(t){
+    var v = LY.views.city, R = fitRect(v.w, v.h, 0); cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H); cx.drawImage(mapStatic('city', R), R.x, R.y, R.w, R.h);
+    overlay('atlas_flood_city', R, 0.9 * ease((t - 0.5) / 1.2));
+    cx.fillStyle = 'rgba(11,14,19,.35)'; cx.fillRect(R.x, R.y, R.w, R.h);
+    function card(y, a, yr, cat, l1, l2, col){
+      cx.globalAlpha = a; cx.fillStyle = 'rgba(16,20,27,.93)'; roundRect(VX + 60, y, VW - 120, 190, 16); cx.fill(); cx.fillStyle = col; roundRect(VX + 60, y, 12, 190, 6); cx.fill();
+      cx.font = '900 54px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(yr, VX + 100, y + 70);
+      cx.font = '700 32px ' + FD; cx.fillStyle = col; cx.textAlign = 'right'; cx.fillText(cat, VX + VW - 100, y + 66); cx.textAlign = 'left';
+      cx.font = '500 28px ' + FT; cx.fillStyle = '#fff'; cx.fillText(l1, VX + 100, y + 122); cx.fillStyle = C.ink2; cx.fillText(l2, VX + 100, y + 162); cx.globalAlpha = 1;
+    }
+    card(150, ease((t - 0.8) / 0.8), 'Nora 2021', 'Categoría 1 · Category 1', 'Ríos desbordados: cayó el puente del Cuale', 'Rivers overflowed: the Cuale bridge fell', C.water);
+    card(380, ease((t - 12.4) / 0.8), 'Lidia 2023', 'Categoría 4 · Category 4', 'Árboles y techos; El Pitillal se inundó 2 días después', 'Trees and roofs; El Pitillal flooded 2 days later', '#b9a7ff');
+    label('En azul: modelo de inundación de CENAPRED · In blue: CENAPRED flood model', VX + 60, H - 70, 22, '#8cc4ff', 600);
+    label('Fuentes · Sources: Atlas de Riesgos PV 2024 · NHC · Protección Civil Jalisco', VX + 60, H - 38, 20, C.ink2, 500);
+  }});
+
+// steep slopes
+scene({id: 'slopes', dur: 22, title: ['Laderas empinadas', 'Steep slopes'], steps: [
+  {at: 0, es: 'En naranja y rojo: laderas que CENAPRED califica con susceptibilidad *alta o muy alta* a deslizarse. Con lluvia intensa el suelo se satura y puede ceder, *también horas después de que deje de llover*.',
+          en: 'In orange and red: slopes CENAPRED rates *high or very high* for landslides. In heavy rain the soil saturates and can give way, *even hours after the rain stops*.'},
+  {at: 11, es: 'Cada punto blanco es un deslave registrado por Protección Civil: *' + AT.inventory.n + ' de ' + AT.inventory.years + '*, la mayoría en agosto y septiembre, muchos en *Amapas y Conchas Chinas*.',
+           en: 'Each white dot is a landslide logged by Protección Civil: *' + AT.inventory.n + ' from ' + AT.inventory.years + '*, most in August and September, many in *Amapas and Conchas Chinas*.'}],
+  draw: function(t){
+    var view = t < 11 ? 'city' : 'zr', v = LY.views[view], R = fitRect(v.w, v.h, 0);
+    cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H); cx.drawImage(mapStatic(view, R), R.x, R.y, R.w, R.h);
+    overlay('atlas_slide_' + view, R, (view === 'city' ? 0.62 : 0.45) * ease((t - (view === 'city' ? 0.5 : 11.2)) / 1.2));
+    if (view === 'zr') overlay('atlas_dep_' + view, R, ease((t - 12) / 1));
+    else overlay('atlas_dep_city', R, ease((t - 6) / 1.5) * 0.9);
+    if (AT && AT.layers) atlasLayers(view, R, t, view === 'zr' ? 10 : 0);
+    if (AT && AT.zones && AT.zones[view]) AT.zones[view].forEach(function(z){ var p = mpx(view, R, z.lat, z.lon); label(z.name, p[0], p[1], 22, '#ffe0b0', 600, 'center'); });
+    var a = B.amapas, e = B.ezapata, pa = mpx(view, R, a.lat, a.lon), pe = mpx(view, R, e.lat, e.lon);
+    if (view === 'city'){ label('Sierra', R.x + R.w * 0.78, R.y + R.h * 0.62, 34, '#ffd8a8', 700); label('Bahía de Banderas', R.x + R.w * 0.12, R.y + R.h * 0.42, 30, '#8cc4ff', 600); marker(pa[0], pa[1], t, '#fff', 'Amapas', 'l'); }
+    else { marker(pa[0], pa[1], t, '#fff', 'Amapas', 'l'); marker(pe[0], pe[1], t + 1, '#fff', 'E. Zapata'); label('Conchas Chinas', R.x + R.w * 0.12, R.y + R.h * 0.93, 26, '#ffe0b0', 700); label('Río Cuale', R.x + R.w * 0.72, R.y + R.h * 0.2, 26, '#8cc4ff', 700); }
+  }});
+
+// risk atlas and history (only what the research verified): atlas layers drawn over the map, then past events
+function atlasLayers(view, R, t, from){
+  (AT.layers || []).filter(function(l){ return l.view === view && IMG['atlas_' + l.key]; }).forEach(function(l, k){
+    var a = ease((t - (from || 0) - (l.at || 0)) / 1); if (a <= 0) return;
+    var b = l.bbox || LY.views[view].bbox, vb = LY.views[view].bbox;
+    var x0 = R.x + (b[2] - vb[2]) / (vb[3] - vb[2]) * R.w, y0 = R.y + (vb[0] - b[0]) / (vb[0] - vb[1]) * R.h, x1 = R.x + (b[3] - vb[2]) / (vb[3] - vb[2]) * R.w, y1 = R.y + (vb[0] - b[1]) / (vb[0] - vb[1]) * R.h;
+    cx.save(); cx.beginPath(); cx.rect(R.x, R.y, R.w, R.h); cx.clip(); cx.globalAlpha = a * (l.alpha || 0.75); cx.drawImage(IMG['atlas_' + l.key], x0, y0, x1 - x0, y1 - y0); cx.restore();
+  });
+}
+function atlasLegend(view, t){
+  var ls = (AT.layers || []).filter(function(l){ return l.view === view && IMG['atlas_' + l.key] && l.legend; }); if (!ls.length) return;
+  var x = VX + 40, y = 40; cx.fillStyle = 'rgba(11,14,19,.86)'; roundRect(x, y, 640, 26 + ls.length * 64, 14); cx.fill();
+  ls.forEach(function(l, k){ var a = ease((t - (l.at || 0)) / 1); cx.globalAlpha = a; cx.fillStyle = l.swatch || '#5eb4ff'; cx.fillRect(x + 22, y + 24 + k * 64, 34, 34);
+    cx.font = '700 25px ' + FT; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(l.legend[0], x + 72, y + 44 + k * 64); cx.font = '500 21px ' + FT; cx.fillStyle = C.ink2; cx.fillText(l.legend[1], x + 72, y + 70 + k * 64); cx.globalAlpha = 1; });
+}
+if (AT && AT.history && AT.history.steps && AT.history.steps.length){
+  scene({id: 'atlas', dur: AT.history.dur || 24, title: AT.history.title, steps: AT.history.steps, draw: function(t){
+    var view = AT.history.view || 'city', v = LY.views[view], R = fitRect(v.w, v.h, 0); cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H); cx.drawImage(mapStatic(view, R), R.x, R.y, R.w, R.h);
+    atlasLayers(view, R, t, 0);
+    (AT.history.marks || []).forEach(function(mk, k){ var a = ease((t - (mk.at || 0)) / 0.8); if (a <= 0) return; var p = mpx(view, R, mk.lat, mk.lon); cx.globalAlpha = a;
+      cx.fillStyle = mk.kind === 'flood' ? C.water : mk.kind === 'slide' ? C.slope : '#ff8a75'; cx.beginPath(); cx.arc(p[0], p[1], 12, 0, 7); cx.fill(); cx.strokeStyle = '#0b0e13'; cx.lineWidth = 3; cx.stroke();
+      label(mk.label, p[0] + (mk.side === 'l' ? -20 : 20), p[1], 24, '#fff', 700, mk.side === 'l' ? 'right' : 'left'); if (mk.sub) label(mk.sub, p[0] + (mk.side === 'l' ? -20 : 20), p[1] + 28, 20, C.ink2, 500, mk.side === 'l' ? 'right' : 'left'); cx.globalAlpha = 1; });
+    atlasLegend(view, t);
+  }});
+}
+
+// one scene per building: zoomed map, the wind arrow and the threat strips running through Sunday
+var TL0 = (function(){ for (var i = NOBS; i < N; i++){ var d = cst(TIMES[i]); if (d.getUTCHours() === 6 && d.getUTCMinutes() === 0) return i; } return NOBS; })();
+function bscene(o){
+  var b = B[o.id];
+  scene({id: o.id, dur: o.dur, title: o.title, steps: o.steps, draw: function(t){
+    var v = LY.views[o.view], R = fitRect(v.w, v.h, 0);
+    cx.fillStyle = '#0b0e13'; cx.fillRect(VX, 0, VW, H);
+    var Rm = {x: VX + (VW - Math.min(VW, v.w * 1080 / v.h)) / 2, y: 0, w: Math.min(VW, v.w * 1080 / v.h), h: 0}; Rm.h = Rm.w * v.h / v.w; Rm.y = (H - Rm.h) / 2;
+    cx.drawImage(mapStatic(o.view, Rm), Rm.x, Rm.y, Rm.w, Rm.h);
+    (o.overlays || []).forEach(function(ov){ overlay(ov[0], Rm, ov[1] * ease((t - 0.5) / 1)); });
+    if (o.ovLabel){ label(o.ovLabel[0], Rm.x + 30, 40, 22, o.ovLabel[2] || '#ffd08a', 700); label(o.ovLabel[1], Rm.x + 30, 70, 20, C.ink2, 500); }
+    // run Sunday 6 am -> Monday noon through the scene
+    var f = ease((t - 1) / (o.dur - 3)), i = Math.round(TL0 + f * (N - 1 - TL0)), sd = b.scen.ext;
+    var rate = sd.rate[i]; if (rate > 0.5){ cx.fillStyle = 'rgba(96,62,204,' + Math.min(0.35, 0.06 + rate / 140) + ')'; cx.fillRect(Rm.x, Rm.y, Rm.w, Rm.h); }
+    var p = mpx(o.view, Rm, b.lat, b.lon);
+    // wind arrow at the building (blowing toward), length by gust at this floor
+    var ang = (sd.frm[i] + 180) * Math.PI / 180, len = 30 + sd.gb[i] * 0.9;
+    cx.save(); cx.strokeStyle = sd.lv.wind[i] >= 3 ? C.t4 : sd.lv.wind[i] >= 2 ? C.t2 : '#fff'; cx.fillStyle = cx.strokeStyle; cx.lineWidth = 9; cx.lineCap = 'round';
+    var ex = p[0] + Math.sin(ang) * len / 2, ey = p[1] - Math.cos(ang) * len / 2, sx = p[0] - Math.sin(ang) * len / 2, sy = p[1] + Math.cos(ang) * len / 2;
+    cx.beginPath(); cx.moveTo(sx, sy); cx.lineTo(ex, ey); cx.stroke(); cx.beginPath(); cx.moveTo(ex + Math.sin(ang) * 18, ey - Math.cos(ang) * 18); cx.lineTo(ex + Math.sin(ang + 2.4) * 22, ey - Math.cos(ang + 2.4) * 22); cx.lineTo(ex + Math.sin(ang - 2.4) * 22, ey - Math.cos(ang - 2.4) * 22); cx.fill(); cx.restore();
+    marker(p[0], p[1], t, '#fff', null);
+    (o.labels || []).forEach(function(l){ var q = mpx(o.view, Rm, l[1], l[2]); label(l[0], q[0], q[1], l[3] || 24, l[4] || '#e8ecf1', 700, 'center'); });
+    // readout + strips
+    var d = cst(TIMES[i]), bx = VX + 40, by = H - 300, bw = VW - 80;
+    cx.fillStyle = 'rgba(11,14,19,.88)'; roundRect(bx, by, bw, 270, 16); cx.fill();
+    cx.font = '800 38px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(DAY_ES[d.getUTCDay()] + ' ' + hrES(d) + '  ·  ' + DAY_EN[d.getUTCDay()] + ' ' + hrEN(d), bx + 24, by + 50);
+    cx.font = '500 23px ' + FM; cx.fillStyle = C.ink2;
+    cx.fillText('Viento ' + r(sd.vb[i]) + ' km/h, ráfagas ' + r(sd.gb[i]) + ' km/h, del ' + C16E[ci(sd.frm[i])].replace(/W/g, 'O') + ' · Wind ' + r(sd.vb[i] / 1.609) + ' mph, gusts ' + r(sd.gb[i] / 1.609) + ' mph, from ' + C16E[ci(sd.frm[i])], bx + 24, by + 88);
+    var rows = o.rows, x0 = bx + 300, x1 = bx + bw - 24, rh = 22;
+    rows.forEach(function(rw, k){
+      var y = by + 118 + k * (rh + 8), a = sd.lv[rw[0]];
+      cx.font = '500 20px ' + FT; cx.fillStyle = C.ink2; cx.textAlign = 'right'; cx.fillText(rw[1] + ' · ' + rw[2], x0 - 14, y + 17); cx.textAlign = 'left';
+      cx.fillStyle = '#1c232e'; cx.fillRect(x0, y, x1 - x0, rh);
+      for (var j = TL0; j < N; j++){ var lv = a[j]; if (lv > 0){ cx.fillStyle = [null, C.t1, C.t2, C.t3, C.t4][lv]; cx.fillRect(x0 + (j - TL0) / (N - 1 - TL0) * (x1 - x0), y, (x1 - x0) / (N - 1 - TL0) + 0.6, rh); } }
+    });
+    var xc = x0 + (i - TL0) / (N - 1 - TL0) * (x1 - x0); cx.fillStyle = '#fff'; cx.fillRect(xc - 1.5, by + 108, 3, rows.length * (rh + 8) + 8);
+    cx.font = '500 18px ' + FM; cx.fillStyle = C.mute; cx.textAlign = 'center';
+    for (var j2 = TL0; j2 < N; j2++){ var d2 = cst(TIMES[j2]); if (d2.getUTCMinutes() === 0 && d2.getUTCHours() % 6 === 0) cx.fillText(d2.getUTCHours() === 0 ? DS_ES[d2.getUTCDay()] + ' / ' + DS_EN[d2.getUTCDay()] : String(d2.getUTCHours()).padStart(2, '0') + 'h', x0 + (j2 - TL0) / (N - 1 - TL0) * (x1 - x0), by + 262); }
+    cx.textAlign = 'left';
+    label('Estimado · Estimate', bx + bw - 24, by + 34, 20, C.mute, 500, 'right', false);
+  }});
+}
+function rng(w, fmt){ return w ? fmt(w[0]) + '–' + (w[2] ? (fmt === hES ? 'lunes' : 'Monday') : fmt(w[1]).replace('~', '')) : ''; }
+bscene({id: 'amapas', view: 'zr', dur: 26, overlays: [['atlas_slide_zr', 0.45], ['atlas_dep_zr', 0.95]], ovLabel: ['Laderas de susceptibilidad alta (CENAPRED) · deslaves registrados (Protección Civil)', 'High-susceptibility slopes (CENAPRED) · logged landslides (Protección Civil)'], title: ['Amapas · 8.º piso, ventanas al norte', 'Amapas · 8th floor, north-facing windows'],
+  rows: [['wind', 'Viento', 'Wind'], ['windows', 'Ventanas N', 'N windows'], ['rate', 'Lluvia', 'Rain'], ['slide', 'Deslave', 'Landslide']],
+  labels: [['AMAPAS', 20.5935, -105.2350, 26], ['Río Cuale', 20.6066, -105.2320, 22, '#8cc4ff']],
+  steps: [
+    {at: 0, es: 'Arriba el viento es más fuerte que en la calle. Antes de que pase el ojo sopla del noreste y *pega de frente en las ventanas del norte*: domingo de ' + hES(FX.windows3[0]) + ' a ' + hES(FX.windows3[1]) + '. En esas horas, *quédate en un cuarto interior*, lejos de las ventanas.',
+            en: 'Up high the wind is stronger than at street level. Before the eye passes it blows from the northeast, *straight onto north windows*: Sunday ' + hEN(FX.windows3[0]) + ' to ' + hEN(FX.windows3[1]) + '. During those hours *stay in an inner room*, away from windows.'},
+    {at: 13, es: 'El Atlas 2024 incluye tu zona entre las que pueden recibir material de deslaves; hay *' + AT.near.amapas_500m + ' deslaves registrados a menos de 500 m*, y en 2021 uno en Amapas obligó a evacuar a 20 personas. Las laderas pueden *cortar la calle*: no salgas a revisar durante la tormenta.',
+             en: 'The 2024 atlas includes your area among those that can receive landslide debris; *' + AT.near.amapas_500m + ' landslides were logged within 1,600 ft*, and in 2021 one in Amapas forced 20 people out. Slopes can *cut off the street*: don’t go out to check during the storm.'}]});
+bscene({id: 'ezapata', view: 'zr', dur: 24, overlays: [['atlas_flood_zr', 0.8]], ovLabel: ['Modelo de inundación de CENAPRED, crecida de 100 años', 'CENAPRED flood model, 100-year flood', '#8cc4ff'], title: ['Emiliano Zapata · 3.er piso, entre edificios de 8', 'Emiliano Zapata · 3rd floor, among 8-story buildings'],
+  rows: [['wind', 'Viento', 'Wind'], ['runoff', 'Calles', 'Streets'], ['river', 'Río Cuale', 'Cuale River'], ['slide', 'Deslave', 'Landslide']],
+  labels: [['EMILIANO ZAPATA', 20.6038, -105.2290, 26], ['Río Cuale', 20.6066, -105.2320, 22, '#8cc4ff']],
+  steps: [
+    {at: 0, es: 'Los edificios altos frenan el viento constante, pero lo vuelven *racheado y arremolinado*. El peligro mayor viene de arriba: *tinacos, calentadores, vidrios y láminas* que pueden caer de los pisos altos.',
+            en: 'Taller buildings block the steady wind but make it *gusty and swirling*. The bigger danger comes from above: *water tanks, heaters, glass and roofing* that can fall from upper floors.'},
+    {at: 12, es: 'Estás en alto: es poco probable que el agua llegue a tu piso, pero en Nora (2021) el Cuale se desbordó hacia calles de Emiliano Zapata, y *puede estar peligroso desde el domingo ' + hES(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. Cuando pase el ojo habrá calma: *no salgas*, el viento regresa.',
+             en: 'You are up the slope: water is unlikely to reach your floor, but in Nora (2021) the Cuale overflowed into streets of Emiliano Zapata, and it *may be dangerous from Sunday ' + hEN(FX.cuale3 ? FX.cuale3[0] : TIMES[N - 1]) + '*. When the eye passes it will go calm: *stay inside*, the wind comes back.'}]});
+bscene({id: 'pitillal', view: 'pit', dur: 32, overlays: [['atlas_flood_pit', 0.8]], ovLabel: ['Modelo de inundación de CENAPRED, crecida de 100 años', 'CENAPRED flood model, 100-year flood', '#8cc4ff'], title: ['El Pitillal · casa de 2 pisos, a nivel de calle', 'El Pitillal · 2-story house, street level'],
+  rows: [['rate', 'Lluvia', 'Rain'], ['runoff', 'Calles', 'Streets'], ['river', 'Río Pitillal', 'Pitillal River'], ['wind', 'Viento', 'Wind']],
+  labels: [['EL PITILLAL', 20.6540, -105.2050, 28], ['Río Pitillal', 20.6440, -105.2165, 22, '#8cc4ff']],
+  steps: [
+    {at: 0, es: 'Aquí el riesgo principal es *el agua*: la calle y el Río Pitillal, a 160 m; en azul, lo que inunda el modelo de CENAPRED. Las calles pueden inundarse desde el domingo ' + hES(FX.run3p ? FX.run3p[0] : TIMES[N - 1]) + '; el río puede estar peligroso desde ' + hES(FX.pit3 ? FX.pit3[0] : TIMES[N - 1]) + ' y *seguir alto el lunes* aunque ya llueva menos.',
+            en: 'Here the main risk is *water*: the street and the Pitillal River, 525 ft away; in blue, what CENAPRED’s flood model floods. Streets may flood from Sunday ' + hEN(FX.run3p ? FX.run3p[0] : TIMES[N - 1]) + '; the river may be dangerous from ' + hEN(FX.pit3 ? FX.pit3[0] : TIMES[N - 1]) + ' and *stay high on Monday* even as the rain eases.'},
+    {at: 11, es: 'Ya pasó: en 2021 (Nora) el Pitillal arrastró casas y se evacuó la colonia Río Pitillal; en 2023, dos días después de Lidia, la calle Corregidora, en el centro de El Pitillal, se inundó y la corriente arrastró autos.',
+             en: 'It has happened: in 2021 (Nora) the Pitillal swept away homes and the Río Pitillal neighborhood was evacuated; in 2023, two days after Lidia, calle Corregidora in central El Pitillal flooded and the current carried cars away.'},
+    {at: 21, es: '*Sube documentos, medicinas y objetos de valor* antes del domingo en la tarde. Si el agua entra, corta la luz y sube al segundo piso. *Nunca cruces agua en movimiento*, ni a pie ni en auto.',
+             en: '*Move documents, medicine and valuables upstairs* before Sunday afternoon. If water comes in, cut the power and go to the second floor. *Never cross moving water*, on foot or by car.'}]});
+
+// summary timeline
+scene({id: 'timeline', dur: 20, title: ['El domingo, hora por hora (estimado)', 'Sunday, hour by hour (estimate)'], steps: [
+  {at: 0, es: 'Los horarios son aproximados: con cada boletín nuevo pueden moverse algunas horas. Lo que no cambia es *qué te amenaza en tu lugar*.',
+          en: 'Times are approximate: they can shift by a few hours with each new advisory. What does not change is *what threatens you where you are*.'}],
+  draw: function(t){
+    cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
+    var x0 = VX + 470, x1 = W - 70, y0 = 190, i0 = TL0, X = function(i){ return x0 + (i - i0) / (N - 1 - i0) * (x1 - x0); };
+    var rows = [
+      ['Viento de tormenta tropical', 'Tropical-storm winds', FX.wind2, C.t2],
+      ['Viento más fuerte', 'Strongest wind', FX.wind3, C.t4],
+      ['Lluvia torrencial', 'Torrential rain', FX.rate3[0], '#7f6bff'],
+      ['Paso del centro', 'Center passes', [TIMES[FX.c1.i], TIMES[FX.c2.i]], '#ffffff'],
+      ['Viento del mar: lluvia en la sierra', 'Onshore wind: rain on the mountains', FX.shift ? [FX.shift, TIMES[N - 1], true] : null, '#9fe0ff'],
+      ['Río Cuale peligroso', 'Cuale River dangerous', FX.cuale3, C.water],
+      ['Río Pitillal peligroso', 'Pitillal River dangerous', FX.pit3, C.water],
+      ['Deslaves posibles', 'Landslides possible', FX.slide2, C.slope]];
+    rows.forEach(function(rw, k){
+      var y = y0 + k * 96, a = ease((t - 0.6 - k * 0.5) / 0.8);
+      cx.globalAlpha = a; cx.font = '700 25px ' + FT; cx.fillStyle = '#fff'; cx.textAlign = 'right'; cx.textBaseline = 'alphabetic'; cx.fillText(rw[0], x0 - 20, y + 22);
+      cx.font = '500 22px ' + FT; cx.fillStyle = C.ink2; cx.fillText(rw[1], x0 - 20, y + 52); cx.textAlign = 'left';
+      cx.fillStyle = '#1a212c'; cx.fillRect(x0, y, x1 - x0, 46);
+      if (rw[2]){ var s = Math.max(i0, TIMES.indexOf(rw[2][0])), e = TIMES.indexOf(rw[2][1]); if (e - s < 6){ s -= 3; e += 3; } cx.fillStyle = rw[3]; cx.globalAlpha = a * 0.9; cx.fillRect(X(s), y, Math.max(6, X(e) - X(s)), 46); }
+      cx.globalAlpha = 1;
+    });
+    cx.font = '500 22px ' + FM; cx.fillStyle = C.mute; cx.textAlign = 'center';
+    for (var j = i0; j < N; j++){ var d = cst(TIMES[j]); if (d.getUTCMinutes() === 0 && d.getUTCHours() % 6 === 0){ cx.fillStyle = '#2a313b'; cx.fillRect(X(j), y0 - 20, 1, rows.length * 96); cx.fillStyle = C.mute;
+      cx.fillText(d.getUTCHours() === 0 ? DS_ES[d.getUTCDay()] : hrES(d), X(j), y0 - 58); cx.fillText(d.getUTCHours() === 0 ? DS_EN[d.getUTCDay()] : hrEN(d), X(j), y0 - 30); } }
+    cx.textAlign = 'left';
+    label('Ventanas que cubren las dos trayectorias (satélite y NHC)', VX + 90, H - 76, 21, C.mute, 500, 'left', false); label('Windows covering both tracks (satellite and NHC)', VX + 90, H - 46, 21, C.mute, 500, 'left', false);
+  }});
+
+scene({id: 'todo', dur: 22, title: ['Qué hacer', 'What to do'], steps: [
+  {at: 0, es: 'Sigue a *Protección Civil* de Puerto Vallarta y de Jalisco. Emergencias: *911*. Si vives junto a un río o bajo una ladera, *decide hoy a dónde irías*.',
+          en: 'Follow *Protección Civil* of Puerto Vallarta and Jalisco. Emergencies: *911*. If you live by a river or below a slope, *decide today where you would go*.'},
+  {at: 11, es: 'Cuando pase el ojo habrá calma: *no salgas*, el viento vuelve del otro lado. *No cruces agua en movimiento.* Después de la tormenta, aléjate de laderas, arroyos y cables caídos.',
+           en: 'When the eye passes it will go calm: *stay inside*, the wind returns from the other side. *Don’t cross moving water.* After the storm, keep away from slopes, streams and downed lines.'}],
+  draw: function(t){
+    cx.fillStyle = '#0d1118'; cx.fillRect(VX, 0, VW, H);
+    var items = [['Protección Civil · 911', 'Avisos oficiales · official alerts', '#ffffff'], ['Río o ladera: plan hoy', 'River or slope: plan today', C.water], ['Ojo = calma engañosa', 'Eye = a false calm', C.warm], ['Agua en movimiento: no cruzar', 'Moving water: don’t cross', '#7f6bff'], ['Después: laderas y cables', 'Afterwards: slopes and lines', C.slope]];
+    items.forEach(function(it, k){ var a = ease((t - 0.5 - k * (k < 2 ? 0.8 : 0) - (k >= 2 ? 10.5 + (k - 2) * 0.8 : 0)) / 0.8), y = 150 + k * 165;
+      cx.globalAlpha = a; cx.fillStyle = '#151b25'; roundRect(VX + 90, y, VW - 180, 130, 16); cx.fill(); cx.fillStyle = it[2]; roundRect(VX + 90, y, 12, 130, 6); cx.fill();
+      cx.font = '800 44px ' + FD; cx.fillStyle = '#fff'; cx.textBaseline = 'alphabetic'; cx.fillText(it[0], VX + 136, y + 60); cx.font = '500 30px ' + FT; cx.fillStyle = C.ink2; cx.fillText(it[1], VX + 136, y + 104); cx.globalAlpha = 1; });
+  }});
+
+scene({id: 'credits', dur: 10, noPanel: true, steps: [{at: 0, es: '', en: ''}], draw: function(t){
+  cx.fillStyle = '#0b0e13'; cx.fillRect(0, 0, W, H); var a = ease(t / 1);
+  cx.globalAlpha = a; cx.textBaseline = 'alphabetic';
+  cx.font = '800 50px ' + FD; cx.fillStyle = '#fff'; cx.fillText('Fuentes · Sources', 140, 220);
+  var src = (AT && AT.sources && AT.sources.length ? AT.sources : []).concat(['NOAA GOES-18 ABI (infrarrojo / infrared, lluvia estimada / rain rate)', 'NHC, boletín / advisory ' + ADV.num, 'Terreno / terrain: AWS Terrain Tiles · Calles / streets © OpenStreetMap']);
+  cx.font = '500 30px ' + FT; cx.fillStyle = C.ink2; src.forEach(function(s, k){ cx.fillText('· ' + s, 140, 300 + k * 50); });
+  var y = 330 + src.length * 50;
+  cx.font = '700 36px ' + FD; cx.fillStyle = C.warm; cx.fillText('Hecho con datos abiertos. No es un pronóstico oficial.', 140, y + 40);
+  cx.font = '500 32px ' + FD; cx.fillStyle = '#d9b46a'; cx.fillText('Made with open data. Not an official forecast.', 140, y + 90);
+  cx.font = '500 26px ' + FM; cx.fillStyle = C.mute; cx.fillText('Datos al ' + ASOF_ES + ' (hora del centro) · Data as of ' + ASOF_EN + ' CST', 140, y + 160);
+  cx.globalAlpha = 1;
+}});
+
+// ---------- timeline of scenes ----------
+var T0 = [], TOTAL = 0; SC.forEach(function(s){ T0.push(TOTAL); TOTAL += s.dur; });
+var XF = 0.6;     // crossfade seconds
+function drawScene(k, t){ var s = SC[k]; cx.save(); s.draw(t); cx.restore(); if (!s.noPanel){ cx.save(); panel(s, t); cx.restore(); } }
+function render(T){
+  T = Math.max(0, Math.min(TOTAL - 1e-6, T));
+  var k = 0; while (k < SC.length - 1 && T >= T0[k + 1]) k++;
+  var t = T - T0[k];
+  cx.globalAlpha = 1; cx.fillStyle = C.bg; cx.fillRect(0, 0, W, H);
+  drawScene(k, t);
+  if (k > 0 && t < XF){ var oc = document.createElement('canvas'); oc.width = W; oc.height = H; var keep = cx; cx = oc.getContext('2d'); drawScene(k - 1, SC[k - 1].dur - 0.001); cx = keep; cx.globalAlpha = 1 - t / XF; cx.drawImage(oc, 0, 0); cx.globalAlpha = 1; }
+  if (T > TOTAL - 1){ cx.fillStyle = 'rgba(0,0,0,' + (T - (TOTAL - 1)) + ')'; cx.fillRect(0, 0, W, H); }
+}
+window.VIDEO = {render: render, total: function(){ return TOTAL; }, scenes: function(){ return SC.map(function(s, k){ return {id: s.id, t0: T0[k], dur: s.dur, title: s.title || null, steps: s.steps}; }); }, ready: null};
+window.VIDEO.ready = document.fonts.ready.then(loadAll).then(function(){ render(0); return true; });
+</script>
+</body>
+</html>
