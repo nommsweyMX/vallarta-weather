@@ -47,7 +47,7 @@ function c16l(d){ return C16L[LANG][Math.round(d / 22.5) % 16]; } function c8(d)
 // ---------- drawing helpers ----------
 function roundRect(x, y, w, h, r){ cx.beginPath(); cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
 function text(s, x, y, size, color, weight, align, font, halo){ cx.font = (weight || 500) + ' ' + size + 'px ' + (font || FT); cx.fillStyle = color || C.ink; cx.textAlign = align || 'left'; cx.textBaseline = 'middle';
-  if (halo){ cx.lineJoin = 'round'; cx.lineWidth = Math.max(3, size * 0.22); cx.strokeStyle = 'rgba(11,14,19,.9)'; cx.strokeText(s, x, y); } cx.fillText(s, x, y); }
+  if (halo){ cx.lineJoin = 'round'; cx.lineWidth = Math.max(3, size * 0.22); cx.strokeStyle = halo === 'light' ? 'rgba(255,255,255,.92)' : 'rgba(11,14,19,.9)'; cx.strokeText(s, x, y); } cx.fillText(s, x, y); }
 function wrap(s, x, y, w, size, lh, color, weight, font, dry){ cx.font = (weight || 500) + ' ' + size + 'px ' + (font || FT); cx.fillStyle = color || C.ink; cx.textAlign = 'left'; cx.textBaseline = 'middle';
   var words = s.split(' '), line = '', n = 0;
   for (var i = 0; i < words.length; i++){ var t = line ? line + ' ' + words[i] : words[i]; if (cx.measureText(t).width > w && line){ if (!dry) cx.fillText(line, x, y + n * lh); line = words[i]; n++; } else line = t; }
@@ -82,7 +82,7 @@ function advLine(){ var m = /^(\d{1,2})(\d{2}) ([AP])M \w+ (\w{3}) \w{3} (\d+)/.
 var MAP_TOP = 228;
 var NOW_MS = Date.parse(BAY.t_obs.replace('Z', ':00Z'));
 function earlyTxt(iso){ return Date.parse(iso.replace('Z', ':00Z')) <= NOW_MS ? L('ya puede empezar en cualquier momento', 'it can start at any time now') : L('podría empezar desde ' + dh(iso), 'could start as early as ' + dh(iso)); }
-var SMN_AV = __SMN_AV__, SMN_RAIN = [50, 75], SMN_RAIN_NAY = [50, 75];
+var SMN_AV = __SMN_AV__, SMN_RAIN = [50, 75], SMN_RAIN_NAY = [50, 75], SMN_GUST = [90, 100], SMN_WAVE = [4, 5];
 function smnTxt(){ return SMN_RAIN[1] ? L(SMN_RAIN[0] + '–' + SMN_RAIN[1] + ' mm', Math.round(SMN_RAIN[0] / 25.4) + '–' + Math.round(SMN_RAIN[1] / 25.4) + ' in') : L('más de ' + SMN_RAIN[0] + ' mm', 'over ' + Math.round(SMN_RAIN[0] / 25.4) + ' in'); }   // SMN aviso quoted (build_graphics.py): rain for coastal/eastern Jalisco, [low, high]; high null = 'more than low'
 function header(n, title, sub){ cx.fillStyle = C.bg; cx.fillRect(0, 0, W, H);
   text('SIMON · ' + n + '/6', 40, 44, 22, C.accent, 700, 'left', FM);
@@ -109,7 +109,7 @@ var LEFT_LABELS = {'Punta Mita': 1, 'Cabo Corrientes': 1, 'Yelapa': 1, 'Sayulita
 function placeLabels(R, fn, skip){ BAY.places.forEach(function(p){ if ((skip || []).indexOf(p.name) >= 0) return; var q = px(R, p.lat, p.lon); if (q[0] < R.x + 6 || q[0] > R.x + R.w - 6 || q[1] < R.y + 6 || q[1] > R.y + R.h - 6) return;
   var left = LEFT_LABELS[p.name]; cx.font = '700 19px ' + FT; var tw = Math.max(cx.measureText(p.name).width, fn ? cx.measureText(fn(p)).width : 0); if (left && q[0] - 10 - tw < R.x + 4) left = false; if (!left && q[0] + 10 + tw > R.x + R.w - 4) left = true;
   cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(q[0], q[1], 4, 0, 7); cx.fill();
-  text(p.name, q[0] + (left ? -10 : 10), q[1] - 11, 19, '#fff', 700, left ? 'right' : 'left', FT, true); if (fn) text(fn(p), q[0] + (left ? -10 : 10), q[1] + 11, 18, '#ffe9a8', 600, left ? 'right' : 'left', FT, true); }); }
+  text(p.name, q[0] + (left ? -10 : 10), q[1] - 11, 19, '#fff', 700, left ? 'right' : 'left', FT, true); if (fn) text(fn(p), q[0] + (left ? -10 : 10), q[1] + 11, 18, LIGHT ? '#1a1200' : '#ffe9a8', LIGHT ? 700 : 600, left ? 'right' : 'left', FT, LIGHT ? 'light' : true); }); }
 var SKIP_BAY = ['Amapas', 'Zona Romántica', 'Las Juntas', 'Ixtapa', 'Aeropuerto PVR', 'Centro PV', 'El Pitillal', 'Mismaloya'];
 function cells(R, fn){ var cw = G.d / (VB[3] - VB[2]) * R.w + 0.6, ch = G.d / (VB[0] - VB[1]) * R.h + 0.6; clipMap(R);
   for (var j = 0; j < G.ny; j++) for (var i = 0; i < G.nx; i++){ var k = j * G.nx + i, la = G.lat0 - j * G.d, lo = G.lon0 + i * G.d, col = fn(k); if (!col) continue; var q = px(R, la + G.d / 2, lo - G.d / 2); cx.fillStyle = col; cx.fillRect(q[0], q[1], cw, ch); } cx.restore(); }
@@ -315,8 +315,12 @@ function gSummary(){ var HS = SUM_BI ? 1800 : 1700; cv.height = HS; cx.fillStyle
   var fy = Math.max(y + 6, HS - 150); if (fy > HS - 124) fy = HS - 124;
   cx.fillStyle = '#121720'; cx.fillRect(0, fy, W, HS - fy);
   var fES = BAY.rain_cal > 1.05 ? 'Cifras de los tres sitios con las probabilidades de viento del NHC y la lluvia del SMN para Jalisco (aviso ' + SMN_AV + ': ' + smnTxt() + '). Horas aproximadas: pueden moverse con cada boletín.' : 'Viento: con las probabilidades del NHC. Lluvia: la que ve el satélite, llevada sobre la línea del NHC; el SMN (aviso ' + SMN_AV + ') prevé ' + smnTxt() + ' para Jalisco, pero con el centro al suroeste y viento de tierra la bahía queda del lado seco. Horas aproximadas.', fEN = BAY.rain_cal > 1.05 ? 'Site figures from the NHC wind odds and the SMN rain for Jalisco (advisory ' + SMN_AV + ': ' + smnTxt() + '). Approximate times: they can shift with each advisory.' : 'Wind: from the NHC odds. Rain: what the satellite sees, carried along the NHC line; the SMN (advisory ' + SMN_AV + ') forecasts ' + smnTxt() + ' for Jalisco, but with the center to the south-west and a wind off the land the bay is on the dry side. Approximate times.';
+  if (!PP['34']){ var WARN = (ADV.warnings && ADV.warnings[0]) ? ADV.warnings[0] : 'Playa Perula to El Roblito';
+    fES = 'Vallarta sigue en zona de prevención por huracán (' + WARN + '); el SMN prevé para la costa de Jalisco rachas de ' + SMN_GUST[0] + '–' + SMN_GUST[1] + ' km/h y olas de ' + SMN_WAVE[0] + '–' + SMN_WAVE[1] + ' m, bajando hoy; las cifras de aquí son para estas direcciones y son menores. Viento: estructura del NHC sobre su línea (Vallarta bajo el umbral de 3%). Lluvia: la que ve el satélite; el SMN (aviso ' + SMN_AV + ') prevé ' + smnTxt() + ' para Jalisco. Horas aproximadas.';
+    fEN = 'Vallarta is still inside the hurricane warning area (' + WARN + '); the SMN forecasts for the Jalisco coast gusts of ' + Math.round(SMN_GUST[0] / 1.609) + '–' + Math.round(SMN_GUST[1] / 1.609) + ' mph and ' + Math.round(SMN_WAVE[0] * 3.281) + '–' + Math.round(SMN_WAVE[1] * 3.281) + ' ft waves, easing today; the figures here are for these addresses and are lower. Wind: the NHC wind structure on its line (Vallarta is below the NHC 3% listing threshold). Rain: what the satellite sees; the SMN (advisory ' + SMN_AV + ') forecasts ' + smnTxt() + ' for Jalisco. Approximate times.'; }
+  var longF = L(fES, fEN).length > 330;
   if (SUM_BI){ wrap(fES, 40, fy + 26, W - 80, 17, 22, C.mute, 500); wrap(fEN, 40, fy + 72, W - 80, 17, 22, C.mute, 500); }
-  else wrap(L(fES, fEN), 40, fy + 34, W - 80, 19, 24, C.mute, 500);
+  else wrap(L(fES, fEN), 40, fy + (longF ? 28 : 34), W - 80, longF ? 16 : 19, longF ? 20 : 24, C.mute, 500);
   text(bt('No es un pronóstico oficial', 'Not an official forecast') + ' · SMN · NHC · Protección Civil · 911', 40, HS - 24, 19, C.ink2, 700, 'left', FT); }
 // ====================== 7. MODEL VERIFICATION: the last two days, checked ======================
 function rmm(mm){ if (mm === null || mm === undefined) return '—'; return LANG === 'es' ? Math.round(mm) + ' mm' : (mm / 25.4).toFixed(mm < 100 ? 1 : 0) + ' in'; }

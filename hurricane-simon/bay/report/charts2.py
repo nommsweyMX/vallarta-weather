@@ -46,7 +46,7 @@ ax.set_ylabel('Forecast closest approach\nto Puerto Vallarta (km)', fontsize=8);
 ax.set_title('How close the NHC forecast line came to Vallarta, advisory by advisory', loc='left', fontsize=10, fontweight='bold')
 ax = axs[1]; ys = [t['cpa_kt'] for t in tr]
 ax.axhline(T['actual_cpa']['kt'], color=INK, linewidth=2); ax.text(0, T['actual_cpa']['kt'] + 4, f"intensity at the real closest pass: {T['actual_cpa']['kt']} kt", color=INK, fontsize=8, fontweight='bold')
-for y, lab in [(64, 'cat. 1'), (96, 'cat. 3'), (113, 'cat. 4')]: ax.axhline(y, color=GRID, linewidth=1); ax.text(len(xs) - 0.6, y + 2, lab, color=MUTE, fontsize=7, ha='right')
+for y, lab in [(64, 'cat. 1'), (96, 'cat. 3'), (113, 'cat. 4')]: ax.axhline(y, color=GRID, linewidth=1); ax.text(1.005, y, lab, transform=ax.get_yaxis_transform(), ha='left', va='center', fontsize=7, color=MUTE, clip_on=False)
 ax.plot(xs, ys, color=P[1], linewidth=2, marker='o', markersize=5, markeredgecolor=SURF, markeredgewidth=1.2)
 ax.set_ylabel('Forecast intensity at that\nclosest approach (kt)', fontsize=8); ax.set_ylim(0, 140); tidy(ax)
 ax.set_xticks(xs); ax.set_xticklabels([l.replace('\n', ' ') for l in labs], fontsize=6.5, rotation=45, ha='right'); ax.set_xlabel('NHC advisory number and issue time (Vallarta time)', fontsize=8)

@@ -47,10 +47,10 @@ for m, y in zip(rows, ys):
     ax.plot(m['score'], y, '|', color=INK, markersize=11, markeredgewidth=1.6, zorder=4)
 ax.set_yticks(ys); ax.set_yticklabels(names, fontsize=8); ax.set_xlabel('Mean position error (km), forecasts made in the last 48 h'); ax.set_xlim(0, 300); tidy(ax); ax.grid(True, axis='x', color=GRID); ax.grid(False, axis='y')
 ax.legend(loc='upper right', fontsize=8, title='lead time', title_fontsize=8); ax.set_title('Position error by lead time, all models (black tick: 12–36 h mean)', loc='left', fontsize=10, fontweight='bold')
-fig.text(0.01, 0.005, '‡ no 36-h verification available (fewer runs in the window), so the mean covers 12–24 h only and is not comparable. Each point averages 1–3 forecasts.', color=MUTE, fontsize=6.5)
+fig.text(0.01, 0.005, '‡ no 36-h verification available (fewer runs in the window), so the mean covers 12–24 h only and is not comparable. Each point averages one to six forecasts (six at 12 h and four at 24 h for 6-hourly models; one to three otherwise).', color=MUTE, fontsize=6.5)
 fig.tight_layout(rect=(0, 0.02, 1, 1)); fig.savefig(S + '/report/f2_track_error.png', dpi=220); plt.close(fig)
 # ---------- F3: NHC's own odds for Vallarta, advisory by advisory ----------
-hist = [(n, iss, pv) for n, iss, pv in D['pv_hist'] if int(n) >= 10 and pv]
+hist = [(n, iss, pv) for n, iss, pv in D['pv_hist'] if pv]
 fig, ax = plt.subplots(figsize=(7.4, 3.2))
 def lab(n, iss):
     t = dt.datetime.strptime(iss.strip(), '%b %d %H%MZ').replace(year=2026) - dt.timedelta(hours=6); h = t.hour % 12 or 12
@@ -62,9 +62,9 @@ for key, col, lb in [('34', P[0], 'tropical-storm force (≥ 63 km/h)'), ('50', 
         if not pv.get(key): ax.plot(xx, 0, 'o', markersize=5, markerfacecolor=SURF, markeredgecolor=col, markeredgewidth=1.5)
     last = hist[-1][2]; ax.text(xs[-1] + 0.18, {'34': 30, '50': 21, '64': 12}[key], {'34': ('TS force: %d%%' % last['34']) if last.get('34') else 'TS force: under 3%', '50': '50 kt: under 3%' if not last.get('50') else ('50 kt: %d%%' % last['50']), '64': 'hurricane: under 1%' if not last.get('64') else ('hurricane: %d%%' % last['64'])}[key], color=INK2, fontsize=7.2, va='center')
     if key == '34': ax.text(xs[-1] + 0.18, 39, 'advisory ' + str(hist[-1][0]), color=INK, fontsize=7.2, va='center', fontweight='bold')
-ax.set_xticks(xs); ax.set_xticklabels(labs, fontsize=7); ax.set_ylim(0, 100); ax.set_ylabel('Chance for Puerto Vallarta (%)'); tidy(ax); ax.legend(loc='upper left', fontsize=7.5)
+ax.set_xticks(xs); ax.set_xticklabels(labs, fontsize=5.8); ax.set_ylim(0, 100); ax.set_ylabel('Chance for Puerto Vallarta (%)'); tidy(ax); ax.legend(loc='upper left', fontsize=7.5)
 ax.set_title("The NHC's own odds for Puerto Vallarta, advisory by advisory", loc='left', fontsize=10, fontweight='bold')
-ax.set_xlabel('Advisory number and issue time, Vallarta time (Friday 9 to Monday 12 October)', fontsize=8); ax.set_xlim(-0.4, len(xs) + 1.0)
+ax.set_xlabel('Advisory number and issue time, Vallarta time (Wednesday 7 to Monday 12 October)', fontsize=8); ax.set_xlim(-0.4, len(xs) + 1.0)
 fig.tight_layout(); fig.savefig(S + '/report/f3_pv_odds.png', dpi=220); plt.close(fig)
 # ---------- F4: how uncertain is the next 48 h? ----------
 fig, axs = plt.subplots(1, 2, figsize=(7.4, 3.4), gridspec_kw={'width_ratios': [1.15, 1]})
