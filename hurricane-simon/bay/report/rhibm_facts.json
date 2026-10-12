@@ -1,0 +1,421 @@
+[
+ [
+  "v2:661c7da9bb9b64bcd260a7d393d9f7a3f43787a290cf2c641d3ad0fa64199820",
+  [
+   {
+    "topic": "Weather Company sale: announcement and what IBM kept",
+    "fact": "IBM announced on 22 Aug 2023 (Armonk/San Francisco dateline) that Francisco Partners would acquire The Weather Company assets: the consumer digital properties (Weather.com, Weather Underground, Storm Radar, The Weather Channel app), the enterprise offerings for broadcast, media, aviation, ad-tech and data solutions, and the forecasting science and technology platform. IBM retained its sustainability software business including the Environmental Intelligence Suite (EIS) and said it would keep using Weather Company data for EIS; terms were not disclosed and closing was expected by end of Q1 2024.",
+    "source_url": "https://newsroom.ibm.com/2023-08-22-Francisco-Partners-to-Acquire-The-Weather-Company-Assets-from-IBM",
+    "quote": "IBM intends to continue leveraging The Weather Company's weather data for EIS, which spans various climate related use cases.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Weather Company sale: closing date and financial terms (SEC filing)",
+    "fact": "IBM's Q1 2024 10-Q (Acquisitions & Divestitures note) states the sale to Zephyr Buyer, L.P., a wholly owned Francisco Partners subsidiary, was for $1,100 million including $250 million of contingent consideration; it closed on 31 January 2024, IBM received $750 million cash plus a $100 million seven-year seller loan, and booked a $241 million pre-tax gain. Francisco Partners' own 1 Feb 2024 release confirms completion and that CEO Sheri Bachstein continues to lead the standalone company. The retained EIS is not mentioned in the filing note.",
+    "source_url": "https://www.sec.gov/Archives/edgar/data/51143/000005114324000025/R14.htm",
+    "quote": "The transaction closed on January 31, 2024.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM GRAF: what it was at launch (2019)",
+    "fact": "GRAF (Global High-Resolution Atmospheric Forecasting) was announced by IBM and The Weather Company on 14 Nov 2019 as a global model at 3 km resolution, updated hourly, predicting up to 12 hours ahead, built with NCAR on the open-source MPAS dynamical core and run on an IBM POWER9 AC922 supercomputer with NVIDIA V100 GPUs. Its output fed The Weather Channel and Weather Underground apps and IBM's business weather offerings.",
+    "source_url": "https://weathercompany.com/news/ibms-the-weather-company-makes-higher-quality-weather-forecasts-available-worldwide",
+    "quote": "GRAF forecasts down to 3 kilometers (1.9 miles) and is updated hourly.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM GRAF: where it sits now (2024-2026)",
+    "fact": "GRAF went with The Weather Company in the Francisco Partners sale and is now marketed as 'Proprietary to The Weather Company' with no IBM mention: a Nov 2025 product sheet (file dated 6 Nov 2025, © 2024) and the weathercompany.com GRAF page (© 2014, 2026) describe 3.5 km resolution, hourly updates, 5-minute forecast data, NVIDIA GPU acceleration and 'AI techniques' to refine outputs. On 18 Mar 2024 The Weather Company and NVIDIA announced work on a 'kilometer-scale, AI-based numerical weather prediction model' trained on years of retrospective GRAF forecasts, starting with the US and Europe. IBM is therefore no longer the owner or operator of GRAF.",
+    "source_url": "https://www.weathercompany.com/wp-content/uploads/2025/11/The-Weather-Company-Global-High-Resolution-Atmospheric-Forecasting-FINAL.pdf",
+    "quote": "Proprietary to The Weather Company, GRAF™ is a physics-based, high precision, rapidly-updating, global weather modeling system",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Environmental Intelligence: product pages now redirect to Envizi (checked 12 Oct 2026)",
+    "fact": "On 12 Oct 2026 the IBM product URLs ibm.com/products/environmental-intelligence, /environmental-intelligence-suite, /environmental-intelligence/apis and /environmental-intelligence/pricing all HTTP-redirect to ibm.com/products/envizi/emissions-management, a GHG emissions-accounting page that does not mention weather data, forecasts, alerts, geospatial analytics or The Weather Company (only an 'Emissions API', a 'Book live demo' CTA and Melbourne Water as a named customer). No public IBM withdrawal-from-marketing notice for EIS was found (searches of ibm.com announcements and IBM Support; the IBM Support EIS overview page, last updated 3 May 2023, carries no end-of-support notice).",
+    "source_url": "https://www.ibm.com/products/environmental-intelligence",
+    "quote": "final=https://www.ibm.com/products/envizi/emissions-management code=200 redirects=1",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Environmental Intelligence Suite: still maintained in IBM Docs with Weather Company APIs through Feb 2026",
+    "fact": "IBM Docs for Environmental Intelligence Suite (SSRQLT_suite) list Alerting, Dashboard Visualization, Geospatial Analytics, GHG Emissions APIs and Weather Data APIs, with the weather APIs documented as 'Weather Company Data' APIs. The 'What's changing' log shows ongoing changes: March 2025 query-parameter validation, April 2025 History-on-Demand API migration, Aug and Nov 2025 Enhanced Cleaned Historical API changes, and a 'February 2026: TWC API alert headlines migration' that changes unsupported-location responses from 204 to 404 and improves point-in-polygon precision, indicating the Weather Company-sourced alert feed is still the backbone of EIS alerting.",
+    "source_url": "https://www.ibm.com/docs/en/SSRQLT_suite/whatsnew/February_2026_updates.html",
+    "quote": "Unsupported locations will now return 404 Not Found instead of 204 No Content.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Environmental Intelligence Suite: public-sector list price and features (UK G-Cloud 14)",
+    "fact": "IBM United Kingdom Ltd lists 'IBM Environmental Intelligence Suite' on the UK Government G-Cloud 14 framework (Lot 2, service 462858728399666) at £57,324 per licence per year with a 30-day free trial. The listing describes real-time weather and traffic data, live global radar and satellite, forecasts and road weather, real-time alerts of approaching weather disruptions, curated geospatial data for model building, and 'New for 2024' AI-driven geospatial models developed by IBM and NASA plus a climate risk analytics application; data is extracted via The Weather Company APIs.",
+    "source_url": "https://www.applytosupply.digitalmarketplace.service.gov.uk/g-cloud-14/services/462858728399666",
+    "quote": "£57,324 a licence a year",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Research open AI weather model: Prithvi WxC (NASA-IBM), Sept 2024",
+    "fact": "Prithvi WxC, released on Hugging Face on 23 Sept 2024 by IBM Research and NASA (with Oak Ridge National Laboratory, NASA IMPACT/Marshall, NASA GMAO, University of Alabama in Huntsville, Colorado State and Stanford), is a 2.3-billion-parameter encoder-decoder foundation model trained on 160 MERRA-2 variables over 40 years, licensed CDLA-Permissive-2.0 (arXiv:2409.13598, 20 Sept 2024). The model card recommends the 'rollout' variant for forecasting; the arXiv abstract lists autoregressive forecasting, downscaling, gravity-wave flux parameterization and extreme-event estimation as validated downstream tasks. The IBM Research blog says Environment and Climate Change Canada was customizing it for precipitation nowcasting and showed a Hurricane Ida track reconstruction (not a forecast).",
+    "source_url": "https://huggingface.co/ibm-nasa-geospatial/Prithvi-WxC-1.0-2300M",
+    "quote": "Prithvi WxC is a 2.3 billion parameter model trained on 160 different variables from MERRA-2 data.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM open downscaling model (granite-geospatial-wxc-downscaling)",
+    "fact": "IBM's Granite 'granite-geospatial-wxc-downscaling' model (CDLA-Permissive-2.0, on Hugging Face) embeds Prithvi WxC transformer layers in convolutional layers to statistically downscale weather fields: demonstrated 6x downscaling of MERRA-2 2 m temperature, 8x downscaling of Environment and Climate Change Canada 10 m wind from the ~15 km GDPS to the ~2.5 km HRDPS grid, and 12x downscaling of EURO-CORDEX climate simulations. IBM Research describes it as magnifying coarse output 'by up to 12 times' (150 km2 to 12.5 km2 segments). No parameter count, release date or limitations section is given on the model card; the paper is listed as 'to appear'.",
+    "source_url": "https://huggingface.co/ibm-granite/granite-geospatial-wxc-downscaling",
+    "quote": "granite-geospatial-downscaling has been used to downscale both MERRA-2 data, ECCC data as well as EURO-CORDEX climate simulations.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Research weather AI: continuing work in 2025 and its stated limits",
+    "fact": "At EGU General Assembly 2025 (Vienna, 27 Apr-2 May 2025; abstract EGU25-19821) IBM Research (Daresbury UK and Yorktown Heights), ORNL, NASA MSFC IMPACT, UAH, KIT and University of Manchester presented an ensembling strategy using architectural variations of Prithvi WxC to study forecast uncertainty and extremes, using an ensemble of 100 models. The abstract reports no quantitative skill results and states that whether AI emulators can be reliably deployed for extreme-scenario forecasting remains an open question.",
+    "source_url": "https://meetingorganizer.copernicus.org/EGU25/EGU25-19821.html",
+    "quote": "A simple of ensemble of 100 models is sufficient to observe the complex mapping",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Deep Thunder history (IBM's own account)",
+    "fact": "IBM's corporate history page dates Deep Thunder to 1995-96 (a WRF-precursor system at the NWS Peachtree City office producing venue forecasts for the 1996 Atlanta Olympics, named by a journalist after Deep Blue in 1997). For Rio de Janeiro it says the April 2010 storm 'killed more than 200 people' and that operational forecasts ran at 1 km for weather and 1 m for flood risk with almost two days' lead time; Deep Thunder's successes 'helped lead to' the 2016 Weather Company acquisition. The page states The Weather Company 'once again became a standalone company in 2024' while its data remains in use by IBM's sustainability software business. Claimed outcomes are general (reduce costs, improve service, save lives) with no quantified verification.",
+    "source_url": "https://www.ibm.com/history/deep-thunder",
+    "quote": "The Weather Company once again became a standalone company in 2024",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Deep Thunder in Rio: technical configuration and discrepancy on death toll (AMS 2012 abstract)",
+    "fact": "IBM Research's AMS 2012 abstract (Treinish et al., 'Enabling An Advanced Numerical Weather Prediction Model for Operational Forecasting in Rio De Janeiro') describes WRF-ARW 3.2.1 with four two-way nests to 1 km over metropolitan Rio, 65 vertical levels, 48-hour forecasts every 12 hours, initialized from NOAA GFS at 0.5 degree with 90 m SRTM terrain, delivered to the city's command center via a web portal branded PMAR; it went operational in May 2011. It gives the April 2010 storm toll as 'at least 110' (IBM's history page says more than 200) and says coupling to a hydrological flood model was still under development. A follow-up AMS 2014 abstract lists Rio at 1 km among Deep Thunder production systems but reports no Rio-specific verification statistics.",
+    "source_url": "https://ams.confex.com/ams/92Annual/webprogram/Paper200773.html",
+    "quote": "four two-way nests focused on the Rio de Janeiro metropolitan area at 1km horizontal resolution",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Rio Operations Center outcome and criticism of the IBM partnership",
+    "fact": "A Globe and Mail report (18 Nov 2023) says IBM and Rio spent about US$14 million on the Centro de Operações after the 2010 floods, that the IBM partnership has since ended with neither side explaining why, and quotes COR CEO Marcus Belchior saying there are no IBM products left; the center now uses smaller multi-partner tools (Waze, a 2021 NASA collaboration on mudslide warning) and recorded zero fatalities in February 2023 heavy rains. Critics quoted (Christopher Gaffney, Sarah Moser) call the smart-city approach 'very reactive, not proactive' and say it did not address inequality; the article does not discuss Deep Thunder forecast accuracy.",
+    "source_url": "https://www.theglobeandmail.com/business/article-rio-de-janeiro-a-test-for-the-intelligence-of-smart-cities",
+    "quote": "We don't even have IBM products around.",
+    "confidence": "likely"
+   },
+   {
+    "topic": "IBM as NOAA supercomputer supplier: history and loss of WCOSS to GDIT",
+    "fact": "IBM supplied NOAA's operational Weather and Climate Operational Supercomputing System under awards dating to 2002 and a November 2011 contract (about $249 million in task orders per Deltek), but on 12 Feb 2020 NOAA awarded the WCOSS follow-on to a CSRA proposal now held by GDIT, a single-award IDIQ/BPA with an estimated $505 million value over an 8-year base plus 2-year option and a $150 million first task order. GDIT's HPE Cray systems Dogwood (Manassas, VA) and Cactus (Phoenix, AZ), 12.1 petaflops each, began running NOAA's operational models on 28 June 2022, ending IBM's role.",
+    "source_url": "https://washingtontechnology.com/2020/02/general-dynamics-takes-out-incumbent-for-505m-noaa-weather-computer-contract/354930/",
+    "quote": "IBM is the incumbent and has booked approximately $249 million in task orders under the current contract",
+    "confidence": "likely"
+   },
+   {
+    "topic": "Negative finding: no current IBM met-service supercomputer/IT contract or renewed Weather Company data deal found",
+    "fact": "Searches on 12 Oct 2026 for IBM contracts with national meteorological services (2024-2026) returned only legacy NOAA items (2002 and 2011 IBM awards; GDIT 2020 release and 2022 Dogwood/Cactus launch, which do not mention IBM); no 2024-2026 IBM supercomputing or IT contract with NOAA, SMN/Conagua or any other weather service was found. Likewise, no 2025-2026 IBM or Weather Company announcement renewing, extending or ending the EIS weather-data arrangement was found; the only evidence of continuity is the IBM history page and IBM Docs API changes through Feb 2026. Pages checked: gdit.com WCOSS release (21 Feb 2020), fedscoop.com 'NOAA unveils 2 supercomputers' (28 Jun 2022), washingtontechnology.com (19 Feb 2020), newsroom.ibm.com search, ibm.com/support EIS overview.",
+    "source_url": "https://www.gdit.com/about-gdit/press-releases/noaa-awards-general-dynamics-high-performance-computing-contract/",
+    "quote": "holds a total estimated value of $505 million.",
+    "confidence": "confirmed"
+   }
+  ]
+ ],
+ [
+  "v2:b13325b27e995b9f4bddea16a4d5f57778b7628e9dc90a2967cce47f1181f065",
+  [
+   {
+    "topic": "Prithvi WxC: release, size, data, license",
+    "fact": "NASA and IBM released Prithvi WxC in September 2024 (arXiv paper 20 Sep 2024; IBM Research blog 23 Sep 2024). It is a 2.3-billion-parameter encoder-decoder transformer pretrained on 160 variables from NASA's MERRA-2 reanalysis with a mixed masked-reconstruction + forecasting objective; two checkpoints are on Hugging Face (prithvi.wxc.2300m.v1 general, prithvi.wxc.rollout.2300m.v1 fixed 6-h step for forecasting) under the CDLA-Permissive-2.0 license, with MIT-licensed code at github.com/NASA-IMPACT/Prithvi-WxC. As of 12 Oct 2026 the card shows 7,145 downloads in the past month, 1 fine-tune and 2 Spaces.",
+    "source_url": "https://huggingface.co/ibm-nasa-geospatial/Prithvi-WxC-1.0-2300M",
+    "quote": "Prithvi WxC is a 2.3 billion parameter model trained on 160 different variables from MERRA-2 data.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Prithvi WxC: hurricane-track demonstration and evaluation",
+    "fact": "The paper (Section 2.5.3) evaluated zero-shot autoregressive rollouts on Category 3-5 Atlantic hurricanes 2017-2023 against HURDAT. For Hurricane Ida (initialised 00 UTC 27 Aug 2021) the mean track error was 63.9 km versus 201.9 km (MERRA-2-trained FourCastNet) and 262.3 km (ERA5-trained FourCastNet), with landfall error under 5 km; across 75 initial conditions the 5-day track error was about 200 km lower than FourCastNet. Intensity (MSLP, wind) was marginally worse than ERA5-FourCastNet, attributed to MERRA-2's coarser grid. No comparison with ECMWF, Pangu or operational NHC guidance was made for tracks.",
+    "source_url": "https://arxiv.org/html/2409.13598v1",
+    "quote": "The mean track error for Prithvi WxC was 63.9 km compared to the observed tracks, significantly outperforming the MERRA-2 trained FourCastNet (201.939 km) and the ERA5 trained FourCastNet (262.323 km)",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Prithvi WxC: known limitations and compute",
+    "fact": "The model works on MERRA-2's 0.5 x 0.625 degree grid (~55 km), was trained on 1980-2019 data, and in dense-data forecasts performs well at 6-12 h but its skill falls below Pangu-Weather after about 66 hours; it was trained on 64 A100 GPUs for 100,000 steps and needs ~43 GB GPU memory in pretraining. The GitHub README (dated 25 Mar 2025) warns that 'The previous version of this repo contained a number of bugs that led to incorrect model outputs' and ships a validation script to reproduce paper results. The model card lists no limitations and no quantitative metrics.",
+    "source_url": "https://arxiv.org/html/2409.13598v1",
+    "quote": "after about 66 hours Prithvi WxC falls below the performance of Pangu.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Granite geospatial WxC downscaling model",
+    "fact": "IBM released granite-geospatial-wxc-downscaling (CDLA-Permissive-2.0, loadable via TerraTorch) that embeds Prithvi WxC's transformer layers in convolutional up/down-sampling layers. Published weights cover 6x downscaling of MERRA-2 2-m temperature and 8x downscaling of ECCC GDPS (~15 km) 10-m wind to HRDPS (~2.5 km); a EURO-CORDEX 12x variant was trained but not released. In the paper's MERRA-2 T2m test the model's spatial RMSE was 0.73 K vs 3.08 K for bilinear interpolation. The card gives no release date, no metrics and says its paper is 'to appear'.",
+    "source_url": "https://huggingface.co/ibm-granite/granite-geospatial-wxc-downscaling",
+    "quote": "granite-geospatial-wxc-downscaling is a fine-tuned foundation model for the downscaling of weather and climate data.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Only national weather service link found: ECCC (research stage)",
+    "fact": "The only national meteorological service found working with Prithvi WxC is Environment and Climate Change Canada. IBM's 23 Sep 2024 blog says precipitation nowcasting work with ECCC was 'still in progress', and an IBM poster at AGU on 9 Dec 2024 ('Enhancing Wind Downscaling with Foundation Models', Civitarese, Guevara, Schmude et al. with ECCC co-authors Brunet, Surcel, Breton) used Prithvi-WxC as a GAN backbone to downscale ECCC GDPS 15 km forecasts to HRDPS 2.5 km, reporting an evaluation plan but no numbers. A related ECCC-IBM arXiv paper (2412.06958, 9 Dec 2024) on operational wind downscaling over Canada does not mention Prithvi WxC in its abstract. No evidence was found of any weather service running Prithvi WxC operationally.",
+    "source_url": "https://research.ibm.com/publications/enhancing-wind-downscaling-with-foundation-models",
+    "quote": "we take the weather foundation model Prithvi-WxC as the backbone for various fine-tuning experiments of GANs",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Negative finding: no operational adopters named; next WxC version in work",
+    "fact": "A NASA Spinoff article (published 9 Jan 2026) says the two Prithvi geospatial models had been downloaded 50,000-60,000 times by May 2025 but NASA's Rahul Ramachandran said 'it's hard to know who's using the models for what'; it names IBM reforestation work in Kenya, urban heat islands in Baltimore and Johannesburg and an unnamed locust-breeding study, but no agency or company using Prithvi WxC in routine operations. It states the team 'is working on the next version of the weather and climate model'. Searches of the Hugging Face card, IBM Research blog, NASA pages and the web (incl. Spanish terms Conagua, SMN, UNAM, CICESE) found no Mexican or Latin American deployment and no 'Prithvi WxC 2' release as of 12 Oct 2026.",
+    "source_url": "https://spinoff.nasa.gov/node/11619",
+    "quote": "it's hard to know who's using the models for what",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Prithvi-EO-2.0 and Granite geospatial models (open licenses)",
+    "fact": "Prithvi-EO-2.0 (paper 3 Dec 2024; IBM blog 6 Dec 2024) is a 300M/600M-parameter ViT-MAE Earth-observation model trained on 4.2 million NASA HLS samples at 30 m, developed by IBM, NASA and Juelich Supercomputing Centre and released under Apache-2.0; its 600M-TL variant scores 75.6% on GEO-Bench, 8% above Prithvi-EO-1. Example fine-tunes include flood, landslide and burn-scar segmentation; NASA's applications page (updated 12 Aug 2026) shows Hurricane Helene flood mapping near Charlotte NC (7 Oct 2024) and says reduced labelling makes it 'more accessible for regional and remote disaster response teams'. IBM's Granite geospatial Hugging Face collection lists seven models: biomass, wxc-downscaling, canopy height, land-surface temperature, uki, uki-flooddetection and ocean.",
+    "source_url": "https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-600M",
+    "quote": "outperforms the previous Prithvi-EO model by 8% across a range of tasks",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "2025 model releases: TerraMind (ESA) and Surya (NASA)",
+    "fact": "On 22 Apr 2025 IBM and ESA open-sourced TerraMind, an any-to-any multimodal EO model (tiny/small/base/large) trained on TerraMesh (9 million aligned samples, ~500 billion tokens) with Juelich, DLR and KP Labs; ESA's PANGAEA evaluation against 12 models found it 8% or more better, and it is Apache-2.0 on huggingface.co/ibm-esa-geospatial, which now also hosts TerraMind-base-Flood (Apache-2.0, fine-tuned on ImpactMesh-Flood using Sentinel-2 L2A, Sentinel-1 RTC and DEM inputs). On 20 Aug 2025 IBM and NASA released Surya, a 366M-parameter Apache-2.0 heliophysics model trained on nine years (~218 TB) of SDO data, claiming a 16% gain in solar-flare classification in early tests; it is space weather, not atmospheric weather.",
+    "source_url": "https://research.ibm.com/blog/terramind-esa-earth-observation-model",
+    "quote": "outperformed other models on these tasks by 8% or more.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Impact Accelerator (formerly Sustainability Accelerator): terms",
+    "fact": "IBM's pro-bono program, launched 2022 and now branded IBM Impact Accelerator, selects five organisations a year for a two-year, no-cost engagement: Phase 1 IBM Garage co-design, Phase 2 build/pilot with IBM experts configuring resources. Participants get access to watsonx, Granite AI models, IBM Cloud, IBM Environmental Intelligence and Red Hat open-source tools, plus EY capacity-building workshops and ServiceNow in-kind support, under an IBM grant agreement. It has run 25 engagements across five cohorts (sustainable agriculture, clean energy, water management, resilient cities, supply chains). RFPs are open to nonprofit, academic or government organisations globally; the 2025 RFP closed 30 Apr 2025 and no 2026 RFP was found on ibm.com or newsroom.ibm.com as of 12 Oct 2026.",
+    "source_url": "https://www.ibm.com/responsibility/programs/ibm-impact-accelerator",
+    "quote": "open to any nonprofit, academic, or government organization",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Accelerator: resilient-cities cohort, $45M, Latin America/Mexico presence",
+    "fact": "On 6 Mar 2024 IBM committed up to $45M in cash and in-kind donations over five years and opened a resilient-cities RFP (closed 30 Apr 2024). On 11 Feb 2025 it named the five winners from 100+ applicants: C40 Cities (AI extreme-heat/urban-heat-island risk tool), UN World Food Programme (AI for its GeoTar vulnerability maps covering droughts, floods, landslides), Mass General Brigham (hyperlocal extreme-heat early-warning for hospitals), Janaagraha (India city data platform) and Kota Kita (Samarinda, Indonesia climate-stress models); C40's release says each receives up to $3 million in cash and in-kind over two years. The only Mexico engagement found is UNIDO's 2025 supply-chain cohort project whose 'pilot will start in Brazil and Mexico' (3 Nov 2025); no hydrometeorological early-warning or weather-service project appears in any cohort.",
+    "source_url": "https://newsroom.ibm.com/blog-ai-powered-social-innovation-to-build-more-resilient-cities",
+    "quote": "in 2024 we committed $45M over five years to support vulnerable populations around the world",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM SkillsBuild: free training usable by Mexican agencies/universities",
+    "fact": "IBM SkillsBuild is a free online learning program for adult learners, university students and faculty, and high-school students, offering AI, data, cybersecurity and cloud courses with IBM digital credentials in 20+ languages; a full Spanish-language site (skillsbuild.org/es, '100 % gratuito y en línea') exists. On 18 Sep 2023 IBM committed to train 2 million learners in AI by end-2026, building on its 2021 pledge to skill 30 million people by 2030, and said 7 million learners had enrolled since 2021. Partner interest/application forms exist for organisations supporting adult learners and college students (follow-up promised within five business days); eligibility criteria reported in search snippets (at least 1,000 learners, nonprofit or free program) could not be confirmed on the pages opened.",
+    "source_url": "https://uk.newsroom.ibm.com/IBM-Commits-to-Train-2-Million-in-Artificial-Intelligence-in-Three-Years-with-a-Focus-on-Underrepresented-Communities",
+    "quote": "These courses are all completely free and available to learners around the world.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM already in Mexico's public AI training centre",
+    "fact": "Mexico's federal government presented the Centro Público de Formación en Inteligencia Artificial on 6 Nov 2025 (President Sheinbaum, TecNM Tláhuac campus) as part of 'México, país de innovación'. Run with ATDT, INFOTEC and TecNM, it offers free five-month tracks in AI, data analytics, cloud, Java and cybersecurity with dual public/private certification, in person at TecNM campuses in 10 cities (incl. Nayarit, the state adjoining Puerto Vallarta's Bay of Banderas) and online via SaberesMX. 10,000 students started on 26 Jan 2026 with a goal of certifying 25,000 people free by end-2026; the ATDT release lists IBM among participating companies alongside Microsoft, Google, AWS, Accenture, Kyndryl and others (a secondary source, dplnews 7 Nov 2025, says IBM provides private certifications and quotes IBM Mexico GM Mauricio Torres Echenagucia).",
+    "source_url": "https://www.gob.mx/atdt/comunicacion/mexico-pone-en-marcha-el-mayor-centro-de-formacion-en-inteligencia-artificial-de-latinoamerica",
+    "quote": "a partir de este lunes 26 de enero, 10 mil estudiantes iniciaron actividades",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Call for Code status (2025-2026)",
+    "fact": "IBM's 5 Mar 2025 release described the 8th-year 2025 Call for Code (David Clark Cause, IBM founding partner, UN Human Rights, Linux Foundation) as five SDG-themed hackathons using watsonx with a $50,000 grand prize; winners (DuniAfrika, Young & Hungry, Agents FDRK) were announced 10 Dec 2025 at the RightsX Summit in Geneva. In 2026 the program ran as 'Call for Code AI: United Against Trafficking' with UN Human Rights and Austin AI Hub (launch post dated 30 Apr 2026; the homepage says 'launched June 11'), with winners announced 30 Jul 2026; IBM is not named on the 2026 winners page. There is no disaster or weather theme in 2025-2026, and the next challenge opens April 2027.",
+    "source_url": "https://www.callforcode.org/un-human-rights-and-call-for-code-ai-announce-the-winners-of-call-for-code-ai-united-against-trafficking",
+    "quote": "Call for Code AI: United Against Trafficking returns as an annual initiative.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM no longer owns a forecasting operation (Weather Company sold)",
+    "fact": "IBM announced on 22 Aug 2023 the sale of The Weather Company assets to Francisco Partners, including weather.com, Weather Underground, Storm Radar, the broadcast/media/aviation enterprise offerings and 'its forecasting science and technology platform'; the deal closed 1 Feb 2024 with Sheri Bachstein remaining CEO of the standalone company. IBM kept its sustainability software business, including the Environmental Intelligence Suite (EIS), and said it would keep licensing Weather Company data for it. IBM's current product pages for 'environmental-intelligence' and 'weather-company-data-packages' now redirect to IBM Envizi emissions software, so IBM's in-house weather forecasting capability is limited to the open research models above.",
+    "source_url": "https://newsroom.ibm.com/2023-08-22-Francisco-Partners-to-Acquire-The-Weather-Company-Assets-from-IBM",
+    "quote": "IBM intends to continue leveraging The Weather Company's weather data for EIS",
+    "confidence": "confirmed"
+   }
+  ]
+ ],
+ [
+  "v2:1c56f05ea3e830cbebe20f903e89838c065b3959407735add865c801ed215176",
+  [
+   {
+    "topic": "Red Hat OpenShift AI / Red Hat AI 3: what the platform provides for a forecasting-AI chain",
+    "fact": "Red Hat's current product documentation (Red Hat AI 3 / OpenShift AI 3, docs dated 2026, with a migration guide to OpenShift AI Self-Managed 3.3.2) documents a model registry (register, version and promote models with metadata and RBAC-controlled access), model serving via KServe with vLLM and llm-d distributed inference, KFP-based data science pipelines that version and schedule runs and store artifacts in S3-compatible storage, GPU-aware distributed training workloads, and Jupyter/RStudio-style workbenches. These are the generic MLOps pieces a met service would need to run and retrain AI weather models; the docs contain no weather- or geospatial-specific component.",
+    "source_url": "https://docs.redhat.com/en/documentation/red_hat_ai/3",
+    "quote": "Build, schedule, and track machine learning pipelines",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Documented use of OpenShift AI in environmental/ecological forecasting (closest precedent to weather AI)",
+    "fact": "Red Hat Research Quarterly (May 2024 issue, by Red Hat Principal Software Engineer Christopher Tate) describes a Red Hat Collaboratory at Boston University project (started January 2023 with Prof. Michael Dietze's ecological forecasting group) that moved the open-source PEcAn ecological forecasting system from a supercomputer onto Red Hat OpenShift AI on the New England Research Cloud (NERC), using RStudio workbenches, a custom 'PEcAn Unconstrained Forecast' image and ERA5 reanalysis (ECMWF) data, with model pods autoscaled from AMQP message counts. No evidence was found of a national meteorological service running operational weather AI on OpenShift AI.",
+    "source_url": "https://research.redhat.com/blog/article/moving-ecological-forecasting-from-supercomputer-to-cloud-why-and-how/",
+    "quote": "released into the production OpenShift Cluster in August 2023",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Red Hat Device Edge / MicroShift / Edge Manager: capabilities for a fleet of small field devices (e.g. coastal weather stations)",
+    "fact": "Red Hat's Device Edge datasheet (copyright 2026) states minimum requirements of 1 CPU core, 1.5 GB RAM and 10 GB disk for RHEL-only devices, and 2 CPU cores and 2 GB RAM for RHEL plus the Red Hat build of MicroShift (a CNCF-certified Kubernetes). It lists edge-specific features: delta over-the-air updates for sites with limited or intermittent connectivity, transactional updates with automatic rollback via health checks, a generic Kubernetes device plugin for serial ports and USB cameras (IoT sensors), PREEMPT_RT low-latency kernel, and Red Hat Edge Manager for template-based fleet management with resource alerts and an agent-based architecture for poor connectivity. Red Hat Edge Manager was announced as a technology preview at Red Hat Summit, Boston, on May 20, 2025 (https://www.redhat.com/en/about/press-releases/red-hat-introduces-red-hat-edge-manager-overseeing-fleets-devices).",
+    "source_url": "https://www.redhat.com/en/resources/deploy-workloads-at-far-edge-datasheet",
+    "quote": "Deployments with Red Hat Enterprise Linux and Red Hat build of MicroShift have minimum system requirements of 2 CPU cores and 2 GB of RAM.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Red Hat open-source governance: OS-Climate (Linux Foundation) and OSPO",
+    "fact": "On September 8, 2021 Red Hat announced it had joined OS-Climate, a Linux Foundation-backed project building a climate 'Data Commons' (open data ingestion, processing and management platform for climate/ESG data), committing eight solutions architects, data engineers and software engineers plus community-management resources; Red Hat was not a founding member (OS-C launched September 2020). Red Hat's open-source-commitments page (https://www.redhat.com/en/about/open-source-program-office) describes stewarding community projects, standards work and financial support but does not describe a service for setting up OSPOs in government agencies.",
+    "source_url": "https://www.redhat.com/en/about/press-releases/red-hat-joins-os-climate-lends-open-source-leadership-financial-services-industry-effort-address-climate-change",
+    "quote": "Red Hat will commit a team of eight solutions architects, data engineers and software engineers to the project, emphasizing the creation of OS-Climate Data Commons.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Red Hat Open Innovation Labs: a vehicle for training people and co-building",
+    "fact": "Red Hat Open Innovation Labs is a consulting residency of 4 to 12 weeks, in person or virtual, in which customer engineers pair with Red Hat staff using open practices (pair programming, Ansible-automated infrastructure, sprint retrospectives, a closing Demo Day). The page cites a public-sector example: the World Health Organization built an online learning platform for COVID-19 health workers in an eight-week virtual residency; UNICEF and the U.S. Defense Innovation Unit logos are shown without details. No meteorological or civil-protection residency is cited.",
+    "source_url": "https://www.redhat.com/en/services/consulting/open-innovation-labs",
+    "quote": "Our immersive residency at Red Hat Open Innovation Labs brought us not only technical but also cultural benefits.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Red Hat Enterprise Linux at a major meteorological centre (ECMWF)",
+    "fact": "ECMWF's own description of its Atos BullSequana XH2000 high-performance computing facility in Bologna (four 'complexes', 7,680 compute nodes, operational since October 2022) lists Red Hat Enterprise Linux as the operating system within the Atos Bull Supercomputing Suite (RHEL 7 at installation); ECMWF's HPC2020 user guide news records the OS being updated from RHEL 8.6 to RHEL 8.8 on the AC complex on 11 June 2024 (https://confluence.ecmwf.int/spaces/UDOC/pages/240851027/HPC2020+User+Guide). This is an operating-system choice, not a documented Red Hat partnership or case study.",
+    "source_url": "https://www.ecmwf.int/en/computing/our-facilities/supercomputer-facility",
+    "quote": "a recent Linux distribution (RedHat Linux RHEL 7)",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Negative finding: no Red Hat customer story with a national met office; only two weather-sector press releases found",
+    "fact": "Searches for Red Hat case studies or press releases involving ECMWF, the UK Met Office, NOAA/National Weather Service, Deutscher Wetterdienst, NCAR, Météo-France or NASA returned none (queries run on redhat.com and the open web, 12 Oct 2026). The only weather-sector items on redhat.com are: a May 24, 2005 release on Arpa Piemonte (Italian regional environmental agency) adopting RHEL and Red Hat Cluster Suite to run numerical weather forecast models for the Turin 2006 Winter Olympics, and a December 3, 2018 release on Japan's Weathernews Inc. adopting Red Hat 3scale API Management for its weather-data API platform (https://www.redhat.com/en/about/press-releases/weathernews-adopts-red-hat-3scale-api-management-weather-information-management-platform).",
+    "source_url": "https://www.redhat.com/en/about/press-releases/383",
+    "quote": "Arpa Piemonte (Agenzia Regionale per la Protezione Ambientale) has chosen to implement Red Hat Enterprise Linux to support applications that develop mathematic weather forecast models.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Red Hat's presence in Mexico: office and partner model",
+    "fact": "Red Hat opened direct operations in Mexico City on March 5, 2007 (then at Alfonso Nápoles Gándara 50, Santa Fe), stating that banking, telecom and government requirements would be served through business partners and naming Grupo Minero Peñoles, two large Mexican banks and telecoms as existing customers, with authorized training centres already operating in Mexico. Red Hat's current office-locations page lists Red Hat Mexico at Calle Río Lerma 232, Cuauhtémoc, 06500 Ciudad de México, tel. +52 55 8851 6400 (https://www.redhat.com/en/about/office-locations). No Red Hat office in Jalisco or Puerto Vallarta is listed.",
+    "source_url": "https://www.redhat.com/es/about/press-releases/433-0",
+    "quote": "anunció hoy el inicio de sus operaciones directas en la Ciudad de México",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Red Hat's Mexican federal public-sector reference customer: IMSS (OpenShift, with OpenShift AI and Ansible planned)",
+    "fact": "A Red Hat case study (Spanish, dated November 2025) states that as of October 2025 the Instituto Mexicano del Seguro Social runs seven Red Hat OpenShift 4.16 clusters (ACM, UAT, QA, production and three DR clusters) hosting more than 5,400 microservices for 140 applications across 320+ environments on 50 servers, handling 1 to 3 billion requests per day, with 83% of IMSS procedures now digital. A follow-up Red Hat snapshot (Portuguese, April 2026; https://www.redhat.com/rhdc/managed-files/imss-openshift-ai-snapshot-3960050-202604-pt.pdf) says IMSS is 'advancing the implementation of Red Hat OpenShift AI', Ansible Automation Platform and OpenShift Virtualization, and was recognised as a model by the Presidency's Coordinación de Estrategia Digital Nacional. This is the clearest evidence that Red Hat already works at scale inside the Mexican federal government.",
+    "source_url": "https://www.redhat.com/rhdc/managed-files/ve-imss-openshift-case-study-3035609-202511-es.pdf",
+    "quote": "A octubre de 2025, el IMSS opera siete clústeres bajo la versión Red Hat OpenShift 4.16",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Mexico: the Guadalajara Technology Campus (Jalisco)",
+    "fact": "IBM marked 50 years of its Guadalajara Technology Campus in Jalisco in late October/early November 2025. Press coverage (Mexico Business News, 5 Nov 2025; DPL News, 30 Oct 2025) quoting campus director Fausto Palma and IBM Mexico president Mauricio Torres says the site began in 1975 as a manufacturing plant and is now a regional hub for hybrid cloud and AI services with six Centers of Excellence (consulting, infrastructure management, finance, software development, digital transformation services) supporting North America, EU and Asia operations, and has contributed more than 500 patents. No current headcount was published (an older Guadalajara Reporter article cited ~4,000 staff); no IBM newsroom primary release was found (mx.newsroom.ibm.com checked).",
+    "source_url": "https://mexicobusiness.news/tech/news/ibm-marks-50-years-guadalajara-driving-mexicos-tech-growth",
+    "quote": "The campus is a hub of innovation where the future of technology in Mexico is designed, shaped, and created,",
+    "confidence": "likely"
+   },
+   {
+    "topic": "InstructLab and RHEL AI: what they are and current status",
+    "fact": "On May 7, 2024 (Red Hat Summit, Denver) Red Hat launched RHEL AI, bundling IBM's Apache-licensed Granite models with InstructLab, an IBM/Red Hat open-source project based on IBM Research's LAB (Large-scale Alignment for chatBots) method, which lets non-specialists add skills and knowledge to a model via a taxonomy and taxonomy-guided synthetic data generation rather than expensive human annotation; RHEL AI was a developer preview and is included in OpenShift AI. The InstructLab GitHub repository (https://github.com/instructlab/instructlab) carries a September 2, 2025 notice that the project is being refactored 'primarily as a framework SDK for model tuning' with SDG and training moved to separate sdg_hub and training_hub repositories, and the main repository has since been archived (read-only).",
+    "source_url": "https://www.redhat.com/en/about/press-releases/red-hat-delivers-accessible-open-source-generative-ai-innovation-red-hat-enterprise-linux-ai",
+    "quote": "Using the LAB method, models can be improved by specifying skills and knowledge attached to a taxonomy, generating synthetic data from that information at scale to influence the model and using the generated data for model training.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM Granite open LLMs: Spanish support relevant to a bilingual risk-communication product",
+    "fact": "The Hugging Face model card for ibm-granite/granite-3.3-8b-instruct (released April 16, 2025, Apache 2.0, 8B parameters, 128K context, developed by IBM's Granite Team) lists 12 supported languages: English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch and Chinese, and states the model may be fine-tuned for further languages. Spanish and English are both covered, so an openly licensed Granite model could in principle draft bilingual warning text; the card documents no weather or emergency-communication evaluation.",
+    "source_url": "https://huggingface.co/ibm-granite/granite-3.3-8b-instruct",
+    "quote": "users may finetune this Granite model for languages beyond these 12 languages.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM/NASA open weather foundation model and the downscaling layer",
+    "fact": "IBM and NASA released Prithvi WxC on Hugging Face (paper arXiv 2409.13598, Sept 2024; IBM Research blog 23 Sep 2024): a 2.3-billion-parameter transformer trained on 160 MERRA-2 variables under a CDLA-Permissive-2.0 license (https://huggingface.co/ibm-nasa-geospatial/Prithvi-WxC-1.0-2300M). The fine-tuned ibm-granite/granite-geospatial-wxc-downscaling model (same license) is documented for 6x downscaling of 2-m temperature from MERRA-2, 8x downscaling of 10-m wind from Environment and Climate Change Canada's ~15 km GDPS forecasts to its ~2.5 km HRDPS grid, and 12x on EURO-CORDEX climate simulations. This is a public precedent for the 'statistical downscaling trained on a national service's own data' layer, though for Canada, not Mexico, and not for precipitation.",
+    "source_url": "https://huggingface.co/ibm-granite/granite-geospatial-wxc-downscaling",
+    "quote": "downscale forecasts from the Global Deterministic Prediction System (GDPS)",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM no longer owns The Weather Company's forecasting business",
+    "fact": "Francisco Partners announced on February 1, 2024 that it had completed the acquisition of The Weather Company (weather.com, The Weather Channel app, Weather Underground, Storm Radar and its enterprise weather business) from IBM, a deal first announced in August 2023, with Sheri Bachstein continuing as CEO. IBM therefore no longer operates a consumer/enterprise weather-forecasting business; its weather-related AI work now sits in IBM Research (Prithvi WxC) and sustainability software. The release does not state what IBM retained.",
+    "source_url": "https://www.franciscopartners.com/media/francisco-partners-completes-acquisition-of-the-weather-company",
+    "quote": "one of the world's leading weather technology providers, from IBM, previously announced in August 2023.",
+    "confidence": "confirmed"
+   }
+  ]
+ ],
+ [
+  "v2:aaf113c8db49afafbe77d52b6fe98651c10d1cf0c071c0b1392e1c7aa0d0006d",
+  [
+   {
+    "topic": "Open AI weather models: ECMWF AIFS weights, operational status and remaining dependence on physics",
+    "fact": "ECMWF published AIFS Single v0.2.1 weights on Hugging Face on 11 December 2024 under CC BY 4.0 ('can be used for any purpose'), with a notebook whose first step is 'Retrieve initial conditions from ECMWF Open data'; AIFS Single became operational on 25 February 2025 and AIFS ENS on 1 July 2025 (both upgraded to v2 on 12 May 2026), at ~31 km resolution and roughly 1,000 times less energy per forecast than the physics-based IFS. ECMWF states that AIFS ENS 'relies on physics-based data assimilation to generate the initial conditions' and that the physics-based ensemble remains indispensable; the AIFS Single 1.0 model card says training (not inference) used 64 A100 GPUs for about one week and the checkpoint is 1.19 GB (https://www.ecmwf.int/node/29246; https://huggingface.co/ecmwf/aifs-single-1.0).",
+    "source_url": "https://www.ecmwf.int/en/about/media-centre/news/2025/ecmwfs-ensemble-ai-forecasts-become-operational",
+    "quote": "remains indispensable for high-resolution fields and coupled Earth-system processes",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Open AI weather models: DeepMind WeatherNext Cyclones release (6 Aug 2026), licences and inference hardware",
+    "fact": "On 6 August 2026 Google DeepMind open-sourced WeatherNext Cyclones (0.25 deg, versions for 2023/2024/2025 seasons), WeatherNext 2 and WeatherNext 2-mini (1 deg) with code and weights in github.com/google-deepmind/weathernext alongside a Nature paper; the repository licenses the notebooks and code under Apache 2.0 and 'all other materials' (the weights) under CC BY 4.0, a loosening from GraphCast's non-commercial weights. DeepMind recommends TPUs (free Colab v5e-1 for Mini, v5p for full models); on GPU the non-Mini models need an H100 while Mini runs on a P100. For scale, DeepMind's 14 Nov 2023 GraphCast post states a 10-day 0.25-degree global forecast 'takes less than a minute on a single Google TPU v4 machine' (https://deepmind.google/discover/blog/graphcast-ai-model-for-faster-and-more-accurate-global-weather-forecasting/). The 6 Aug 2026 blog claims 'an extra day' of lead time, 1,000-member ensembles, and pairs ML with 'the indispensable real-world expertise of human forecasters' (https://deepmind.google/blog/weathernext-ai-model-achieves-breakthrough-in-forecasting-cyclones/).",
+    "source_url": "https://github.com/google-deepmind/weathernext",
+    "quote": "The non-Mini models require H100 for sufficient VRAM.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Precedent: UK Met Office with Microsoft (infrastructure partner, 2021)",
+    "fact": "Microsoft's 22 April 2021 announcement describes a ten-year arrangement to deliver the UK Met Office 'supercomputing-as-a-service' on Azure: HPE Cray EX systems in four quadrants with over 1.5 million cores and over 60 petaflops peak in the first generation, a ~4-exabyte active data archive, an end-to-end managed service, operations from July 2022 and upgrades over the ten years, hosted in the South of the UK on 100 percent renewable energy. The post describes Microsoft's role as infrastructure and managed-service provider; it gives no contract value and does not describe any change in who runs the Met Office's models or issues its forecasts.",
+    "source_url": "https://azure.microsoft.com/en-us/blog/microsoft-brings-azure-supercomputing-to-uk-met-office/",
+    "quote": "Supercomputing is fundamental to the Met Office's weather and climate science and services.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Initial-condition data access for running AI models locally (ECMWF Open Data, NOAA GFS/GDAS on AWS)",
+    "fact": "ECMWF's AIFS output is governed by CC BY 4.0 ('may be redistributed and used commercially, subject to appropriate attribution'), is 'freely available to the user community' and is disseminated as open data on a regular 0.25 x 0.25-degree grid as soon as each forecast is produced. NOAA's GFS, including GDAS-derived warm-start initial conditions, is published through the NOAA Open Data Dissemination (NODD) program in the AWS bucket noaa-gfs-bdp-pds, updated '4 times a day, every 6 hours starting at midnight UTC', with 'AWS CLI Access (No AWS account required)' and 'open to the public and can be used as desired' (https://registry.opendata.aws/noaa-gfs-bdp-pds).",
+    "source_url": "https://www.ecmwf.int/en/forecasts/datasets/aifs-machine-learning-data",
+    "quote": "Open data for the AIFS is disseminated on a regular 0.25 x 0.25-degree grid.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Precedent: Israel Meteorological Service with NVIDIA Earth-2 (what the vendor supplied, what the service kept)",
+    "fact": "NVIDIA announced its Earth-2 open models at the AMS Annual Meeting on 26 January 2026 (Earth-2 Medium Range to 15 days; Earth-2 Nowcasting, km-scale, 0-6 h; a Global Data Assimilation model 'expected to be released later this year'), available via Earth2Studio, Hugging Face and GitHub, naming the Israel Meteorological Service, Taiwan's Central Weather Administration and the US National Weather Service (evaluating) as users (https://blogs.nvidia.com/blog/nvidia-earth-2-open-models). NVIDIA's IMS case study says IMS's 'F3' system runs the CorrDiff downscaler, which IMS trained to emulate its own regional ICON model from ECMWF IFS input, producing 2.5-km forecasts four times a day with a claimed 90 percent compute saving versus a CPU-based NWP run; IMS is described as having 'built a full stack across hardware and software' as a sovereign capability, and NVIDIA claims Tel Aviv-Yafo saved 20-30 percent of its flood-preparedness budget. These figures are vendor-reported; no independent verification or GPU count was found.",
+    "source_url": "https://www.nvidia.com/en-us/case-studies/israel-meteorological-service",
+    "quote": "built a full stack across hardware and software",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Precedent: NOAA/NHC with Google DeepMind (CRADA, July 2025) and the human forecaster's role",
+    "fact": "On 8 July 2025 NOAA's Technology Partnerships Office announced a cooperative research and development agreement (CRADA) between NHC's Technology and Science Branch and Hurricane Specialist Unit and Google DeepMind/Google Research: Google provides near-real-time AI tropical cyclone forecasts and hosts and maintains the Weather Lab visualization platform, while NOAA performs routine evaluations, integrates the output 'within NOAA's technical infrastructure' and jointly publishes results; NHC director Michael Brennan said the deal ensures NHC 'is able to quickly evaluate' new technology. DeepMind's 19 May 2026 account says NHC used WeatherNext 50-member ensembles to forecast Hurricane Melissa's Category 5 landfall in Jamaica (late Oct 2025) with 80 percent confidence five days ahead and that WeatherNext was the top individual track/intensity model in NHC's 2025 verification, while 'all official weather alerts and warnings are issued solely by the respective national meteorological authorities' (https://deepmind.google/blog/how-weathernext-helped-the-national-hurricane-center-better-predict-hurricane-melissas-historic-landfall-in-jamaica/). Brennan told WFTV on 2 June 2026 that 'AI models are going to continue to be part of our toolkit' and 'there is a human forecaster taking all of that guidance' (secondary source: https://www.wftv.com/news/local/artificial-intelligence-enhances-hurricane-forecasting-says-national-hurricane-center/GFFHY4FO5RGRXBTUPSMSAJTGUY/).",
+    "source_url": "https://techpartnerships.noaa.gov/?p=11681",
+    "quote": "Google's AI for weather team will provide near-real-time AI tropical cyclone forecasts to NHC",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "WMO guidance on AI (2025): complement not replace, NMHS authority, digital divide",
+    "fact": "WMO's Executive Council (EC-79, 16-20 June 2025) agreed an AI action plan, created a Joint Advisory Group on Artificial Intelligence and called for technical guidelines on AI-based Earth-system prediction within WIPPS, while keeping NMHSs as 'the single authoritative voice on weather, climate and water-related warnings and services' (https://wmo.int/node/31173). The Extraordinary Congress (20-23 Oct 2025) adopted the 'WMO Call to All Stakeholders to Collaborate on the Development of AI and ML Environmental Monitoring and Prediction Technologies, Tools and Applications', published 26 Nov 2025, which invites public, private and academic collaboration, stresses open data, open-source tools and FAIR principles, and states AI must complement rather than replace existing methods; a Cg-Ext panel on 21 Oct 2025 ('AI for weather forecasting: closing the digital divide with AI?') noted AI development is driven mainly by developed countries and large technology companies and that it is essential AI does not widen the technological gap among Members (https://wmo.int/node/32864).",
+    "source_url": "https://wmo.int/node/38025",
+    "quote": "AI must complement, not replace, existing well-honed scientific forecasting methods and infrastructure.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "WMO public-private engagement: Open Consultative Platform status (June 2026) and a possible PPE instrument for Congress 2027",
+    "fact": "WMO's Open Consultative Platform (first session convened 'six years ago', i.e. 2019/2020, following the 2019 Congress) held its Seventh High-Level Session on 22 June 2026 in the margins of EC-80, moderated by Arlene Laing, with Executive Council members and private-sector representatives at six World Cafe tables. WMO told participants that companies are now 'contributing to observation networks, developing AI-based forecasting tools' and that the gap between needs and 'what public funding alone can deliver is widening'; both sectors agreed 'WMO should serve as the global provider of guidelines and standards for public-private engagement', and the session feeds an 'initial understanding or vision for a potential WMO instrument for PPE to be finalized during the next WMO Congress in 2027' (see also https://wmo.int/node/38789). The page does not mention capacity development or developing countries.",
+    "source_url": "https://wmo.int/node/38738",
+    "quote": "This is not a problem WMO can solve alone.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Precedent: Rio de Janeiro Centro de Operações with IBM (2010) and what independent reviewers concluded",
+    "fact": "Rio's Centro de Operações (COR) opened at end-2010 after April 2010 floods killed more than 60 people, cost about US$14 million with IBM positioning itself as the integrator of hardware, software and data; by November 2023 the IBM partnership had ended for undisclosed reasons (CEO Marcus Belchior: no IBM products remain), the centre had moved to a 'smaller, more pragmatic approach', expanded cameras from ~150 to 2,500, works with Waze and since 2021 with NASA on landslide hazards, sends push alerts and sirens, and recorded zero deaths in Rio during the Feb 2023 Carnival rains (the author notes luck likely played a role). Academics Christopher Gaffney and Cerianne Robertson ('Smarter than Smart: Rio de Janeiro's Flawed Emergence as a Smart City', Journal of Urban Technology 25(3):47-64, 2018, DOI 10.1080/10630732.2015.1102423) found cameras clustered in wealthier areas and data inaccessible to planners; Sarah Moser (McGill): 'Tech isn't going to save us.' No formal quantitative evaluation of the COR's flood/landslide warning performance was found (pages checked: Globe and Mail; ideas.repec.org abstract; FGV dissertation record).",
+    "source_url": "https://www.theglobeandmail.com/business/article-rio-de-janeiro-a-test-for-the-intelligence-of-smart-cities",
+    "quote": "We don't even have IBM products around",
+    "confidence": "likely"
+   },
+   {
+    "topic": "Mexican federal rules on cloud and data location for public institutions (DOF 6 Sept 2021)",
+    "fact": "Mexico's federal ICT policy (ACUERDO por el que se emiten las politicas y disposiciones para impulsar el uso y aprovechamiento de la informatica, el gobierno digital, las TIC y la seguridad de la informacion en la APF, DOF 06/09/2021, issued by the Coordinacion de Estrategia Digital Nacional) requires institutions to 'privilegiar la operacion de Centros de Datos gubernamentales', allows third-party data centres only when no government capacity exists and preferably with data hosted in national territory, and permits public cloud only 'en casos especificos' justified in a feasibility study (Art. 46); Art. 69 requires applications handling critical, confidential or sensitive data to 'priorizar su alojamiento en territorio nacional', and general principle V reads 'Privilegiar el alojamiento de la informacion en territorio nacional y en instalaciones del Estado.' AWS public-sector director Guillermo Almada cited this 'requerimiento regulatorio... de privilegiar la informacion y los datos en suelo mexicano' when explaining the Queretaro region (DPL News, 1 Oct 2024, https://dplnews.com/?p=251130). Whether the 2025 ATDT sectoral programme or 'Nube MX' has superseded this instrument was not verified.",
+    "source_url": "https://fonacot.gob.mx/nosotros/Documents/Marco%20Juridico/ACUERDO%20por%20el%20que%20se%20emiten%20las%20pol%C3%ADticas%20y%20disposiciones%20para%20impulsar....pdf",
+    "quote": "podrán contratarse servicios de Centros de Datos a terceros, procurando que la información se aloje en territorio nacional. En casos específicos, podrá requerirse la contratación de Servicios en la Nube Pública, en este supuesto, deberán aportarse datos que justifiquen la contratación, dentro del Estudio de Factibilidad.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "In-country cloud regions available in Mexico (Microsoft, Google, AWS) and absence of an IBM Cloud region",
+    "fact": "Three hyperscalers now operate regions in Queretaro: Microsoft's 'Mexico Central' region was announced generally available on 7 May 2024 'with the option of data residency and improved latency in country' (https://news.microsoft.com/source/latam/company-news-es/microsoft-launches-its-first-hyper-scale-cloud-datacenter-region-in-mexico/); Google Cloud's Queretaro region opened 5 Dec 2024 offering 'local data residency' and quoting Mexico's Auditoria Superior de la Federacion; AWS launched the Mexico (Central) Region with three Availability Zones and API code mx-central-1 in January 2025 (AWS News Blog, 20 Jan 2025, https://aws.amazon.com/blogs/aws/aws-weekly-roundup-new-aws-mexico-central-region-simultaneous-sign-in-for-multiple-aws-accounts-and-more-january-20-2025). IBM Cloud's own locations documentation lists multizone regions only in Dallas, Washington DC, Toronto, Sao Paulo, Frankfurt, London, Madrid, Sydney and Tokyo (plus Chennai, Montreal, Mumbai, Osaka) and no location in Mexico (https://cloud.ibm.com/docs/overview?topic=overview-locations). An Oracle Queretaro region (2022) appeared only in search snippets and was not verified.",
+    "source_url": "https://cloud.google.com/blog/products/infrastructure/google-cloud-announces-41st-cloud-region-in-mexico",
+    "quote": "This new region offers low latency, high performance, and local data residency, empowering organizations to innovate and accelerate digital transformation initiatives.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM's current weather/climate AI assets: Prithvi WxC foundation model; divestiture of The Weather Company",
+    "fact": "IBM and NASA's Prithvi WxC (Hugging Face: ibm-nasa-geospatial/Prithvi-WxC-1.0-2300M, paper published 20 Sep 2024) is a 2.3-billion-parameter foundation model trained on 160 MERRA-2 variables, released under the CDLA-Permissive-2.0 license, with fine-tuned variants for climate downscaling (released in IBM's Granite geospatial family) and gravity-wave parameterization and a Colab demo on a T4 GPU; the model card recommends the base checkpoint 'for generic use cases that do not focus on forecasting.' IBM no longer owns an operational forecasting business: Francisco Partners completed its acquisition of The Weather Company from IBM on 1 February 2024 (https://www.franciscopartners.com/media/francisco-partners-completes-acquisition-of-the-weather-company).",
+    "source_url": "https://huggingface.co/ibm-nasa-geospatial/Prithvi-WxC-1.0-2300M",
+    "quote": "Prithvi WxC is a 2.3 billion parameter model trained on 160 different variables from MERRA-2 data.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IBM and Red Hat footprint relevant to Jalisco and to meteorological services (incl. negative finding on Red Hat)",
+    "fact": "IBM's Guadalajara (Jalisco) technology campus, founded in 1975 as a manufacturing plant and IBM's first large-scale technology investment in Latin America, marked 50 years in November 2025 and is described as a regional hub for hybrid cloud and AI with six Centers of Excellence and more than 500 patents (no current headcount published). No Red Hat case study of OpenShift or OpenShift AI at any national meteorological or hydrological service was found; the only Red Hat meteorology references located were Red Hat Enterprise Linux at Arpa Piemonte for the Turin 2006 Winter Olympics, Red Hat Enterprise Virtualization at Belgium's Royal Meteorological Institute (2012), and a 2023 BAE Systems/Red Hat/The Weather Company military-simulation collaboration (pages checked via search: redhat.com press releases 383 and the RMI release; research.redhat.com; executivebiz.com).",
+    "source_url": "https://mexicobusiness.news/tech/news/ibm-marks-50-years-guadalajara-driving-mexicos-tech-growth",
+    "quote": "The campus is a hub of innovation where the future of technology in Mexico is designed, shaped, and created.",
+    "confidence": "likely"
+   },
+   {
+    "topic": "Is the gap AI knowledge or institutional capacity? Mexico's cancelled World Bank SMN modernization (MoMet, 2012-2016)",
+    "fact": "Mexico's last externally financed SMN modernization, World Bank project P126487 'Modernization of the National Meteorological Service (MoMet)' (IBRD loan US$105.26 million, effective 20 Dec 2012, objective to 'strengthen the human resource, institutional, and infrastructural capacity' of the SMN), was cancelled at Mexico's request (received 19 Feb 2016, agreed by the Bank 11 Mar 2016) with only US$4.70 million disbursed and US$100.56 million cancelled. The June 2016 Implementation Status Report rated progress toward the objective 'Unsatisfactory', raised institutional-capacity risk to High and fiduciary risk to Substantial, and recorded 61 of 198 automatic-weather-station contracts awarded, 0 of 4 pilot-basin early-warning systems delivered and climate products for specialized users at 10 percent versus an 85 percent target.",
+    "source_url": "http://documents1.worldbank.org/curated/en/682011468054229849/txt/ISR-Disclosable-P126487-06-16-2016-1466088380979.txt",
+    "quote": "Most of the Project targets have not been achieved and only 4.7% of the loan is disbursed.",
+    "confidence": "confirmed"
+   }
+  ]
+ ]
+]
