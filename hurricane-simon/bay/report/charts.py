@@ -55,16 +55,16 @@ fig, ax = plt.subplots(figsize=(7.4, 3.2))
 def lab(n, iss):
     t = dt.datetime.strptime(iss.strip(), '%b %d %H%MZ').replace(year=2026) - dt.timedelta(hours=6); h = t.hour % 12 or 12
     return f"#{n}\n{t.strftime('%a')} {h} {'am' if t.hour < 12 else 'pm'}"
-xs = list(range(len(hist))); labs = [lab(n, iss.title()) for n, iss, _ in hist]
+xs = list(range(len(hist))); labs = [lab(n, iss.title()) for n, iss, _ in hist]; ax_lab = None
 for key, col, lb in [('34', P[0], 'tropical-storm force (≥ 63 km/h)'), ('50', P[1], '≥ 93 km/h (50 kt)'), ('64', P[2], 'hurricane force (≥ 119 km/h)')]:
-    ys = [pv.get(key, math.nan) for _, _, pv in hist]; ax.plot(xs, ys, color=col, linewidth=2, marker='o', markersize=5, markeredgecolor=SURF, markeredgewidth=1.2, label=lb)
+    ys = [(pv[key] if pv.get(key) else math.nan) for _, _, pv in hist]; ax.plot(xs, ys, color=col, linewidth=2, marker='o', markersize=5, markeredgecolor=SURF, markeredgewidth=1.2, label=lb)
     for xx, (_, _, pv) in zip(xs, hist):
-        if key not in pv: ax.plot(xx, 0, 'o', markersize=5, markerfacecolor=SURF, markeredgecolor=col, markeredgewidth=1.5)
-    ax.text(xs[-1] + 0.18, {'34': 30, '50': 21, '64': 12}[key], {'34': f"TS force: {ys[-1]}%", '50': '50 kt: under 3%', '64': 'hurricane: under 1%'}[key], color=INK2, fontsize=7.2, va='center')
-    if key == '34': ax.text(xs[-1] + 0.18, 39, 'advisory 18', color=INK, fontsize=7.2, va='center', fontweight='bold')
+        if not pv.get(key): ax.plot(xx, 0, 'o', markersize=5, markerfacecolor=SURF, markeredgecolor=col, markeredgewidth=1.5)
+    last = hist[-1][2]; ax.text(xs[-1] + 0.18, {'34': 30, '50': 21, '64': 12}[key], {'34': ('TS force: %d%%' % last['34']) if last.get('34') else 'TS force: under 3%', '50': '50 kt: under 3%' if not last.get('50') else ('50 kt: %d%%' % last['50']), '64': 'hurricane: under 1%' if not last.get('64') else ('hurricane: %d%%' % last['64'])}[key], color=INK2, fontsize=7.2, va='center')
+    if key == '34': ax.text(xs[-1] + 0.18, 39, 'advisory ' + str(hist[-1][0]), color=INK, fontsize=7.2, va='center', fontweight='bold')
 ax.set_xticks(xs); ax.set_xticklabels(labs, fontsize=7); ax.set_ylim(0, 100); ax.set_ylabel('Chance for Puerto Vallarta (%)'); tidy(ax); ax.legend(loc='upper left', fontsize=7.5)
 ax.set_title("The NHC's own odds for Puerto Vallarta, advisory by advisory", loc='left', fontsize=10, fontweight='bold')
-ax.set_xlabel('Advisory number and issue time, Vallarta time (Friday 9 to Sunday 11 October)', fontsize=8); ax.set_xlim(-0.4, len(xs) + 1.0)
+ax.set_xlabel('Advisory number and issue time, Vallarta time (Friday 9 to Monday 12 October)', fontsize=8); ax.set_xlim(-0.4, len(xs) + 1.0)
 fig.tight_layout(); fig.savefig(S + '/report/f3_pv_odds.png', dpi=220); plt.close(fig)
 # ---------- F4: how uncertain is the next 48 h? ----------
 fig, axs = plt.subplots(1, 2, figsize=(7.4, 3.4), gridspec_kw={'width_ratios': [1.15, 1]})

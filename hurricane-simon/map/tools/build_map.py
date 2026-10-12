@@ -3,7 +3,7 @@ building-by-building wind, rain and threat timelines, river catchments and lands
 Usage: build_map.py WORK OUT.json
 WORK holds mapwork/sat.json + rain_stack.npy (from process_sat.py), nhc.json (from ../tools/nhc_parse.py),
 tiles_reg/ (terrarium z8), tiles/ (z13), tiles_ws/ (z12)."""
-import sys, os, json, math, base64, datetime as dt, numpy as np
+import sys, math, os, json, math, base64, datetime as dt, numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from terrain import mosaic, sample, grid, slope_aspect, fill_and_flow, upstream
 
@@ -13,7 +13,7 @@ STACK = np.load(W + '/mapwork/rain_stack.npy'); FIELD = STACK.mean(0)          #
 KM0, DKM, NK = SAT['grid']['km0'], SAT['grid']['dkm'], SAT['grid']['n']
 P = lambda s: dt.datetime.strptime(s, '%Y-%m-%dT%H:%MZ')
 F = lambda t: t.strftime('%Y-%m-%dT%H:%MZ')
-END = dt.datetime(2026, 10, 12, 18, 0)                                            # Monday 12:00 CST
+END = dt.datetime(2026, 10, 14, 6, 0)                                             # Tuesday midnight CST
 
 # ---------------- time axis: observed satellite frames, then 10-minute forecast steps ----------------
 fixes = SAT['fixes']; t_obs = P(SAT['motion']['t'])
@@ -41,7 +41,19 @@ def nhc_at(t):
     return dict(lat=I(a['lat'], b['lat']), lon=I(a['lon'], b['lon']), v=I(a['kt'], b['kt']), g=I(a['gust'], b['gust']),
                 r34=[I(a['r34'][j], b['r34'][j]) for j in range(4)], r50=[I(a['r50'][j], b['r50'][j]) for j in range(4)], r64=[I(a['r64'][j], b['r64'][j]) for j in range(4)])
 
-M = SAT['motion']
+# ---------------- validate the satellite fixes against the NHC analysed position (the IR centre-finder can lock onto cold tops over the Sierra) ----------------
+def _nhc_or_cur(t):
+    p = nhc_at(t); return (p['lat'], p['lon']) if p else (float(cur['lat']), float(cur['lon']))
+fixes = [x for x in fixes if nhc_at(P(x['t'])) is not None or P(x['t']) >= t_obs - dt.timedelta(hours=4)]; SAT['fixes'] = fixes   # keep only fixes the NHC track can vouch for
+_bad = 0
+for x in fixes:
+    la0, lo0 = _nhc_or_cur(P(x['t'])); d = geo(la0, lo0, x['lat'], x['lon'])[0] if 'geo' in globals() else math.hypot((x['lat'] - la0) * 111.2, (x['lon'] - lo0) * 111.2 * math.cos(math.radians(la0)))
+    if d > 60: x['lat'], x['lon'], x['replaced'] = la0, lo0, True; _bad += 1
+print('satellite fixes replaced by the NHC position (more than 60 km off):', _bad, 'of', len(fixes))
+fl = np.array([x['lat'] for x in fixes]); fo = np.array([x['lon'] for x in fixes]); fl, fo = sm(fl), sm(fo)
+M = dict(SAT['motion']); M['lat'], M['lon'] = _nhc_or_cur(t_obs)
+_p1 = nhc_at(t_obs + dt.timedelta(hours=1)); _p0 = nhc_at(t_obs)
+if _p0 and _p1: M['lat_per_h'], M['lon_per_h'] = _p1['lat'] - _p0['lat'], _p1['lon'] - _p0['lon']
 def ext_track():
     out, landfall, vlf = [], None, None
     for t in times[n_obs:]:

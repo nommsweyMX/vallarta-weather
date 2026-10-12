@@ -1,0 +1,558 @@
+[
+ {
+  "facts": [
+   {
+    "topic": "Otis 2023 — landfall, rapid intensification and forecast failure",
+    "fact": "Otis made landfall in Acapulco around 0645 UTC 25 Oct 2023 as a 140-kt Category 5 (peak 145 kt at 0300 UTC) after strengthening from a 65-kt hurricane at 1200 UTC 24 Oct; NHC states the extreme RI was not anticipated by forecasters or any guidance, mean official intensity errors were 29.5 kt at 24 h and 51.7 kt at 48 h, one forecast was the largest 48-h intensity error in the basin since Patricia, and the lack of observations over the eastern Pacific was cited as a cause.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP182023_Otis.pdf",
+    "quote": "The extreme RI of Otis was not anticipated by NHC forecasters or the intensity guidance suite ... almost every piece of intensity guidance available to forecasters for Otis was unskillful.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Otis 2023 — size of the operational under-forecast",
+    "fact": "The NHC advisory issued 2100 UTC 23 Oct 2023 (about 34 h before landfall) forecast Otis to be 60 kt at 36 h and 48 h and 'near hurricane strength when it reaches the coast'; the 0300 UTC 24 Oct advisory (about 28 h before landfall) still forecast 55 kt at 24 h and 60 kt at 36 h. The storm hit at 140 kt — an under-forecast of roughly 80 kt (about four Saffir-Simpson categories).",
+    "source_url": "https://www.nhc.noaa.gov/archive/2023/ep18/ep182023.discus.006.shtml",
+    "quote": "It now appears likely that Otis will be near hurricane strength when it reaches the coast ... 36H 25/0600Z 60 KT; 48H 25/1800Z 60 KT (vs 140-kt landfall per the TCR).",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Otis 2023 — impact in Acapulco",
+    "fact": "Mexico's government attributed 52 deaths and 32 missing to Otis; damage estimates of USD 12–16 billion make it Mexico's costliest tropical cyclone; over 98% of homes and about 80% of hotels in Acapulco were damaged, 51,000+ homes destroyed in Guerrero, 500,000+ customers lost power, and hundreds of vessels sank in Acapulco Bay.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP182023_Otis.pdf",
+    "quote": "Over 98% of homes and around 80% of the hotels in Acapulco were damaged ... between $12–16 billion (USD) in total damage ... the costliest tropical cyclone on record for Mexico.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Lidia 2023 — Jalisco landfall near Puerto Vallarta",
+    "fact": "Lidia's eye made landfall about 0000 UTC 11 Oct 2023 near Las Peñitas, Jalisco, roughly 35 n mi southwest of Puerto Vallarta, as a 120-kt Category 4 after winds rose 45 kt in the 18 h beginning 0600 UTC 10 Oct; NHC says its official forecasts 'seriously underestimated the rapid strengthening' before landfall even though mean errors were below average. Three direct deaths (one near Punta Mita), downed trees and roof damage around Puerto Vallarta, Highway 200 blocked, and a USD 77.6 million state damage estimate.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP152023_Lidia.pdf",
+    "quote": "Although the overall intensity errors were not that high ... the official forecasts seriously underestimated the rapid strengthening of Lidia prior to landfall.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Roslyn 2022 — Nayarit landfall and under-forecast RI",
+    "fact": "Roslyn made landfall at 1120 UTC 23 Oct 2022 near Mayorquín/Santa Cruz, Nayarit, as a 105-kt Category 3 (peak 115 kt Cat 4) after intensifying as much as 55 kt in 24 h; even though NHC explicitly forecast RI, those forecasts were still 15–20 kt too low at peak and official intensity errors exceeded the 5-year mean through 72 h. Puerto Vallarta saw heavy rain, flooding and large waves that damaged beachside eateries; ~160,000 customers lost power in Nayarit, Jalisco and Sinaloa; an indirect death occurred in Bahía de Banderas.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP192022_Roslyn.pdf",
+    "quote": "even these forecasts did not show enough strengthening and ended up being 15 to 20 kt too low ... Roslyn's rate of intensification was as high as 55 kt over ... 24-h periods.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Patricia 2015 — record intensity and record forecast errors",
+    "fact": "Patricia peaked at 185 kt (879 mb) at 1200 UTC 23 Oct 2015 and made landfall near Playa Cuixmala, Jalisco, about 2300 UTC 23 Oct at 130 kt (932 mb), midway between Manzanillo and Puerto Vallarta. Mean official intensity errors were 35.0 kt at 24 h and 57.8 kt at 48 h; several forecasts had the highest errors through 48 h since NHC took over the basin in 1988, no guidance anticipated the degree or speed of RI, and the SHIPS RI guidance was unavailable before RI began due to missing satellite inputs. Two direct deaths; >10,000 homes damaged; ~USD 325 million damage.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP202015_Patricia.pdf",
+    "quote": "Several forecasts had intensity errors through 48 h that were the highest on record since the National Hurricane Center took over warning responsibility in the eastern North Pacific basin in 1988.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Kenna 2002 — the Puerto Vallarta benchmark storm",
+    "fact": "Kenna intensified from 40 to 140 kt in 42 h, peaked at 145 kt (913 mb) about 125 n mi WSW of Cabo Corrientes at 0000 UTC 25 Oct 2002, and made landfall near San Blas, Nayarit, at 1630 UTC 25 Oct at about 120 kt (Cat 4). Official intensity errors averaged 27 kt at 24 h and 52 kt at 48 h, with one 75-kt under-forecast at 48 h and a 30-kt under-forecast at 12 h. In Puerto Vallarta, storm surge caused an estimated USD 5 million in damage, largely to hotels, with 100+ injuries from flying glass in San Blas and Puerto Vallarta; 80–90% of San Blas homes damaged or destroyed; four deaths.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP142002_Kenna.pdf",
+    "quote": "Kenna intensified from 40 to 140 kt in 42 hours ... There was a 75 kt under-forecast at 48 h ... In Puerto Vallarta, storm surge was primarily responsible for the estimated $5 million ... of damage, largely to hotels.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "John 2024 — Guerrero landfall with almost no warning lead time",
+    "fact": "John made landfall near Marquelia, Guerrero, around 0315 UTC 24 Sep 2024 at 105 kt (Cat 3) after going from 35 kt to 100 kt in 24 h; the first three advisories (30, 24 and 18 h before landfall) did not forecast a hurricane, the Hurricane Warning came only 12–15 h before tropical-storm winds arrived, and all intensity aids beat the official forecast at 24–72 h. A second landfall followed in Michoacán on 27 Sep at ~50 kt. Acapulco recorded 1,442 mm (56.8 in) storm-total rain; 29 deaths in Mexico (23 in Guerrero) and ~USD 2.45 billion damage.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP102024_John.pdf",
+    "quote": "the first 3 advisories, issued 30, 24, and 18 h before landfall ... did not indicate that John would become a hurricane ... A storm total rainfall of 1442 mm, or about 56.8 inches, was recorded at Acapulco.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Erick 2025 — earliest major-hurricane landfall, RI forecast partly succeeded",
+    "fact": "Erick made landfall near 1130 UTC 19 Jun 2025 in Santiago Domingo Armenta, far western Oaxaca, at 110 kt (Cat 3; peak 120 kt Cat 4 six hours earlier) after RI began 0000 UTC 18 Jun. NHC's first advisory did forecast RI (+30 kt in 24 h) and HCCA was the best intensity aid, but official intensity errors still exceeded the 5-year mean at all lead times (13.1 kt at 24 h, 25.0 kt at 48 h). Impacts: 42,552 homes affected, 276,885 customers without power, two deaths; Acapulco losses alone USD 112 million. NHC's landfall discussion called it the earliest major-hurricane landfall on record for Mexico.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP052025_Erick.pdf",
+    "quote": "The first official advisory package on Erick ... forecast rapid intensification ... Official intensity forecast errors exceeded the 5-year mean at all forecast intervals, likely the result of Erick's rapid intensification.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Priscilla 2025 — AI model beat official track near Puerto Vallarta",
+    "fact": "Priscilla (4–10 Oct 2025) peaked at 100 kt (Cat 3) offshore while moving parallel to the Jalisco/Nayarit coast and never made landfall; NHC's TCR notes the only model to beat the official track forecast at nearly all lead times was the experimental Google DeepMind ensemble mean (GDMI), which was not always available to forecasters in real time. Localized flooding and rough-surf damage was reported near Puerto Vallarta; no casualties.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP162025_Priscilla.pdf",
+    "quote": "The only model to outperform the official forecast at nearly all forecast hours (except at 48 h) was the Google DeepMind ensemble mean (GDMI) ... an experimental (non-operational) aid.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Simon 2026 — rapid intensification off Jalisco (operational advisories)",
+    "fact": "Simon went from 45 kt at 0300 UTC 8 Oct 2026 (Adv 3) to 65 kt at 0300 UTC 9 Oct (Adv 7), 105 kt at 0300 UTC 10 Oct (Adv 11), 130 kt/932 mb at 2100 UTC 10 Oct (Adv 14) and 135 kt/928 mb at 0300 UTC 11 Oct (Adv 15) — about 70 kt in 48 h. Unlike Otis, NHC forecast RI in advance: Adv 7 called for 100 kt at 24 h (actual 105 kt) and a 120-kt peak, though its 48-h value (110 kt) was ~25 kt below the operational 135 kt; Adv 11 warned the small inner core made peak intensity hard to predict. Final best-track values await the TCR.",
+    "source_url": "https://www.nhc.noaa.gov/archive/2026/ep20/ep202026.discus.007.shtml",
+    "quote": "SHIPS RI index gives a near 70 percent chance of a 30 kt increase within 24 hours ... reaching Category 4 and a peak of 120 kt on Saturday morning (Adv 7, 0300 UTC 9 Oct 2026).",
+    "confidence": "likely"
+   },
+   {
+    "topic": "Simon 2026 — no Puerto Vallarta landfall as of 12 Oct; track uncertainty and AI guidance",
+    "fact": "At 0900 UTC 12 Oct 2026 (Adv 20) Simon was a 100-kt hurricane at 20.0N 106.3W, about 50 mi SW of Cabo Corrientes, drifting NW with no landfall yet; NHC said track uncertainty was higher than normal, that some models trap the storm in weak steering, that the forecast was nudged west partly on recent AI-based guidance, and that landfall is now expected around 72 h (near 23.4N 106.6W, Sinaloa) as a 70-kt hurricane. A Hurricane Warning covered Playa Perula to El Roblito. AP/PBS reported Puerto Vallarta's malecón closed, hotels evacuated and 22 Jalisco municipalities with classes suspended, with no confirmed damage or deaths reported there.",
+    "source_url": "https://www.nhc.noaa.gov/archive/2026/ep20/ep202026.discus.020.shtml",
+    "quote": "Track uncertainty is higher than normal ... The new forecast is slightly west of the previous one and accounts for some recent AI-based guidance (NHC Discussion 20, 0900 UTC 12 Oct 2026).",
+    "confidence": "confirmed"
+   }
+  ]
+ },
+ {
+  "facts": [
+   {
+    "topic": "SMN observing network size and health (2019 baseline)",
+    "fact": "In Conagua/SMN's own September 2019 inventory, only 4 of the SMN's 13 C-band Doppler weather radars were operational; 160 of 189 automatic weather stations (EMAs), 65 of 98 automatic synoptic stations (ESIMEs), 75 of 77 observatories, 14 of 15 radiosonde stations and 2 of 9 satellite-image receivers were operating (status as of 31 Aug 2019).",
+    "source_url": "https://www.cec.org/wp-content/uploads/2020/02/fabian_vazquez_romana.pdf",
+    "quote": "Weather Radars (Total: 13 Operational: 4) ... -EMAs (Total: 189 Operational: 160) -ESIMEs (Total: 98 Operational: 65) ... Radiosounding Sations (Total: 15 Operational: 14)",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "SMN observing network status audited for 2024",
+    "fact": "Mexico's federal auditor (ASF, performance audit of Cuenta Pública 2024) reports that of 387 SMN observing 'networks' monitored in 2024, 302 operated and 85 were out of service for maintenance needs or damage; by type: 138 of 189 EMAs, 65 of 97 ESMAs, 6 of 8 weather radar stations, 76 of 76 observatories and 15 of 15 radiosonde stations operated. Conagua reported 78.0% (234 of 300) of SMN stations operating at December 2024 and spent 97.5 million pesos on program E006 'Sistemas Meteorológicos e Hidrológicos'.",
+    "source_url": "https://www.asf.gob.mx/Trans/Informes/IR2024b/Documentos/Auditorias/2024_0103_a.pdf",
+    "quote": "de las 387 redes de observación monitoreadas ... 302 se mantuvieron en operación y los 85 restantes estuvieron fuera de servicio, debido a fallas técnicas relacionadas con necesidades de mantenimiento y daños ocasionados por siniestros. [table: Estaciones de radar meteorológico: Sí 6, No 2, Total 8]",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Radar network obsolescence acknowledged by Conagua",
+    "fact": "Conagua acknowledged (reported Nov 2020) that its weather radar network has technological lag or has exceeded its average useful life, that the country lacks sufficient radars, and that maintenance/optimisation could raise radar network operability from 35% to 70%; a proposed 25-million-peso mobile X-band dual-pol radar was left out of the 2021 federal budget.",
+    "source_url": "https://www.eluniversal.com.mx/cartera/insuficientes-y-obsoletos-radares-para-pronosticar-el-clima/",
+    "quote": "presenta atraso tecnológico o ha rebasado su vida útil promedio ... con medidas de mantenimiento y optimización puede incrementar su operatividad de 35% a 70%",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Nearest SMN radars to Puerto Vallarta / Banderas Bay",
+    "fact": "The SMN's Pacific-coast C-band radars nearest Banderas Bay are Cuyutlán (Colima, ~250 km SE of Puerto Vallarta) and El Palmito (Sinaloa, near Mazatlán, ~350 km NW); both appear as SMN-CNA radar sites in the NCAR/UCAR NAME 2004 archive alongside Guasave, Los Cabos and Obregón. A third-party WMO Radar Database record (page could not be re-loaded) lists Cuyutlán as a 1994 Vaisala C-band radar in 'stand-by' status. No SMN-operated radar in Jalisco or Nayarit was found; the SMN radar page (smn.conagua.gob.mx) returned server errors and could not be checked.",
+    "source_url": "https://ckanprod.data-commons.k8s.ucar.edu/harvest/object/58024caa-59fd-4655-aa4c-dfe5a9f78545/html",
+    "quote": "Mexico SMN-CNA C-band Weather Radar Imagery ... The following imagery products are included: Cuyutlan, Guasave, Los_Cabos, Obregon, Palmito.",
+    "confidence": "likely"
+   },
+   {
+    "topic": "Only radar in Jalisco is university-run (Guadalajara)",
+    "fact": "The Doppler weather radar in Guadalajara is operated by the Universidad de Guadalajara's Instituto de Astronomía y Meteorología (inaugurated 2011, bought by UdeG and the Jalisco state government) and is described as the only radar in Mexico run by a university; its stated detection range is about 120 km around the site, which does not reach Puerto Vallarta (~200 km away). A 2011 UdeG note said the SMN then had a network of nine radars, some obsolete. (UdeG pages returned HTTP 503 on fetch; quote is from the indexed article text.)",
+    "source_url": "https://www.comsoc.udg.mx/print/14959",
+    "quote": "con el Radar Doppler del IAM es posible detectar, en tiempo real, tormentas y granizadas en 120 kilómetros alrededor del aparato",
+    "confidence": "likely"
+   },
+   {
+    "topic": "NHC aircraft reconnaissance policy for the eastern Pacific",
+    "fact": "The National Hurricane Operations Plan sets routine Atlantic/Gulf/Caribbean/Central Pacific recon levels (up to four 6-hourly fixes per day within 500 nm of landfall, up to eight 3-hourly fixes within 300 nm of U.S. territory), but for the eastern Pacific it only says missions 'may be tasked when necessary to carry out warning responsibilities' – i.e., no standing requirement to fly Mexico-bound storms.",
+    "source_url": "https://www.weather.gov/media/nws/IHC2022/2022_NHOP_June_1.pdf",
+    "quote": "5.4.1.2.2. In the Eastern Pacific (EPAC), reconnaissance missions may be tasked when necessary to carry out warning responsibilities.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "How recon actually covered a Jalisco landfall (Hurricane Lidia 2023)",
+    "fact": "For Hurricane Lidia, which hit the Jalisco coast SSW of Puerto Vallarta as a Category 4 in October 2023, the Air Force Reserve flew only two missions (9 and 10 Oct) giving four center fixes; the last aircraft data came ~5 h before landfall, so the 120-kt landfall intensity rests on satellite Dvorak estimates, and NHC received no coastal wind observations near the landfall point.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP152023_Lidia.pdf",
+    "quote": "There were two AFRES missions into Lidia, on 9 and 10 October, that provided four center fixes ... There were no wind observations received near the landfall location on the coast.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Share of Hurricane Hunter effort that goes to the eastern Pacific",
+    "fact": "In the 2025 season the 53rd Weather Reconnaissance Squadron flew 927.9 hours across the Atlantic, eastern Pacific and central Pacific; in the eastern Pacific crews flew only two storms (Hurricanes Erick and Lorena), versus nine named Atlantic storms, and a single Atlantic hurricane (Melissa) alone received 17 missions and 170 flight hours.",
+    "source_url": "https://www.dvidshub.net/news/552681/hurricane-hunters-wrap-up-2025-season-after-flying-three-category-5-storms",
+    "quote": "flew 927.9 hours this year across the Atlantic, eastern Pacific and central Pacific basins ... In the eastern Pacific, crews flew into Hurricanes Erick and Lorena ... the squadron flew 17 missions and 170 flight hours into Melissa",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Ocean observations: Mexico's Apixqui buoy/glider programme (2026)",
+    "fact": "On 9 June 2026 Secihti announced the Apixqui project (Sistema Interinstitucional de Monitoreo Metoceánico y Alerta Temprana) with CICESE, UNAM (ICAyCC, ICMyL), SEMAR and SMN, deploying underwater gliders, coastal buoys and metocean buoys in the Pacific with real-time transmission to national and WMO systems; in 2025 it ran 4 glider missions (164 days, >4,000 T/S profiles, ~5,000 km), is using AI for forecasts and coupled ocean-atmosphere models, and plans to build a new radiosonde station to complement the SMN.",
+    "source_url": "https://secihti.mx/wp-content/uploads/2026/06/Comunicado_conjunto_09062026.pdf",
+    "quote": "una red de planeadores submarinos (gliders), boyas costeras y boyas metoceánicas que se están desplegando en el Pacífico ... Durante la temporada de huracanes de 2025, se realizaron 4 misiones de gliders ... 164 días de toma de datos",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Government acknowledges Pacific is Mexico's least-observed region",
+    "fact": "President Sheinbaum stated on 29 June 2026 that the Pacific Ocean is the zone with the least meteorological measurement coverage in the country, and that buoys developed by the science ministry with SEMAR were already built and would begin to be deployed in the Pacific from September 2026 pending a specialised vessel (press report of the morning briefing; no gob.mx transcript located).",
+    "source_url": "https://zetatijuana.com/2026/06/sheinbaum-alerta-por-temporada-atipica-de-huracanes-en-el-pacifico/",
+    "quote": "el océano Pacífico representa la zona con menor cobertura de medición meteorológica en el país ... ya hay varias boyas, ya están fabricadas ... iniciar la puesta de boyas en septiembre en el Pacífico",
+    "confidence": "likely"
+   },
+   {
+    "topic": "WMO Systematic Observations Financing Facility (SOFF): what it funds, who qualifies, Mexico's status",
+    "fact": "SOFF (WMO/UNDP/UNEP, launched 2022) gives grant finance and peer technical assistance so countries meet Global Basic Observing Network (GBON) surface/upper-air observation requirements, including contributing to operations and maintenance 'on an open-ended basis'; it prioritises Least Developed Countries and Small Island Developing States, reports 61 countries with readiness funding approved and 12 funders, and its Latin America/Caribbean pipeline (via IDB) is Belize, Bahamas, Barbados, Ecuador, Guatemala, Guyana, Haiti, Jamaica, St Kitts & Nevis and Trinidad & Tobago. Mexico, an upper-middle-income country, appears neither as beneficiary nor funder on SOFF's site or WMO's regional announcement.",
+    "source_url": "https://wmo.int/media/update/idb-joins-undp-support-data-systems-tackle-climate-change-latin-america-caribbean",
+    "quote": "The IDB will first implement the SOFF program in Belize ... followed by projects in The Bahamas, Barbados, Ecuador, Guatemala, Guyana, Haiti, Jamaica, St. Kitts & Nevis, and Trinidad & Tobago ... prioritizing Least Developed Countries and Small Island Developing States",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "SOFF funds operations and maintenance, not just hardware",
+    "fact": "WMO states SOFF support covers not only installing GBON-compliant stations but contributes to their operation and maintenance costs indefinitely, with support targeted at the most vulnerable countries, in particular LDCs and SIDS.",
+    "source_url": "https://wmo.int/node/13827",
+    "quote": "to support the most vulnerable countries, in particular LDCs and the Small Islands Developing States (SIDS) ... SOFF will contribute to cover the O&M costs an open-ended basis",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "UN Early Warnings for All (EW4All): scope and Mexico's position",
+    "fact": "EW4All, launched by the UN Secretary-General in 2022 and led by WMO, UNDRR, ITU and IFRC, aims for everyone on Earth to be protected by multi-hazard early warning systems by end-2027; 30 countries were short-listed for priority action, of which six are in the Americas and Caribbean – Antigua and Barbuda, Barbados, Ecuador, Guatemala, Guyana and Haiti. Mexico is not among the priority countries; its documented EW4All engagement found so far is at city level (a 2024 Mexico City–Guatemala City seismic-alert exchange involving CENAPRED and CIRES, per UNDRR, page not retrievable), not a national hydromet roadmap.",
+    "source_url": "https://wmo.int/node/22962",
+    "quote": "Six of the countries are in the Americas and the Caribbean: Antigua and Barbuda, Barbados, Ecuador, Guatemala, Guyana and Haiti",
+    "confidence": "confirmed"
+   }
+  ]
+ },
+ {
+  "facts": [
+   {
+    "topic": "Google DeepMind Weather Lab + NHC partnership (June 2025)",
+    "fact": "Google DeepMind launched Weather Lab on 12 June 2025 with an experimental stochastic cyclone model that generates 50 scenarios up to 15 days ahead, and announced a partnership with the US National Hurricane Center in which NHC forecasters see the live AI predictions alongside physics-based models and observations. DeepMind's own (not independent) evaluation on 2023-24 Atlantic/East Pacific cases claimed 5-day track errors 140 km smaller than ECMWF ENS (equivalent to a 1.5-day lead-time gain) and mean intensity error better than NOAA's HAFS; storm-size/wind-radii skill was only 'preliminary' and 'comparable' to physics baselines.",
+    "source_url": "https://deepmind.google/discover/blog/weather-lab-cyclone-predictions-with-ai/",
+    "quote": "\"generating 50 possible scenarios, up to 15 days ahead\" ... 5-day track prediction is \"on average, 140 km closer to the true cyclone location than ENS\" ... NHC forecasters are \"now seeing live predictions from our experimental AI models, alongside other physics-based models and observations.\"",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "NHC model IDs for AI guidance (GDMN/GDMI and others)",
+    "fact": "NHC's official model summary lists the Google DeepMind model as GDMN (late) / GDMI (interpolated early version): 'Google DeepMind Ensemble Mean', ensemble mean of 50 members, trained on 'ERA5/IBTrACS analyses of historical TCs (1979-2018)' and fine-tuned on HRES-fc0, producing track, intensity and wind radii. The same table lists NOAA's AI-GFS as GAIO/GAII (28 km, 13 levels), AI-GEFS ensemble mean as EGMN/EGMI (30 members), ECMWF AIFS as EAIO/EAII (28 km), the AIFS ensemble as EAMN/EAMI (50 members), plus GenCast (GENC/GENI) and GraphCast (GRPH/GRPI). 'Interpolated' (I-suffix) models are the time-adjusted early versions of late models.",
+    "source_url": "https://www.nhc.noaa.gov/modelsummary.shtml",
+    "quote": "GDMN / GDMI: \"Google DeepMind Ensemble Mean\" ... mean of 50 members ... \"ERA5/IBTrACS analyses of historical TCs (1979-2018)\" ... Parameters: \"Track, intensity, wind radii.\" / \"The adjusted versions of the late models are known, for historical reasons, as interpolated models.\"",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "NHC 2025 verification: first operational use of AI models, GDMI performance in the East Pacific",
+    "fact": "NHC's 2025 Forecast Verification Report states 2025 was the first season NHC incorporated AI-based models into real-time operations, noting some 'were not consistently available on a timely basis'. In the eastern North Pacific (the basin covering Puerto Vallarta), GDMI 'performed considerably better than all of the other individual models and beat the official forecast and all of the consensus aids at 48-120 h' for track (Table 6: 120-h error 87.3 n mi vs OFCL 111.9 n mi; 72-h 45.3 vs 52.6). For intensity, GDMI was the top individual model only at 12-48 h and was bested by the regional hurricane models (HFAI best at 96/120 h) at longer ranges. In the Atlantic GDMI slightly outperformed NHC track forecasts at 12-72 h. GDMI was unavailable for the first five East Pacific storms of the season.",
+    "source_url": "https://www.nhc.noaa.gov/verification/pdfs/Verification_2025.pdf",
+    "quote": "\"The 2025 season marked the first time that NHC incorporated AI-based models into real-time operations. Many of these systems remain under active development, and some were not consistently available on a timely basis\" ... \"GDMI performed considerably better than all of the other individual models and beat the official forecast and all of the consensus aids at 48-120 h\" ... \"GDMI was the top performer from 12-48 h but was bested by the hurricane regional models at longer time ranges.\"",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "East Pacific official forecast skill records in 2025 (context for Vallarta)",
+    "fact": "NHC's 2025 eastern North Pacific official track errors were 15-30% below the 5-year means and set accuracy records at 24-120 h (mean errors from 19 n mi at 12 h to 100 n mi at 120 h); intensity errors set records at 48 and 72 h. NHC notes CLIPER errors were also 5-15% below normal, 'which suggests that the track forecasts ... in 2025 were somewhat easier than normal', and that 5-year running-mean track errors 'have generally leveled off in recent years'. RI forecasting 'remains challenging'.",
+    "source_url": "https://www.nhc.noaa.gov/verification/pdfs/Verification_2025.pdf",
+    "quote": "\"the mean NHC track errors broke records for accuracy at 24-120 h, making 2025 one of the best NHC track forecast performances in history for the eastern North Pacific basin\" ... \"the 5-yr running mean track errors have generally leveled off in recent years.\"",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "WeatherNext Cyclones (FNV3) Nature paper and open release (Aug 2026)",
+    "fact": "On 6 August 2026 Google DeepMind published its cyclone model in Nature ('Operational Tropical Cyclone Forecasting with AI', doi 10.1038/s41586-026-10953-2, Alet et al.) and released code and weights for WeatherNext 2 and WeatherNext Cyclones on GitHub. The model ingests 28x28 km (0.25 deg, 13 pressure levels) data, 'about 100x coarser than traditional models', trained on ~20 TB of global atmospheric data plus the IBTrACS database of ~5,000 storms; it uses Functional Generative Networks (FGN) to create ensembles. DeepMind credits it with helping NHC forecast Hurricane Melissa's rapid intensification and Jamaica landfall in 2025. A third-party Hugging Face port states the model ran publicly as 'FNV3' in 2025 and NHC's post-processed version was 'GDMI' (CC-BY-4.0 weights, Apache-2.0 code). The underlying FGN method (arXiv 2506.10772) is trained to minimise per-location CRPS and 'makes skillful ensemble tropical cyclone track predictions'.",
+    "source_url": "https://deepmind.google/blog/weathernext-ai-model-achieves-breakthrough-in-forecasting-cyclones/",
+    "quote": "WeatherNext Cyclones uses data at 28x28 km, \"100x coarser than traditional models\" ... \"our three-day forecasts are as good as what prior models were able to provide for only the next two days\" ... predicted \"the storm's rapid intensification and landfall in Jamaica\"; code and weights \"freely available for anyone to build on\". (FNV3/GDMI naming from huggingface.co/kashif/weathernext-cyclones.)",
+    "confidence": "likely"
+   },
+   {
+    "topic": "ECMWF AIFS operational status",
+    "fact": "ECMWF's deterministic AIFS Single became operational on 25 February 2025 (28 km grid vs 9 km for IFS), with ECMWF claiming gains 'of up to 20%' on several measures including tropical cyclone tracks and ~1,000x lower energy per forecast. The 51-member AIFS ENS became operational on 1 July 2025 at 31 km, running over 10 times faster than the physics-based ensemble; the announcement does not mention tropical cyclones. The AIFS paper (arXiv 2406.01465) describes training on ERA5 reanalysis and ECMWF operational analyses with a GNN encoder/decoder and transformer processor, and reports skilled 'tropical cyclone tracks' but does not discuss intensity. A v2 of AIFS ENS (multi-scale loss) was reported released 12 May 2026 (search summary of ECMWF Confluence; not independently fetched).",
+    "source_url": "https://www.ecmwf.int/en/about/media-centre/news/2025/ecmwfs-ai-forecasts-become-operational",
+    "quote": "ECMWF took AIFS into operations on \"25 February 2025\" ... \"The AIFS has a grid spacing of currently 28 km\" ... gains \"of up to 20%\" including tropical cyclone tracks. / AIFS ENS: \"into operations today, 1 July 2025\" ... \"a collection of 51 different forecasts\" ... \"a lower resolution (31 km) than the physics-based ensemble system (9 km)\" (ecmwf.int/en/about/media-centre/news/2025/ecmwfs-ensemble-ai-forecasts-become-operational).",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "AIFS-TC intensity correction (2026 preprint): size of the raw AI intensity bias and the fix",
+    "fact": "Allen, Bruinsma, Maier-Gerber, Cook, Chantry and Turner (ECMWF + Univ. of Cambridge; arXiv 2608.09959 v1 24 Jul 2026, v2 13 Aug 2026; ECMWF blog 3 Aug 2026) show raw AIFS-Single 'severely underestimates intensity': across 70 storms in the held-out 2025 season the global max-wind bias is -28.8 kt and MAE 28.9 kt, and for rapid-intensification cases MAE is 71.1 kt. A lightweight post-processor (gradient-boosted trees on derived AIFS predictors + CNN on storm-centred fields, trained 2016-2024) cuts MAE to 10.8 kt (bias -1.9 kt), statistically indistinguishable from Google's FNV3 (10.2 kt); in the North Atlantic/East Pacific, AIFS-TC 11.0 kt vs FNV3 10.7 kt vs NHC OFCL 10.7 kt; RI MAE 20.9 kt vs FNV3 23.8 kt and OFCL 20.1 kt. The authors attribute the raw bias to the ~0.25 deg grid being too coarse, and state the system was built autonomously by an LLM in a few hours. It is a prototype; ECMWF's stated next step is to 'implement this work as a real-time system' and evaluate it with Member State forecasters.",
+    "source_url": "https://arxiv.org/abs/2608.09959",
+    "quote": "\"Globally, across 70 storms in 2025, AIFS achieves an MAE of 28.9 kt. AIFS-TC is able to reduce this to 10.8 kt, which is comparable to FNV3's 10.2 kt\" ... \"severely underestimate intensity, leading to a bias of -28.8 kt globally. AIFS-TC reduces this bias to -1.9 kt\" ... abstract: AI models \"tend to dramatically underestimate intensity.\" (ECMWF blog: \"the uncorrected AIFS forecast had a global wind-speed bias of almost -29 knots.\")",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "NOAA AIGFS / AIGEFS / HGEFS operational (Dec 2025)",
+    "fact": "NOAA announced on 17 December 2025 that three AI global models from Project EAGLE became operational: AIGFS (deterministic; built on Google DeepMind's GraphCast 'as an initial foundation', fine-tuned on NOAA GDAS analyses; a 16-day run uses 0.3% of GFS compute and finishes in ~40 minutes), AIGEFS (31-member AI ensemble, 9% of GEFS compute) and HGEFS (62-member hybrid of 31 GEFS + 31 AIGEFS members). NOAA states AIGFS gives 'a significant reduction in tropical cyclone track errors at longer lead times' but that v1.0 'shows a degradation in tropical cyclone intensity forecasts', to be addressed in future versions. A NOAA VLab webinar abstract (not fetched) reportedly specifies the track gains at 5-6 day leads in the North Atlantic and NW Pacific.",
+    "source_url": "https://www.noaa.gov/news-release/noaa-deploys-new-generation-of-ai-driven-global-weather-models",
+    "quote": "\"The team leveraged Google DeepMind's GraphCast model as an initial foundation\" ... AIGFS uses \"only 0.3% of the computing resources of the operational GFS\" ... \"a significant reduction in tropical cyclone track errors at longer lead times\" ... AIGFS v1.0 \"shows a degradation in tropical cyclone intensity forecasts.\"",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Documented AI-model weakness: intensity (DeMaria/Franklin et al. 2024 NHC-style verification)",
+    "fact": "The first NHC-procedure evaluation of open AI weather models (FourCastNet v1, FourCastNet v2-small, GraphCast-operational, Pangu-Weather) over the May-November 2023 Northern Hemisphere season found track errors and detection rates comparable to the best operational models, and adding them to the track consensus cut errors by up to 11% at longer leads; but intensity errors were larger than even climatology-persistence, because the models 'almost always reduce the TC intensity, especially within the first 24 h', producing a large low bias. Authors: Mark DeMaria, James L. Franklin, Galina Chirokova, Jacob Radford, Robert DeMaria, Kate Musgrave, Imme Ebert-Uphoff (CIRA/NHC alumni), arXiv 2409.06735, 8 Sep 2024.",
+    "source_url": "https://www.arxiv.org/abs/2409.06735",
+    "quote": "\"track forecast errors and detection rates are comparable to those from the best-performing operational forecast models\" ... intensity errors \"larger than those of even the simplest intensity forecasts based on climatology and persistence\" ... \"The AIWP models almost always reduce the TC intensity, especially within the first 24 h of the forecast.\"",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Documented AI-model weakness: structure/smoothing from MSE training and 0.25 deg ERA5",
+    "fact": "Subich, Husain, Separovic and Yang (Environment and Climate Change Canada; arXiv 2501.19374, accepted ICML 2025) show that training on mean-squared error makes AI forecasts inherently smoothed ('double penalty'): GraphCast's effective resolution is only ~1,250 km despite its 0.25 deg grid, and fine-tuning with a modified spherical-harmonic loss raised it to ~160 km while improving tropical cyclone strength and surface-wind extremes. Related work cited in searches (not fetched; unconfirmed detail) attributes weak strong-storm intensity to ERA5's grid-averaged core gradients and regression losses pulling toward conditional means, and reports ERA5's own TC maximum-wind error of ~68 kt (19 kt after linear correction) even in the North Atlantic (Remote Sensing, 2023).",
+    "source_url": "https://arxiv.org/abs/2501.19374",
+    "quote": "MSE training causes fine-scale smoothing through a \"double penalty\" effect; fine-tuning GraphCast with the modified loss raises effective resolution \"from about 1,250 km to 160 km\" with \"improvements to predictions of tropical cyclone strength and surface wind extremes.\"",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Training data and resolution of the major AI global models (GraphCast, Pangu-Weather, Aurora, AIFS)",
+    "fact": "All first-generation AI global models are trained on ECMWF's ERA5 reanalysis at 0.25 deg (~28-31 km): GraphCast 'can be trained directly from reanalysis data' and predicts hundreds of variables 'over 10 days at 0.25 degree resolution globally, in under one minute', with claimed better severe-event prediction 'including tropical cyclones' (Lam et al., arXiv 2212.12794 / Science 2023); Pangu-Weather used 43 years of hourly ERA5 at 0.25 deg with ~256M parameters and lists 'tropical cyclone tracking' as a downstream use (Bi et al., arXiv 2211.02556 / Nature 2023); Microsoft's Aurora is 'trained on over a million hours of diverse data' and 'outperforms operational forecasts for ... tropical cyclone tracks' (Bodnar et al., arXiv 2405.13063 / Nature 2025; the '7 centres, 100% of targets' and 0.1 deg details come from secondary summaries); ECMWF's AIFS is trained on ERA5 plus operational analyses. None of these abstracts claims intensity skill.",
+    "source_url": "https://arxiv.org/abs/2212.12794",
+    "quote": "GraphCast \"can be trained directly from reanalysis data\" ... \"predicts hundreds of weather variables, over 10 days at 0.25 degree resolution globally, in under one minute\" ... \"better severe event prediction, including tropical cyclones\". Pangu: 43 years hourly ERA5, \"0.25 x 0.25\" resolution, \"tropical cyclone tracking\" (arxiv.org/abs/2211.02556). Aurora: \"trained on over a million hours of diverse data\" (arxiv.org/abs/2405.13063).",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "HAFS: operational physics hurricane model resolution and vortex initialisation",
+    "fact": "NOAA's Hurricane Analysis and Forecast System was approved for operations ahead of the 2023 Atlantic season in two configurations: HFSA (replacing HWRF) and HFSB (replacing HMON), each with a storm-centric domain and one moving nest at 6 km and 2 km respectively, 81 vertical levels, a 2-hPa top, 4DEnVar inner-core data assimilation and warm-cycling vortex initialisation. HAFSv2 (effective 16 July 2024, 12 UTC) raised the HFSA nest to 5.4-1.8 km, enhanced vortex initialisation to cycle hydrometeors and vertical velocity, lowered the warm-cycling Vmax threshold from 50 to 40 kt, added GOES-R mesoscale AMVs and MOM6 ocean coupling, and NCEP states it showed 'overall improved tropical cyclone track and intensity forecast guidance in all global oceanic basins'. In NHC's 2025 East Pacific verification, these regional models (HFAI/HFBI) were the best intensity guidance beyond 60 h, i.e. the physics models still lead on intensity where AI models lead on track.",
+    "source_url": "https://www.weather.gov/media/notification/pdf_2023_24/scn24-64_hafsv2.pdf",
+    "quote": "\"Increase moving nesting horizontal resolution from 6-2 km to 5.4-1.8 km (HFSA only)\" ... \"Enhance vortex initialization to cycle hydrometeor variables and vertical velocity (HFSA only)\" ... \"reduce warm-cycling Vmax threshold from 50 to 40 kt\". DTC: \"one moving nest at 6 km and 2 km, respectively, 81 vertical levels, and a 2-hPa model top\" (dtcenter.org/node/2852).",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "2026 season-to-date verification and run-to-run consistency caveat (secondary source)",
+    "fact": "A 10 September 2026 Local10 (WPLG Miami) analysis of verification data shared by former NHC branch chief James Franklin reports that through the first week of September 2026 GDMI was 'besting all other publicly available hurricane forecast guidance for track prediction in the Atlantic, eastern Pacific, and central Pacific basins', beating NHC's official track by 'as much as 30% for a five-day forecast' (second straight season), while on intensity it only kept pace with OFCL and the HCCA consensus was the best performer. It also documents a consistency weakness: for Hurricane Lowell (Hawaii) GDMI had the lowest track errors but 'did initially jump around erratically' while NHC 'homed in ... faster ... and with better timing consistency' (Franklin). The article notes Weather Lab now shows an experimental 64-member 'WeatherNext 3' ensemble, and that the AI European model had 'essentially negative skill' on intensity in 2025 before ECMWF's August 2026 post-processing fix. These are journalist-reported, partial-season figures, not an official NHC report.",
+    "source_url": "https://www.local10.com/weather/hurricane/2026/09/10/the-ai-hurricane-model-that-continues-to-blow-away-the-competition/",
+    "quote": "\"so far in 2026 Google DeepMind is besting all other publicly available hurricane forecast guidance for track prediction in the Atlantic, eastern Pacific, and central Pacific basins\" ... \"by as much as 30% for a five-day forecast\" ... \"it looks to me like OFCL homed in...on the track [of Hurricane Lowell] faster than GDMI...and with better timing consistency\" (James Franklin).",
+    "confidence": "likely"
+   },
+   {
+    "topic": "NHC/NWS official framing of AI guidance and its limits",
+    "fact": "NOAA/NWS's public page on AI hurricane forecasting (referenced in NHC's 2025 verification report) states NHC 'has partnered directly with Google DeepMind to develop a new AI hurricane forecast model' and began integrating AI weather prediction systems 'as guidance' alongside existing tools; it stresses the official NHC forecast remains 'the most skillful and consistent, surpassing any individual model forecast', that 'None of the models are perfect, and they never will be', that on Melissa the AI models 'honed in very early' but 'there are other examples where the traditional models performed better', and that AI systems 'require one to constantly understand why the model generated the result that it produced'. More AI tools are being evaluated 'for potential integration into forecast operations'.",
+    "source_url": "https://www.weather.gov/news/261102-AI-Hurricane-Forecasting",
+    "quote": "\"NHC has partnered directly with Google DeepMind to develop a new AI hurricane forecast model\" ... \"None of the models are perfect, and they never will be\" ... AI systems \"require one to constantly understand why the model generated the result that it produced.\"",
+    "confidence": "confirmed"
+   }
+  ]
+ },
+ {
+  "facts": [
+   {
+    "topic": "IPCC AR6 – observed change in intense tropical cyclones and rapid intensification",
+    "fact": "IPCC AR6 WG1 (2021) assesses it as 'likely' that the global proportion of Category 3–5 tropical cyclones and the frequency of rapid-intensification events have increased over the past ~40 years. The SPM (A.3.4) adds that these changes 'cannot be explained by internal variability alone (medium confidence)', that there is 'low confidence' in long-term trends in all-category TC frequency, and that human-induced climate change increases heavy precipitation associated with TCs (high confidence). Chapter 11 cites Kossin et al. (2020) for a significant global increase in major-TC exceedance probability of about 6% per decade over 1979–2017 (the PNAS abstract itself gives ~8% per decade, 95% CI 2–15%), and Bhatia et al. (2018/2019) and Balaguru et al. (2018) for increased intensification rates in the satellite era.",
+    "source_url": "https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_Chapter11.pdf",
+    "quote": "It is likely that the global proportion of Category 3–5 tropical cyclone instances and the frequency of rapid intensification events have increased globally over the past 40 years. (Section 11.7.1.2; SPM A.3.4: 'these changes cannot be explained by internal variability alone (medium confidence)')",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IPCC AR6 – projected TC intensity, Category 4–5 proportion and rainfall per degree of warming",
+    "fact": "IPCC AR6 WG1 projects that average peak TC wind speeds and the proportion of Category 4–5 TCs will 'very likely' increase globally with warming (SPM B.2.4 rates the Cat 4–5 proportion / peak-wind increase as high confidence). Chapter 11 Table 11.1 gives high-confidence median increases in global TC rain rates of about 11% at +1.5°C, 14% at +2°C and 28% at +4°C, and in the proportion of TCs reaching Cat 4–5 of about 10%, 13% and 20% at those warming levels; the increase in mean lifetime-maximum wind speed is medium confidence at 1.5°C and high confidence at 2°C and 4°C. Average TC rain rates will very likely rise with warming, and peak rain rates likely exceed the Clausius–Clapeyron rate of ~7% per 1°C in some regions. SPM B.2.4 separately states extreme daily precipitation events intensify by about 7% per 1°C of global warming (high confidence).",
+    "source_url": "https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_Chapter11.pdf",
+    "quote": "In summary, average peak TC wind speeds and the proportion of Category 4–5 TCs will very likely increase globally with warming... It is very likely that average TC rain rates will increase with warming, and likely that the peak rain rates will increase at rate greater than the Clausius–Clapeyron scaling rate of 7% per 1°C of warming in some regions (Section 11.7.1.5)",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "WMO/BAMS expert assessment (Knutson et al. 2020) – projected TC response to 2°C warming",
+    "fact": "Knutson et al. (2020), Bulletin of the AMS 101(3), 'Tropical Cyclones and Climate Change Assessment Part II', the WMO-task-team consensus assessment, concludes that for 2°C of anthropogenic warming: (1) the most confident projection is that sea-level rise will produce higher storm inundation levels; (2) TC precipitation rates increase with at least medium-to-high confidence, median +14% (close to the water-vapour increase at constant relative humidity); (3) 10 of 11 authors had at least medium-to-high confidence that global mean TC intensity increases, median +5% (range 1–10%) in lifetime-maximum wind; (4) the global proportion of Cat 4–5 TCs increases, median +13%. Lower confidence/mixed opinion on a decrease in global TC frequency and a slowdown of translation speed.",
+    "source_url": "https://doi.org/10.1175/BAMS-D-18-0194.1",
+    "quote": "The most confident TC-related projection is that sea level rise accompanying the warming will lead to higher storm inundation levels, assuming all other factors are unchanged. 2) For TC precipitation rates, there is at least medium-to-high confidence in an increase globally, with a median projected increase of 14%",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Peer-reviewed – nearshore (coastal) intensification is increasing globally",
+    "fact": "Balaguru et al. (2024), Earth's Future 12(5), e2023EF004230, 'A Global Increase in Nearshore Tropical Cyclone Intensification': over 1979–2020 observations show the global mean TC intensification rate rose by about 3 kt per 24 h in regions close to the coast, attributed to stronger decreases in vertical wind shear and larger increases in relative humidity near coasts than over the open ocean; high-resolution climate models project nearshore intensification will keep rising under warming, with decreasing shear near coastlines (from amplified upper-tropospheric warming) the main pathway. Note: a German-language press summary claimed the increase was not significant specifically along Mexico's west coast; that basin-level detail could not be confirmed from the paper and should be treated as unconfirmed.",
+    "source_url": "https://doi.org/10.1029/2023EF004230",
+    "quote": "Over the historical period 1979–2020, observations reveal a global mean TC intensification rate increase of about 3 kt per 24-hr in regions close to the coast... high-resolution climate model simulations suggest that nearshore TC intensification will continue to rise under global warming.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Peer-reviewed – marine heatwaves, rapid intensification and the East Pacific (Otis)",
+    "fact": "Radfar, Foroumandi, Moftakhari, Moradkhani, Gupta & Foltz (2026), Science Advances, 10 April 2026, doi:10.1126/sciadv.adu1733 (open access, PMC13068078): using 1981–2023 global data, marine heat waves (MHWs) affect 52% of landfalling TCs; TCs that rapidly intensified during MHWs produced 60% more billion-dollar disasters than those without MHW influence, with consistently higher maximum winds, storm surge and rain rates, even after controlling for coastal development. The paper states the strongest acceleration in rapidly-intensified MHW TCs is 'most notably the East Pacific and North Atlantic', with clear upward trends in MHW-related TCs in the East Pacific. It cites Hurricane Otis (Oct 2023, Acapulco, 143 kt, ~$16 bn, ≥52 deaths) as 'one of the most poorly predicted RI events in recent decades', and notes that in the Gulf of Mexico/NW Caribbean RI is on average 50% more likely during MHWs (Radfar et al. 2024, Commun. Earth Environ. 5:421).",
+    "source_url": "https://doi.org/10.1126/sciadv.adu1733",
+    "quote": "The strongest acceleration in rapidly intensified MHW TCs is instead confined to individual Northern Hemisphere basins, most notably the East Pacific and North Atlantic... Upward trends in MHW-related TCs (red and pink lines) are clear in the East Pacific, North Atlantic, and North Indian basins",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Peer-reviewed – eastern Pacific hurricane activity and anthropogenic subtropical Pacific warming",
+    "fact": "Murakami et al. (2017), Journal of Climate 30(1), 'Dominant Role of Subtropical Pacific Warming in Extreme Eastern Pacific Hurricane Seasons: 2015 and the Future': targeted high-resolution model experiments show the record 2015 eastern/central Pacific hurricane season was driven mainly by subtropical Pacific warming (Pacific Meridional Mode superimposed on long-term anthropogenic warming) rather than by El Niño alone, and the coupled GCM projects more frequent extremely active eastern Pacific TC years over the next few decades as greenhouse forcing enhances subtropical Pacific warming. IPCC AR6 Ch 11 (Cross-Chapter Box 11.1) repeats that the intense 2015 eastern North Pacific activity was 'not only due to the El Niño, but also to a contribution of anthropogenic forcing'.",
+    "source_url": "https://doi.org/10.1175/JCLI-D-16-0424.1",
+    "quote": "the coupled GCM projects an increase in the frequency of such extremely active TC years over the next few decades for EPO, CPO, and Hawaii as a result of enhanced subtropical Pacific warming from anthropogenic greenhouse gas forcing.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Official NHC record – rapid intensification extremes off Mexico's Pacific coast (Otis 2023, Patricia 2015)",
+    "fact": "NHC Tropical Cyclone Report for Hurricane Otis (EP182023): Otis strengthened by an estimated 90 kt in 21 h to a 165 kt peak and made landfall near Acapulco at 140 kt, the strongest landfalling hurricane on record in the eastern Pacific since NHC took the basin in 1988; at least 52 deaths and US$12–16 bn damage, Mexico's costliest tropical cyclone. The only faster eastern Pacific intensification is Patricia (2015), which strengthened 105 kt in 24 h (pressure fell 95 mb in 24 h) to a 185 kt peak, 'over anomalously warm waters to the south of Mexico' (NHC TCR EP202015, https://www.nhc.noaa.gov/data/tcr/EP202015_Patricia.pdf), before weakening to Category 4 at landfall on the Jalisco coast. Both occurred in late October when eastern Pacific ocean heat content peaks.",
+    "source_url": "https://www.nhc.noaa.gov/data/tcr/EP182023_Otis.pdf",
+    "quote": "The peak intensity of Otis at 0300 UTC 25 October marked the end of an historic period of RI in which Otis strengthened by an estimated 90 kt in just 21 h. This rate of strengthening is only bested in the eastern Pacific basin records by Hurricane Patricia, which strengthened by 105 kt in a 24-h period.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IPCC AR6 – global sea-level rise and extreme sea-level (storm surge) events",
+    "fact": "IPCC AR6 WG1 SPM B.5.3: it is 'virtually certain' global mean sea level will keep rising through the 21st century; relative to 1995–2014 the likely rise by 2100 is 0.28–0.55 m (SSP1-1.9), 0.44–0.76 m (SSP2-4.5) and 0.63–1.01 m (SSP5-8.5) (medium confidence), and a rise approaching 2 m by 2100 'cannot be ruled out' (low confidence) because of deep uncertainty in ice-sheet processes. SPM C.2.5: once-per-century extreme sea-level events are projected to occur at least annually at more than half of all tide-gauge locations by 2100 (high confidence); C.2.6: in coastal cities, more frequent extreme sea-level events (sea-level rise plus storm surge) combined with extreme rainfall/river flow will make flooding more probable (high confidence).",
+    "source_url": "https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_SPM.pdf",
+    "quote": "Due to relative sea level rise, extreme sea level events that occurred once per century in the recent past are projected to occur at least annually at more than half of all tide gauge locations by 2100 (high confidence). (SPM C.2.5)",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "IPCC AR6 regional (Ch 12) – Mexico and the eastern Pacific: storms, relative sea level, marine heatwaves",
+    "fact": "IPCC AR6 WG1 Chapter 12 (12.4.6 North America) states there is 'medium confidence in Mexico and the US Gulf and Atlantic coasts for more intense storms with higher wind, precipitation, and storm surge totals when they do occur' (stated in the North Atlantic TC context). For the oceans around Central and South America (12.4.4) it reports a 1900–2018 tide-gauge-based regional mean relative sea-level change of 1.20 [0.76–1.62] mm/yr in the East Pacific versus ~1.7 mm/yr global mean; regional mean relative sea-level rise is 'extremely likely' to continue, with 2081–2100 medians of 0.3–0.5 m (SSP1-2.6) to 0.5–0.9 m (SSP5-8.5) relative to 1995–2014, contributing to increased coastal flooding in low-lying areas (high confidence); and marine heatwaves are expected to increase around the region over the 21st century (high confidence). Present-day 1-in-100-year extreme total water levels are 0.5–2.5 m around most of Central and South America and are expected to increase in magnitude and frequency (high confidence).",
+    "source_url": "https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_Chapter12.pdf",
+    "quote": "Projections indicate low confidence in change in North Atlantic tropical cyclone numbers, but medium confidence in Mexico and the US Gulf and Atlantic coasts for more intense storms with higher wind, precipitation, and storm surge totals when they do occur (Section 11.7.1...)",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Peer-reviewed – extreme sea levels and hurricane storm surge on Mexico's Pacific tide gauges",
+    "fact": "Calderón-Vega et al. (2026), Journal of Marine Science and Engineering 14(8):706, 10 April 2026, analysed Mexican Pacific and Gulf/Caribbean tide-gauge records (astronomical tide removed; GEV and POT–GPD extreme-value analysis). Pacific stations show bounded/near-Gumbel tails with extremes strongly concentrated in the tropical-cyclone season; 25-year return levels of the storm-driven residual are about 0.85–0.95 m on the Pacific coast (vs ~1.7 m at Veracruz). ENSO acts mainly as a secondary modulator, with the largest anomalies tied to tropical-cyclone activity; the authors frame the results as a baseline for integrating ongoing sea-level rise into coastal hazard assessment and design.",
+    "source_url": "https://doi.org/10.3390/jmse14080706",
+    "quote": "Return levels for a 25-year return period range from approximately 0.85–0.95 m in the Pacific to about 1.7 m in Veracruz... Pacific stations exhibit... a strong seasonal concentration of extremes during the tropical cyclone season.",
+    "confidence": "confirmed"
+   }
+  ]
+ },
+ {
+  "facts": [
+   {
+    "topic": "Mexico Pacific hurricane cat bond (World Bank/IBRD)",
+    "fact": "On 15 May 2024 the World Bank (IBRD) issued a US$175 million parametric catastrophe bond covering named storms on Mexico's Pacific coast, providing four years of protection to a scheduled maturity of 24 April 2028. Payouts are per-occurrence, triggered when a storm meets location and severity (central pressure) criteria, and flow to the Government of Mexico via Munich Re and state insurer Agroasemex. It was the fourth 2024 tranche, bringing World Bank cat-bond cover for Mexico to US$595 million (the April 2024 bonds totalled US$420 million). Mexico's finance ministry noted a US$60 million payout received for Hurricane Otis (2023) under the previous bond.",
+    "source_url": "https://www.worldbank.org/en/news/press-release/2024/05/15/world-bank-issues-175-million-in-catastrophe-bond-for-mexico-s-pacific-hurricane-risk",
+    "quote": "The issuance of this $175 million cat bond, the fourth tranche provided to Mexico for disaster risk coverage ... brings the total to $595 million; payouts are triggered if a named storm on the Pacific coast meets the bond's parametric criteria for location and severity.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Hurricane Simon (Oct 2026) and the Mexico cat bond trigger",
+    "fact": "Artemis.bm tracked whether Hurricane Simon would trigger the IBRD CAR Mexico 2024 (Pacific) bond. Simon peaked on 11 Oct 2026 at Category 4, 155 mph, 930 mb, just below the reported 932 mb level needed for a 25% principal payout (937 mb is the reported initial zone threshold; 915 mb for 50%). On 12 Oct 2026 ILS analyst Isacco Loconte (Azimut) concluded from preliminary NHC track data that all four sub-937 mb track points (10 Oct 18Z to 11 Oct 12Z, lowest 928 mb) fell outside the offshore parametric trigger zones as the track shifted west, calling it 'a very close call'. No official determination by the calculation agent had been published as of 12 Oct 2026.",
+    "source_url": "https://www.artemis.bm/news/hurricane-simon-track-remained-outside-of-mexico-cat-bond-parametric-trigger-zones-loconte/",
+    "quote": "Based on preliminary NHC track data, the bond looks safe from a trigger event ... all four high-intensity points occurred at a safe distance outside the defined trigger zones.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Mexico's 2026 parametric catastrophe insurance renewal",
+    "fact": "On 10 June 2026 Artemis reported Mexico renewed its sovereign catastrophe insurance for 5 June 2026 to 5 May 2027 at 10.4 billion pesos: a 10 billion peso (c. US$575 million) parametric layer plus a 400 million peso Loss Management Fund, roughly double the prior year. Cover spans earthquakes, volcanic eruptions, hurricanes and floods nationwide, placed through state insurer Agroasemex as the conduit to global reinsurance capacity. Together with the US$595 million of World Bank cat bonds (in force to April 2028), Mexico holds about US$1.17 billion of parametric protection.",
+    "source_url": "https://www.artemis.bm/news/mexico-doubles-parametric-catastrophe-insurance-to-575m-at-2026-renewal/",
+    "quote": "$10 billion pesos (around US $575 million) of parametric catastrophe insurance ... the government has around US $1.17 billion of parametric protection in force.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "End of FONDEN and what replaced it",
+    "fact": "Mexico's Senate voted in October 2020 to extinguish 109 public trusts including the FONDEN disaster fund; from 1 January 2021 the trust could take no new commitments, and on 27 July 2021 the finance ministry (SHCP) formally abrogated FONDEN's general operating rules (El Imparcial, 27 Jul 2021: https://www.elimparcial.com/mexico/2021/07/27/hacienda-oficializa-extincion-del-fondo-de-desastres-naturales). Disaster response is now funded from the annual federal budget under Article 37 of the Ley Federal de Presupuesto y Responsabilidad Hacendaria, with the Coordinación Nacional de Protección Civil (SSPC) running a budget programme (Programa para la Atención de Emergencias por Amenazas Naturales, lineamientos DOF 16 Aug 2021, replaced 6 Jun 2023). The World Bank FONDEN 2020 cat bond continued uninterrupted, with the beneficiary switched from the FONDEN trust to the Treasury.",
+    "source_url": "https://www.artemis.bm/news/mexicos-cat-bond-coverage-continues-despite-shuttering-of-fonden/",
+    "quote": "the coverage it provides will continue uninterrupted ... the only change is a shift in beneficiary within the underlying insurance agreement [to] the country's Treasury.",
+    "confidence": "likely"
+   },
+   {
+    "topic": "Insurance industry exposure to Pacific hurricanes: Hurricane Otis (Acapulco, 2023)",
+    "fact": "The Mexican insurers' association AMIS estimated insured losses from Hurricane Otis at 35,468 million pesos (about US$1.94 billion), making it the second-costliest hurricane and third-costliest insured event in Mexico's history (after COVID-19 and Hurricane Wilma). By January 2024, 32% of payments to date had gone to the hotel sector, with advances of 1,957 million pesos to 98 hotels; insured housing damage was 27% of the estimate.",
+    "source_url": "https://www.eluniversal.com.mx/cartera/huracan-otis-cerca-de-los-2-mil-mdd-27-son-danos-en-viviendas-amis/",
+    "quote": "alcanzando los 35 mil 468 millones de pesos, aproximadamente mil 940 millones de dólares ... del total de pagos el 32% ha sido para el giro de hoteles.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Puerto Vallarta tourism sector and airport during Hurricane Simon (Oct 2026)",
+    "fact": "During Simon's approach, the Asociación de Hoteles de Puerto Vallarta reported about 50% occupancy (more than 12,000 visitors in the city); hotels activated emergency protocols, kept guests in interior safe areas and offered to reschedule unused nights without penalty; beach access was fully closed. Mexican Times (11 Oct 2026) reported the Puerto Vallarta airport had been closed since Saturday afternoon (10 Oct) with reopening planned for Monday morning conditions permitting, and that Jalisco Protección Civil (coordinator Sergio Ramírez) was arranging road transfers of tourists to Guadalajara. Tribuna de la Bahía reported Aeroméxico and Volaris cancellations (https://tribunadelabahia.com.mx/puerto-vallarta-turistas-salidas-huracan-simon/). No official GAP (airport operator) statement on Simon was found.",
+    "source_url": "https://www.mexicantimes.com.mx/puerto-vallarta-turistas-simon/",
+    "quote": "[la terminal aérea] permanece cerrada desde la tarde del sábado ... se propondrá a los huéspedes trasladarse a Guadalajara en distintas corridas.",
+    "confidence": "likely"
+   },
+   {
+    "topic": "Private-sector coordination in Puerto Vallarta: Coparmex and hotels",
+    "fact": "On 9 October 2026 Coparmex Puerto Vallarta president Francisco Gabriel Vizcaíno Rendón said coastal-strip hotels must activate prevention protocols and shelter guests and workers by that afternoon, that the hotel sector was in contact with Protección Civil on which measures to apply, that some downtown hotels had only 15-20% occupancy, and that 15-20% of reservations he reviewed had changed dates; no consolidated cancellation figures were available.",
+    "source_url": "https://www.globalmedia.mx/articles/hoteles_de_puerto_vallarta_deberan_resguardar_a_turistas_ante_riesgo_por_huracan_simon_coparmex",
+    "quote": "activar sus protocolos de prevención y resguardar la integridad de turistas y trabajadores ... mantiene comunicación con las autoridades de Protección Civil.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "World Bank financing for Mexico's National Meteorological Service (MoMet)",
+    "fact": "The World Bank approved on 17 May 2012 a US$105.26 million IBRD loan (project P126487, 'Modernization of the National Meteorological Service for Improved Climate Adaptation', MOMET; total project cost US$171.26 million) to strengthen the human-resource, institutional and infrastructure capacity of Mexico's SMN (under CONAGUA), including observation infrastructure, forecasting/modelling tools and training. The project is now listed as closed. No World Bank or IDB hydromet lending approvals for Latin America dated 2024-2026 were found in this search.",
+    "source_url": "https://projects.worldbank.org/en/projects-operations/project-detail/P126487?lang=en",
+    "quote": "MX Moderniz of National Meteorological Serv (MOMET) - P126487 ... to strengthen the human resource, institutional, and infrastructure capacity of Mexico's national meteorological service (IBRD US$105.26 million).",
+    "confidence": "likely"
+   },
+   {
+    "topic": "IDB programmes for hydromet and early warning in Latin America",
+    "fact": "At COP26 (2021) the Inter-American Development Bank joined the WMO-led Alliance for Hydromet Development, naming support for the Systematic Observations Financing Facility (SOFF) as a priority action. IDB country operations include a US$10 million loan to Ecuador to strengthen its national multi-hazard early warning system (floods, landslides, tsunamis, volcanic eruptions; 24-year term, 6-year grace, SOFR-based rate: https://www.iadb.org/en/news/ecuador-strengthen-early-warning-system-natural-hazards), a US$998,000 Japan Special Fund grant for El Nino monitoring and forecasting, and technical assistance for Trinidad and Tobago's multi-hazard EWS roadmap. IDB pages returned HTTP 403 to the fetcher, so details come from search snippets.",
+    "source_url": "https://www.iadb.org/en/news/idb-joins-alliance-hydromet-development",
+    "quote": "IDB joins the Alliance for Hydromet Development ... key priority action is establishing the Systematic Observations Financing Facility (SOFF).",
+    "confidence": "likely"
+   },
+   {
+    "topic": "SOFF: UN financing for basic weather observations",
+    "fact": "The Systematic Observations Financing Facility is a UN fund jointly created by WMO, UNEP and UNDP to close basic weather observation gaps to the GBON standard; as of July 2026, 26 countries were in the SOFF Investment Phase (building new stations, upgrading data transmission, training staff). A 2026 EMS abstract puts the pipeline at over 60 countries assessed and over US$150 million mobilised. The WMO page names Bhutan, Madagascar and the Solomon Islands; no Latin American or Caribbean country is named there, and Mexico is not an eligible LDC/SIDS beneficiary.",
+    "source_url": "https://wmo.int/resources/meteoworld/meteoworld-july-2026/soff-action-what-it-takes-strengthen-global-weather-observations",
+    "quote": "Twenty-six countries are currently in the SOFF Investment Phase ... a United Nations fund jointly created by the World Meteorological Organization (WMO), UNEP and UNDP.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "WMO policy basis for public-private weather partnerships",
+    "fact": "On 12 June 2019 the 18th World Meteorological Congress adopted the Geneva Declaration 2019 on public-private engagement, recognising the private sector's growing contribution across the weather value chain and calling for inclusive partnerships among public, private and academic sectors; WMO launched the Open Consultative Platform the same week as the mechanism to deliver it, while affirming national met services remain the core of observation, data collection and analysis.",
+    "source_url": "https://wmo.int/node/20972",
+    "quote": "adopted a landmark declaration on strengthening links between the public, private and academic sectors ... the role of the private sector is growing fast.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "NOAA commercial data purchases (public-private observations)",
+    "fact": "NOAA's NESDIS Commercial Data Program, which 'assesses and acquires space-based observational weather data from the private sector to improve NOAA's weather forecasts', announced on 13 August 2026 bridge awards totalling US$6,402,332: Spire Global US$3,671,880 for 4,600 GNSS radio-occultation profiles/day and PlanetiQ US$2,730,452 for 4,200 profiles/day plus 500 TEC tracks/day, delivered 18 Sep to 1 Dec 2026 and ingested into NOAA, NASA, USAF and Navy NWP models. The prior Delivery Order 5 (Sep 2025) totalled US$35.5 million; a two-year SBEM IDIQ task order (Dec 2026-Dec 2028) was solicited in April 2026 (https://www.nesdis.noaa.gov/news/noaanesdis-solicits-radio-occultation-task-order-under-new-idiq).",
+    "source_url": "https://www.nesdis.noaa.gov/news/noaa-nesdis-commercial-data-program-announces-64-million-contract-awards-support-weather-forecasting-and-space-weather",
+    "quote": "The awards total $6,402,332 ... NOAA, NASA, the U.S. Air Force, and U.S. Navy will ingest these data into their numerical weather prediction models.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Google DeepMind Weather Lab and the US National Hurricane Center",
+    "fact": "On 12 June 2025 Google DeepMind launched Weather Lab with an experimental stochastic AI cyclone model (50 scenarios, up to 15 days ahead, predicting formation, track, intensity, size and shape) and announced a partnership with the US National Hurricane Center, whose forecasters now view the live AI predictions alongside physics-based models; on 2023-24 NHC cases its 5-day track error averaged 140 km better than ECMWF ENS and its intensity error beat NOAA's HAFS. Other testers include CIRA/Colorado State University, the UK Met Office and Weathernews Inc. (Japan); the paper was not yet peer-reviewed.",
+    "source_url": "https://deepmind.google/discover/blog/weather-lab-cyclone-predictions-with-ai/",
+    "quote": "partnering with the U.S. National Hurricane Center ... 140 km closer to the true cyclone location than ENS.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "NVIDIA Earth-2 open AI weather models adopted by met services",
+    "fact": "On 26 January 2026 (AMS Annual Meeting) NVIDIA released the Earth-2 family of open models (Medium Range 15-day global, Nowcasting 0-6 h, CorrDiff downscaling, FourCastNet3, forthcoming Global Data Assimilation). The Israel Meteorological Service runs Earth-2 CorrDiff operationally, reporting a 90% reduction in compute time at 2.5 km resolution versus its CPU-based model; Taiwan's Central Weather Administration is a user and the US National Weather Service is evaluating the models for operational workflows.",
+    "source_url": "https://blogs.nvidia.com/?p=89402",
+    "quote": "a new NVIDIA Earth-2 family of open models, libraries and frameworks for weather and climate AI ... 90% reduction in compute time at 2.5-kilometer resolution.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Met Office-Microsoft supercomputing partnership (Microsoft example)",
+    "fact": "On 22 April 2021 the UK Met Office signed a multimillion-pound, 10-year agreement with Microsoft to build and run its weather and climate supercomputer on Azure, backed by the UK government's February 2020 commitment of £1.2 billion; outputs are intended for more accurate severe-weather warnings, very-high-resolution local simulations and climate modelling. It was due to be operational in late 2023.",
+    "source_url": "https://ukstories.microsoft.com/features/met-office-and-microsoft-join-forces-to-build-worlds-most-powerful-weather-and-climate-forecasting-supercomputer-in-uk/",
+    "quote": "has signed a multimillion-pound agreement ... committed £1.2 billion of funding to develop this state-of-the-art supercomputer ... will be used to provide more accurate warnings of severe weather.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Tourism-funded parametric cover in Mexico: Quintana Roo reef insurance",
+    "fact": "Quintana Roo's parametric reef-and-beach insurance (bought 2019) is paid through a Coastal Zone Management Trust created by The Nature Conservancy, the local tourism industry and the state, funded from hotel-tax revenue; it triggers at 100-knot winds in the covered area (full payout above 160 knots) and paid 17 million pesos (about US$800,000) after Hurricane Delta in October 2020 (earth.org, 22 Jan 2021: https://earth.org/insuring-natural-infrastructure/). This is the main Mexican precedent for hotel-sector-financed disaster risk transfer.",
+    "source_url": "https://www.nbcmiami.com/news/national-international/mexico-coral-reef-parametric-insurance/2000510/",
+    "quote": "the Coastal Zone Management Trust, created by The Nature Conservancy, the local tourism industry, and the state of Quintana Roo, will collect hotel tax money to pay for reef maintenance and the parametric insurance policy.",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "ECMWF and industry AI collaboration",
+    "fact": "No formal ECMWF-industry partnership announcement (2025-2026) was found. ECMWF launched its own AI Forecasting System (AIFS) operationally in 2025, and its 2025-2034 strategy emphasises collaboration with Member States, EUMETSAT and ESA; ECMWF evaluates and displays third-party AI models from Google DeepMind, NVIDIA and Huawei on its charts so forecasters can compare them with the IFS, and these models are trained on ECMWF's ERA5 reanalysis. Treat any claim of an ECMWF commercial partnership as unconfirmed.",
+    "source_url": "https://www.ecmwf.int/node/28858",
+    "quote": "to help assess machine learning weather forecasts from different sources [ECMWF shows models from NVIDIA, Huawei and Google DeepMind in its charts catalogue].",
+    "confidence": "unconfirmed"
+   }
+  ]
+ },
+ {
+  "facts": [
+   {
+    "topic": "SIAT-CT: the national tropical-cyclone early-warning protocol and who runs it",
+    "fact": "Mexico's Sistema de Alerta Temprana para Ciclones Tropicales (SIAT-CT) was created in 2000 after the 1999 Puebla/Veracruz/Hidalgo/Tabasco floods and updated in 2003 and 2017. It is a coordination protocol of the Sistema Nacional de Protección Civil (SINAPROC), not a forecast: the Coordinación Nacional de Protección Civil (CNPC), via its Dirección General de Protección Civil (DGPC), issues the colour-coded SIAT-CT bulletins (blue/green/yellow/orange/red, with separate 'acercamiento' and 'alejamiento' tables keyed to Saffir-Simpson intensity and forecast arrival time/distance); the SMN is the official monitoring/forecast source; and the DGPC convenes the inter-agency GIAC-CT group (CNPC, CENAPRED, SEDENA, SEMAR, CONAGUA-SMN, SENEAM, CFE) before each season. The manual states that SINAPROC acts 'siempre bajo la coordinación de la autoridad de Protección Civil correspondiente (Coordinación Nacional de Protección Civil a través de la DGPC, Unidad Estatal de Protección Civil o Unidad Municipal de Protección Civil, según sea el caso)'. CENAPRED has run the 'SIAT-CT Automático' since 2003, which auto-generates alert maps from NHC and SMN advisories, and supplies the public infographics.",
+    "source_url": "https://www.gob.mx/cms/uploads/attachment/file/460326/MANUAL_SIAT_CT_2019.pdf",
+    "quote": "Surge así en el año 2000 el Sistema de Alerta Temprana para Ciclones Tropicales (SIAT CT) como una herramienta de coordinación en el alertamiento a la población y en la acción institucional",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "SMN (CONAGUA): mandate, observing infrastructure and its NHC/NOAA links",
+    "fact": "The Coordinación General del Servicio Meteorológico Nacional (CGSMN), part of CONAGUA under SEMARNAT, is defined in the SIAT-CT manual as 'un actor principal del SINAPROC' that generates the rain, wind and other hazard forecasts. The 2019 manual lists its infrastructure as 79 synoptic observatories, 189+ automatic stations, 98 automatic synoptic stations, 16 radiosonde sites (two launches/day), 13 weather radars and 9 satellite receivers; it runs GFS and WRF numerical products and the MIKE 21 storm-surge/wave model (calibrated in the 2017 season). Internationally, the CGSMN coordinates the pre-season visit of the US 'Avión Caza-huracanes' to Mexican territory and, 'en coordinación con el Centro Nacional de Huracanes de los Estados Unidos de América, establece zonas de vigilancia' (watch zones) for Mexican coasts. (Note: SMN's own current radar page says the national network is 8 Doppler radars covering ~70% of the territory, and the 2024 ASF audit counts 8 radars, 6 operating—so the 13-radar figure in the 2019 manual appears outdated.)",
+    "source_url": "https://www.gob.mx/cms/uploads/attachment/file/460326/MANUAL_SIAT_CT_2019.pdf",
+    "quote": "La Coordinación General del Servicio Meteorológico Nacional (CGSMN) es un actor principal del SINAPROC y dadas sus atribuciones, se encarga de generar el pronóstico de lluvia, viento y otras variables",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "State of the SMN observing network: 2024 federal performance audit (ASF)",
+    "fact": "The Auditoría Superior de la Federación's performance audit 2024-5-16B00-07-0103-2025 of CONAGUA's budget programme E006 'Sistemas Meteorológicos e Hidrológicos' (dictamen dated 11 Sept 2025) reports that the SMN has 300 observation stations of which 234 (78%) were operating in Dec 2024, and that of 387 observation networks monitored by the CGSMN, 302 operated and 85 were out of service 'debido a fallas técnicas relacionadas con necesidades de mantenimiento y daños ocasionados por siniestros'. Breakdown: 51 of 189 automatic stations (EMAS) and 32 of 97 automatic synoptic stations (ESMAS) out of service; 2 of 8 radars out; all 76 observatories, 15 radiosonde stations and 2 satellite receivers operating. CONAGUA also told auditors that 'no se ha realizado ninguna instalación de observatorios o estaciones automáticas durante 2024'. In 2024 the SMN published 12,888 bulletins/avisos, including 226 Pacific tropical-cyclone advisories, with a reported 91.3% national forecast reliability. The audit found no irregularities (8 results, 5 clean, 3 resolved).",
+    "source_url": "https://www.asf.gob.mx/Trans/Informes/IR2024b/Documentos/Auditorias/2024_0103_a.pdf",
+    "quote": "de las 387 redes de observación monitoreadas por la Coordinación General del Servicio Meteorológico Nacional, 302 se mantuvieron en operación y los 85 restantes estuvieron fuera de servicio",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Budget trends for CENAPRED and SMN investment (2018–2023)",
+    "fact": "A November 2023 analysis (Sopitas, citing Mexicanos Contra la Corrupción y la Impunidad, Transparencia Presupuestaria and analyst Juan Ortiz) reports CENAPRED's budget fell from almost 116 million pesos in 2018 to 79.1 million in 2023 (−31%), with the 2024 proposal still 29% below 2018; it also reports that SMN modernization received only 12 million pesos in 2021 and that for 2023 'no se le aprobó ni un peso por concepto inversión del SMN' (the same article elsewhere says 6 million pesos were available for new investment in 2023, an internal inconsistency). The WMO/World Bank-funded MoMet modernization programme (≈US$170 M, to 2017) is the last large documented investment; no 2025–2026 official announcement of new SMN radars, stations or staffing increases was found in this search, and no documented 2025–2026 CONAGUA/SMN staffing reform specific to meteorologists was located—treat staffing cuts as unconfirmed.",
+    "source_url": "https://www.sopitas.com/noticias/gobierno-quito-mas-30-millones-centro-nacional-prevencion-desastres-cenapred/amp/",
+    "quote": "en 2021, solo se destinaron 12 millones a su modernización ... en 2023 no se le aprobó ni un peso por concepto 'inversión del SMN'",
+    "confidence": "likely"
+   },
+   {
+    "topic": "CENAPRED: mission and research/training role",
+    "fact": "CENAPRED (Centro Nacional de Prevención de Desastres, part of the CNPC under the Secretaría de Seguridad y Protección Ciudadana, located on the UNAM campus) states its mission as promoting public-policy actions to foresee, reduce and control disaster risk 'con base en la investigación, monitoreo y análisis de peligros y vulnerabilidades de los sistemas expuestos' and through 'la capacitación y profesionalización'. Within SIAT-CT it supplies the before/during/after recommendations and infographics for the three levels of government and operates the automatic alert-mapping tool; it also hosts the Atlas Nacional de Riesgos platform (atlasnacionalderiesgos.gob.mx) that integrates state and municipal atlases, and the SIAT-CT manual says 84 CENAPRED-co-published state/municipal hazard products exist under collaboration agreements.",
+    "source_url": "https://www.gob.mx/cenapred/que-hacemos",
+    "quote": "Promover acciones de política pública para prever, reducir y controlar el riesgo de desastres, con base en la investigación, monitoreo y análisis de peligros y vulnerabilidades",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "NOAA/NHC–Mexico cooperation under the WMO RA-IV framework",
+    "fact": "NHC is the WMO Regional Specialized Meteorological Center for both the Atlantic and eastern North Pacific and 'provides forecasts and guidance on watches and warnings to 28 WMO member nations'; the NHC Director chairs the WMO RA-IV Hurricane Committee, whose annual meeting updates the region's 'Hurricane Operational Plan'; RA-IV members include Mexico. NHC 'hosts and teaches [a] two-week workshop on tropical cyclones for international government meteorologists' (the annual RA IV Workshop on Hurricane Forecasting and Warning, run in English and Spanish). The 2023 Hurricane Awareness Tour with the hurricane-hunter aircraft visited Mérida and Chetumal, Mexico. On warnings, NHC's 2022 workshop slides state: 'Each country responsible for issuing watches/warning for their respective country or jurisdiction', NHC 'will recommend the placement' of watches/warnings (48 h/36 h before tropical-storm winds), coordination 'occurs with each country's meteorological office' by phone or email, and NHC began experimenting with video-conference coordination with international met services in 2021.",
+    "source_url": "https://severeweather.wmo.int/TCFW/RAIV_Workshop2023/00_Workshop_Intro_2023.pdf",
+    "quote": "NHC Director serves as Chairman of the WMO RA-IV Hurricane Committee. Annual meeting updates the Region's 'Hurricane Operational Plan'",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "WMO–SMN cooperation on training and capacity",
+    "fact": "On 19 March 2020 the SMN coordinator general Jorge Zavala Hidalgo and WMO Secretary-General Petteri Taalas met and agreed to 'fortalecer las capacidades científico-tecnológicas del Servicio Meteorológico Nacional (SMN)', analysing 'estrategias para la capacitación y desarrollo del personal del SMN en las áreas técnicas', improved processing of data for weather/climate products and more efficient access to analysis tools. WMO describes the SMN as an 'organismo dependiente de la Conagua'. No newer formal WMO–SMN or NOAA–SMN training agreement (2024–2026) was found; treat current status as unconfirmed.",
+    "source_url": "https://wmo.int/es/node/12597",
+    "quote": "fortalecer las capacidades científico-tecnológicas del Servicio Meteorológico Nacional (SMN) ... estrategias para la capacitación y desarrollo del personal del SMN en las áreas técnicas",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "University capacity: Apixqui ocean–atmosphere monitoring project (CICESE, UNAM, SEMAR, SMN)",
+    "fact": "Apixqui ('vigilante del agua' in Náhuatl) is a Secihti-led Sistema Interinstitucional de Monitoreo Metoceánico y Alerta Temprana de Eventos Extremos, created in 2025 under budget programme F003, with three annual stages and a Pacific focus. Partners: CICESE (Departamento de Oceanografía Física; project lead Dr. Sheila Estrada-Allis coordinating modelling; Drs. Enric Pallàs-Sanz and Miguel Tenreiro leading the glider group; CANEK group/Domitilo Nájera on buoys), UNAM's Instituto de Ciencias de la Atmósfera y Cambio Climático and Instituto de Ciencias del Mar y Limnología, SEMAR's Unidad de Investigación y Desarrollo Tecnológico, and CONAGUA's SMN. It deploys underwater gliders, coastal and metocean buoys, a planned radiosonde station, and HPC ocean–atmosphere–wave models with early tests of data assimilation and AI; in the 2025 season gliders ran four missions off Guerrero (164 days, >4,000 T/S profiles, ~5,000 km) including sampling Hurricane Priscilla. Its main product is to be a real-time collaborative platform for civil-protection agencies, motivated by Otis (2023), whose rapid intensification 'los modelos de pronóstico no fueron capaces de anticipar'.",
+    "source_url": "https://www.cronica.com.mx/academia/2026/05/24/desarrollan-sistema-de-monitoreo-y-alerta-temprana-de-ciclones-tropicales-para-mexico/",
+    "quote": "los modelos de pronóstico no fueron capaces de anticipar la extrema rapidez de intensidad que logró Otis",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Puerto Vallarta municipal risk atlas and Universidad de Guadalajara's local role",
+    "fact": "On 6 June 2016 the Universidad de Guadalajara delivered to Puerto Vallarta mayor Arturo Dávalos Peña the 'Atlas de riesgos por amenazas naturales', led by Carlos Suárez Plascencia (head of Geografía y Ordenación Territorial, CUCSH—not the local CUCosta campus). Begun in 2014, it updates a 2005–2006 atlas, comprises 311 maps at block ('manzana') level and covers 'inundaciones, deslaves y hundimientos, o a los efectos de tsunamis y sismos'; the mayor 'aceptó que el municipio está en una zona de inundación por diversos ríos'. The atlas was also to be reviewed by SEDATU. No newer official municipal atlas update (2017–2026) or a municipal download page was found—unconfirmed whether one exists. UdeG's hurricane expertise cited in the press during Simon (Oct 2026) sits in its Instituto de Astronomía y Meteorología in Guadalajara (Carlos Román Castañeda); the Puerto Vallarta campus (CUCosta, founded 1994) lists 88 full-time professors, 19 in the SNI, with research roots in coastal oceanography and seismology, but its official history page does not mention meteorology or civil protection.",
+    "source_url": "https://www.gaceta.udg.mx/Atlas-de-riesgos/",
+    "quote": "El estudio consta de 311 mapas ... inundaciones, deslaves y hundimientos, o a los efectos de tsunamis y sismos",
+    "confidence": "confirmed"
+   },
+   {
+    "topic": "Jalisco and Puerto Vallarta civil protection: legal roles and how the chain worked for Priscilla (2025) and Simon (2026)",
+    "fact": "Jalisco's Ley de Protección Civil del Estado (decree 15095, approved 25 June 1993, with reforms through 2010 in the published text) creates in Art. 36 the Unidad Estatal de Protección Civil y Bomberos (UEPCBJ) as 'un organismo público descentralizado con personalidad jurídica y patrimonio propio' including a Centro Estatal de Operaciones and a Centro de Análisis del Riesgo; Art. 38 charges it with integrating the Atlas Estatal de Riesgos (III), alerting the population to any risk (XI) and convening municipal units semi-annually (XVI); Art. 42 requires every municipality to have a Sistema Municipal and Unidad Municipal de Protección Civil reporting to the state unit every six months; Art. 44 makes the Consejo Municipal escalate risks beyond local capacity to the state unit. In practice, for Hurricane Priscilla (7 Oct 2025) the UEPCBJ and Puerto Vallarta's Unidad Municipal de Protección Civil, Seguridad Pública y Tránsito ran a joint command post in the Palacio Municipal with 274 operational personnel (Publimetro); for Hurricane Simon (9 Oct 2026) the CNPC (Laura Velázquez Alzúa) announced three command centres in Puerto Vallarta, Cihuatlán and Manzanillo, SEMAR's Plan Marina and SEDENA's Plan DN-III-E, while the SMN 'with the NHC' set a hurricane watch from Punta San Telmo to Punta Mita and Governor Pablo Lemus suspended classes in 22 coastal municipalities and pointed residents to the 'Jalisco Alerta' app (Crónica).",
+    "source_url": "https://transparencia.info.jalisco.gob.mx/sites/default/files/ley%20de%20prot.%20civil%20del%20estado.pdf",
+    "quote": "Artículo 36.- Se crea la Unidad Estatal de Protección Civil y Bomberos, como un organismo público descentralizado con personalidad jurídica y patrimonio propio",
+    "confidence": "confirmed"
+   }
+  ]
+ }
+]

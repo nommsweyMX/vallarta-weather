@@ -56,7 +56,10 @@ for p in track: p['t'] = p['t'].strftime('%Y-%m-%dT%H:%MZ')
 tcp = pre('TCPEP5.html')
 g = lambda pat: (re.search(pat, tcp) or [None, None]) [1]
 adv = re.search(r'(Intermediate )?Advisory Number\s+(\w+)', tcp)
-issued = re.search(r'\n(\d{3,4} [AP]M) (C[SD]T) (\w{3}) (\w{3}) (\d+) (\d{4})', tcp)
+issued = re.search(r'\n(\d{3,4} [AP]M) ([CM][SD]T) (\w{3}) (\w{3}) (\d+) (\d{4})', tcp)
+if issued and issued.group(2).startswith('M'):      # the NHC switched the summary clock to MST on 12 Oct; Vallarta keeps CST (one hour later)
+    _t = issued.group(1); _h = int(_t[:-5]) % 12 + (12 if _t.endswith('PM') else 0) + 1; _m = _t[-5:-3]
+    issued = type('I', (), {'group': (lambda self, i, v=(None, f"{_h % 12 or 12}{_m} {'AM' if _h % 24 < 12 else 'PM'}", 'CST', issued.group(3), issued.group(4), issued.group(5), issued.group(6)): v[i])})()
 summary = dict(
     advisory=adv.group(2), intermediate=bool(adv.group(1)),
     issued_local=f'{issued.group(1)} {issued.group(2)} {issued.group(3)} {issued.group(4)} {issued.group(5)}' if issued else None,
