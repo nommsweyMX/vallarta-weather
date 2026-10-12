@@ -55,7 +55,7 @@ fig, ax = plt.subplots(figsize=(7.4, 3.2))
 def lab(n, iss):
     t = dt.datetime.strptime(iss.strip(), '%b %d %H%MZ').replace(year=2026) - dt.timedelta(hours=6); h = t.hour % 12 or 12
     return f"#{n}\n{t.strftime('%a')} {h} {'am' if t.hour < 12 else 'pm'}"
-xs = list(range(len(hist))); labs = [lab(n, iss.title()) for n, iss, _ in hist]; ax_lab = None
+xs = list(range(len(hist))); labs = [lab(n, iss.title()) if i % 2 == 0 else f'#{n}' for i, (n, iss, _) in enumerate(hist)]; ax_lab = None
 for key, col, lb in [('34', P[0], 'tropical-storm force (≥ 63 km/h)'), ('50', P[1], '≥ 93 km/h (50 kt)'), ('64', P[2], 'hurricane force (≥ 119 km/h)')]:
     ys = [(pv[key] if pv.get(key) else math.nan) for _, _, pv in hist]; ax.plot(xs, ys, color=col, linewidth=2, marker='o', markersize=5, markeredgecolor=SURF, markeredgewidth=1.2, label=lb)
     for xx, (_, _, pv) in zip(xs, hist):
