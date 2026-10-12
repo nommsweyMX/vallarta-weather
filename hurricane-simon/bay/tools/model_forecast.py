@@ -10,7 +10,7 @@ from simon_phys import geo, wind
 ADECK, BDECK, CYC, OUT = sys.argv[1:5]
 PV = (20.6100, -105.2345)
 SITES = {'amapas': (20.5984, -105.2382), 'ezapata': (20.6014, -105.2340), 'pitillal': (20.6477, -105.2087), 'pv': PV}
-NAMES = {'AVNI': 'GFS', 'CEMI': 'ECMWF ensemble mean', 'CMCI': 'Canadian', 'CTCI': 'COAMPS-TC', 'GDMI': 'Google DeepMind (AI)', 'HFAI': 'HAFS-A', 'HFBI': 'HAFS-B', 'HMNI': 'HMON', 'HWFI': 'HWRF',
+NAMES = {'AVNI': 'GFS', 'CEMI': 'Canadian ensemble mean', 'CMCI': 'Canadian', 'CTCI': 'COAMPS-TC', 'GDMI': 'Google DeepMind (AI)', 'HFAI': 'HAFS-A', 'HFBI': 'HAFS-B', 'HMNI': 'HMON', 'HWFI': 'HWRF',
          'NVG2': 'NAVGEM', 'UKXI': 'UK Met Office', 'HCCA': 'Corrected consensus', 'TVCN': 'Track consensus', 'OFCI': 'NHC previous', 'OFCL': 'NHC official'}
 LATE = {'AVNI': 'AVNO', 'CEMI': 'CEMN', 'CMCI': 'CMC', 'CTCI': 'CTCX', 'GDMI': 'GDMN', 'HFAI': 'HFSA', 'HFBI': 'HFSB', 'HMNI': 'HMON', 'HWFI': 'HWRF', 'NVG2': 'NVGM', 'UKXI': 'UKX', 'HCCA': 'HCCA', 'TVCN': 'TVCN', 'OFCI': 'OFCL'}
 AI = {'GDMI': True}

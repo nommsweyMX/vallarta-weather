@@ -57,7 +57,9 @@ def lab(n, iss):
     return f"#{n}\n{t.strftime('%a')} {h} {'am' if t.hour < 12 else 'pm'}"
 xs = list(range(len(hist))); labs = [lab(n, iss.title()) for n, iss, _ in hist]
 for key, col, lb in [('34', P[0], 'tropical-storm force (≥ 63 km/h)'), ('50', P[1], '≥ 93 km/h (50 kt)'), ('64', P[2], 'hurricane force (≥ 119 km/h)')]:
-    ys = [pv.get(key, 0) for _, _, pv in hist]; ax.plot(xs, ys, color=col, linewidth=2, marker='o', markersize=5, markeredgecolor=SURF, markeredgewidth=1.2, label=lb)
+    ys = [pv.get(key, math.nan) for _, _, pv in hist]; ax.plot(xs, ys, color=col, linewidth=2, marker='o', markersize=5, markeredgecolor=SURF, markeredgewidth=1.2, label=lb)
+    for xx, (_, _, pv) in zip(xs, hist):
+        if key not in pv: ax.plot(xx, 0, 'o', markersize=5, markerfacecolor=SURF, markeredgecolor=col, markeredgewidth=1.5)
     ax.text(xs[-1] + 0.18, {'34': 30, '50': 21, '64': 12}[key], {'34': f"TS force: {ys[-1]}%", '50': '50 kt: under 3%', '64': 'hurricane: under 1%'}[key], color=INK2, fontsize=7.2, va='center')
     if key == '34': ax.text(xs[-1] + 0.18, 39, 'advisory 18', color=INK, fontsize=7.2, va='center', fontweight='bold')
 ax.set_xticks(xs); ax.set_xticklabels(labs, fontsize=7); ax.set_ylim(0, 100); ax.set_ylabel('Chance for Puerto Vallarta (%)'); tidy(ax); ax.legend(loc='upper left', fontsize=7.5)
@@ -65,17 +67,17 @@ ax.set_title("The NHC's own odds for Puerto Vallarta, advisory by advisory", loc
 ax.set_xlabel('Advisory number and issue time, Vallarta time (Friday 9 to Sunday 11 October)', fontsize=8); ax.set_xlim(-0.4, len(xs) + 1.0)
 fig.tight_layout(); fig.savefig(S + '/report/f3_pv_odds.png', dpi=220); plt.close(fig)
 # ---------- F4: how uncertain is the next 48 h? ----------
-fig, axs = plt.subplots(1, 2, figsize=(7.4, 3.3), gridspec_kw={'width_ratios': [1.25, 1]})
+fig, axs = plt.subplots(1, 2, figsize=(7.4, 3.4), gridspec_kw={'width_ratios': [1.15, 1]})
 ax = axs[0]; hs = [c['h'] for c in CS['consensus']]; sp = [c['spread_km'] for c in CS['consensus']]
 ax.fill_between(hs, 0, sp, color=P[0], alpha=0.12, linewidth=0); ax.plot(hs, sp, color=P[0], linewidth=2); ax.plot(hs[-1], sp[-1], 'o', color=P[0], markersize=5, markeredgecolor=SURF)
 ax.text(hs[-1] - 1, sp[-1] + 6, f"{sp[-1]} km", ha='right', color=INK2, fontsize=8)
 ax.set_xticks(range(0, 49, 12)); ax.set_xticklabels(['Sun noon', 'Mon midnight', 'Mon noon', 'Tue midnight', 'Tue noon'], fontsize=7); ax.set_ylabel('Weighted RMS spread of member positions (km)', fontsize=8); ax.set_ylim(0, 110); tidy(ax)
 ax.set_title('Spread of the skill-weighted consensus\ngrows with lead time', loc='left', fontsize=9.5, fontweight='bold')
-ax = axs[1]; ens = [('GEFS\n(20 trackable of 31)', 11, 20, 100), ('ECMWF ENS\n(51 members)', D['ens_members']['ecmwf']['within100'], D['ens_members']['ecmwf']['n'], D['ens_members']['ecmwf']['median']), ('ECMWF AIFS ens.\n(51 members, AI)', 43, 51, 57)]
+ax = axs[1]; ens = [('GEFS\n20 of 31 trackable', 11, 20, 100), ('ECMWF ENS\n51 members', D['ens_members']['ecmwf']['within100'], D['ens_members']['ecmwf']['n'], D['ens_members']['ecmwf']['median']), ('ECMWF AIFS ens.\n51 members (AI)', 43, 51, 57)]
 vals = [w / n * 100 for _, w, n, _ in ens]; bars = ax.bar(range(3), vals, width=0.5, color=[P[0], P[0], P[4]], linewidth=0)
 for b in bars: b.set_capstyle('round')
 for i, (lab, w, n, med) in enumerate(ens): ax.text(i, vals[i] + 2, f"{w} of {n}\nmedian {med} km", ha='center', fontsize=7.5, color=INK2)
-ax.set_xticks(range(3)); ax.set_xticklabels([e[0] for e in ens], fontsize=7); ax.set_ylim(0, 110); ax.set_xlim(-0.6, 2.6); ax.set_ylabel('Members within 100 km (%)'); tidy(ax)
-ax.set_title('Sat 6 pm ensembles: members within\n100 km of the real center, 3 pm Sunday', loc='left', fontsize=9.5, fontweight='bold')
+ax.set_xticks(range(3)); ax.set_xticklabels([e[0] for e in ens], fontsize=6.5); ax.set_ylim(0, 110); ax.set_xlim(-0.6, 2.6); ax.set_ylabel('Members within 100 km (%)'); tidy(ax)
+ax.set_title('Sat 6 pm ensembles: members\nwithin 100 km of the real\ncenter at 3 pm Sunday', loc='left', fontsize=9, fontweight='bold')
 fig.tight_layout(); fig.savefig(S + '/report/f4_uncertainty.png', dpi=220); plt.close(fig)
 print('charts ok')
