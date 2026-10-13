@@ -1,10 +1,10 @@
 """Analog climatology for Invest EP93 (future Trudy) from HURDAT2 (NE Pacific, 1949-2025).
-Usage: trudy_climo.py HURDAT2 OUT.json
+Usage: trudy_climo.py HURDAT2 OUT.json [LAT0 LON0]
 Analogs: every storm with a 6-hourly fix within R km of the EP93 position of 12 Oct 18Z (8.1N 93.9W), between 12 Sep and 11 Nov
 of any year. From that fix forward: closest pass to Puerto Vallarta, days to it, intensity then, peak intensity, landfall region."""
 import sys, json, math, datetime as dt
 HUR, OUT = sys.argv[1:3]
-P0 = (8.1, -93.9); PV = (20.61, -105.2345); DOY0 = dt.date(2026, 10, 12).timetuple().tm_yday
+P0 = (float(sys.argv[3]), float(sys.argv[4])) if len(sys.argv) > 4 else (8.1, -93.9); PV = (20.61, -105.2345); DOY0 = dt.date(2026, 10, 12).timetuple().tm_yday
 def geo(la1, lo1, la2, lo2):
     R = 6371.0; p1, p2 = math.radians(la1), math.radians(la2); dl = math.radians(lo2 - lo1)
     a = math.sin((p2 - p1) / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
@@ -69,4 +69,5 @@ for R in (300, 500):
     print('  regions:', res[str(R)]['regions']); print('  days to CPA (<=300 km):', days)
     for x in res[str(R)]['storms'][:12]:
         print(f"   {x['year']} {x['name']:>10} from {x['lat0']:.1f}N {-x['lon0']:.1f}W ({x['t0']}) -> CPA {x['cpa_km']} km on {x['cpa_t']} (+{x['cpa_days']} d) at {x['v_cpa']} kt; peak {x['vmax']} kt; {x['region']}")
+res['p0'] = P0
 json.dump(res, open(OUT, 'w'))

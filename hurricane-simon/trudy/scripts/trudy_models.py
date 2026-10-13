@@ -21,15 +21,22 @@ NAMES = {'AVNO': 'GFS', 'AVNI': 'GFS (early)', 'UKX': 'UKMET', 'UKXI': 'UKMET (e
          'HFSA': 'HAFS-A', 'HFAI': 'HAFS-A (early)', 'HFSB': 'HAFS-B', 'HFBI': 'HAFS-B (early)', 'CTCX': 'COAMPS-TC', 'CTCI': 'COAMPS-TC (early)',
          'GDMN': 'Google DeepMind', 'GDMI': 'Google DeepMind (early)', 'AEMN': 'GEFS mean', 'AEMI': 'GEFS mean (early)',
          'HCCA': 'NHC corrected consensus', 'TVCN': 'Track consensus', 'CLP5': 'Climatology-persistence', 'AC00': 'GEFS control',
-         'ECMO': 'ECMWF IFS', 'AIFS': 'ECMWF AIFS (AI)', 'EEMN': 'ECMWF ens. mean', 'AEMM': 'AIFS ens. mean'}
+         'ECMO': 'ECMWF IFS', 'AIFS': 'ECMWF AIFS (AI)', 'AIFI': 'ECMWF AIFS (AI, early)', 'EEMN': 'ECMWF ens. mean', 'AEMM': 'AIFS ens. mean',
+         'GDM2': 'Google DeepMind (early, 12 h)', 'CEM2': 'Canadian ens. mean (early, 12 h)', 'AEM2': 'GEFS mean (early, 12 h)', 'UKX2': 'UKMET (early, 12 h)', 'NVG2': 'NAVGEM (early, 12 h)', 'CMC2': 'Canadian GEM (early, 12 h)', 'NGX2': 'NAVGEM-X (early, 12 h)'}
 GROUP = {'AVNO': 'global', 'AVNI': 'global', 'UKX': 'global', 'UKXI': 'global', 'CEMN': 'global', 'CEMI': 'global', 'NVGM': 'global', 'NVGI': 'global',
          'HWRF': 'regional', 'HWFI': 'regional', 'HMON': 'regional', 'HMNI': 'regional', 'HFSA': 'regional', 'HFAI': 'regional', 'HFSB': 'regional',
          'HFBI': 'regional', 'CTCX': 'regional', 'CTCI': 'regional', 'GDMN': 'ai', 'GDMI': 'ai', 'AEMN': 'ensmean', 'AEMI': 'ensmean',
-         'HCCA': 'consensus', 'TVCN': 'consensus', 'CLP5': 'climo', 'ECMO': 'global', 'AIFS': 'ai', 'EEMN': 'ensmean', 'AEMM': 'ensmean'}
+         'HCCA': 'consensus', 'TVCN': 'consensus', 'CLP5': 'climo', 'ECMO': 'global', 'AIFS': 'ai', 'AIFI': 'ai', 'EEMN': 'ensmean', 'AEMM': 'ensmean',
+         'GDM2': 'ai', 'CEM2': 'global', 'AEM2': 'ensmean', 'UKX2': 'global', 'NVG2': 'global', 'CMC2': 'global', 'NGX2': 'global'}
 # Simon verification, mean position error 12-36 h (km), from the final report (Figure 2 / Appendix B). Early (interpolated) aids inherit.
-SIMON_ERR = json.loads(os.environ.get('SIMON_ERR', '{}')) or {'GDMN': 33, 'HCCA': 38, 'TVCN': 55, 'AVNO': 70, 'UKX': 75, 'CEMN': 70, 'NVGM': 80,
-                                                              'HWRF': 75, 'HMON': 120, 'HFSA': 117, 'CTCX': 129, 'HFSB': 169, 'AEMN': 70, 'CLP5': 150}
-LATE = {'HFAI': 'HFSA', 'HFBI': 'HFSB', 'HWFI': 'HWRF', 'HMNI': 'HMON', 'AVNI': 'AVNO', 'UKXI': 'UKX', 'NVGI': 'NVGM', 'GDMI': 'GDMN', 'CTCI': 'CTCX', 'CEMI': 'CEMN', 'AEMI': 'AEMN'}
+SIMON_ERR = json.loads(os.environ.get('SIMON_ERR', '{}')) or {'GDMN': 33, 'HCCA': 38, 'AIFS': 50, 'TVCN': 51, 'CLP5': 53, 'CEMN': 54, 'AEMN': 57, 'NVGM': 64, 'AVNO': 67,
+                                                              'HWRF': 68, 'CMC': 69, 'ECMO': 70, 'UKX': 83, 'HMON': 99, 'HFSA': 117, 'CTCX': 129, 'HFSB': 169}
+# The five best Simon performers that are not NHC products (official forecast, corrected consensus) nor the climatology baseline
+TOP5 = ['GDMN', 'AIFS', 'TVCN', 'CEMN', 'AEMN']
+TOP5B = ['GDMN', 'HCCA', 'AIFS', 'TVCN', 'CEMN']     # sensitivity: if only the official forecast counts as "NHC"
+EARLY_OF = {'AIFS': ('AIFI',), 'GDMN': ('GDMI', 'GDM2'), 'CEMN': ('CEMI', 'CEM2'), 'AEMN': ('AEMI', 'AEM2'), 'AVNO': ('AVNI',), 'UKX': ('UKXI', 'UKX2'), 'NVGM': ('NVGI', 'NVG2'), 'HWRF': ('HWFI',), 'HMON': ('HMNI',), 'HFSA': ('HFAI',), 'HFSB': ('HFBI',), 'CTCX': ('CTCI',)}
+LATE = {'HFAI': 'HFSA', 'HFBI': 'HFSB', 'HWFI': 'HWRF', 'HMNI': 'HMON', 'AVNI': 'AVNO', 'UKXI': 'UKX', 'NVGI': 'NVGM', 'GDMI': 'GDMN', 'CTCI': 'CTCX', 'CEMI': 'CEMN', 'AEMI': 'AEMN',
+        'AIFI': 'AIFS', 'GDM2': 'GDMN', 'CEM2': 'CEMN', 'AEM2': 'AEMN', 'UKX2': 'UKX', 'NVG2': 'NVGM', 'CMC2': 'CMC', 'NGX2': 'NVGM'}
 
 def ll(a, b):
     la = int(a[:-1]) / 10 * (1 if a[-1] == 'N' else -1); lo = int(b[:-1]) / 10 * (-1 if b[-1] == 'W' else 1); return la, lo
@@ -54,15 +61,38 @@ for line in (l for fn in ADECK.split(',') for l in open(fn)):
     f = [x.strip() for x in line.split(',')]
     if len(f) < 9: continue
     tech = f[4]; c = cyc(f[2]); tau = int(f[5])
-    if not (tech in NAMES or tech.startswith('AP') or tech.startswith('EE') or tech.startswith('AE') or tech in ('EC00', 'AE00')): continue
+    if not (tech in NAMES or tech == 'IVCN' or tech.startswith('AP') or tech.startswith('EE') or tech.startswith('AE') or tech in ('EC00', 'AE00')): continue
     la, lo = ll(f[6], f[7])
-    if la == 0 and lo == 0: continue
+    if la == 0 and lo == 0 and tech != 'IVCN': continue
     v = int(f[8]) if f[8] else 0
     rec = tracks.setdefault((c, tech), {}).setdefault(tau, dict(lat=la, lon=lo, v=v, r={}))
     if len(f) > 16 and f[11] in ('34', '50', '64') and f[12] in ('NEQ', 'AAA'):
         q = [max(0, int(x or 0)) for x in f[13:17]]
         if f[12] == 'AAA': q = [q[0]] * 4
         if any(q): rec['r'][int(f[11])] = q
+
+# NHC-style early version of the ECMWF AIFS (the ATCF has none): the run from cycle c, shifted so its 6-h position matches the best-track
+# position at c+6, the same offset at every forecast hour, relabelled as cycle c+6 (tau - 6). This is how the GDMI/AEMI/TVCN early aids are made.
+BT = {}
+for line in open(BDECK):
+    f = [x.strip() for x in line.split(',')]
+    if len(f) > 8 and f[4] == 'BEST': BT[cyc(f[2])] = ll(f[6], f[7])
+for (c, tech), trk in list(tracks.items()):
+    if tech != 'AIFS' or 6 not in trk: continue
+    c6 = c + dt.timedelta(hours=6)
+    if c6 not in BT or (c6, 'AIFS') in tracks: continue
+    dla = BT[c6][0] - trk[6]['lat']; dlo = BT[c6][1] - trk[6]['lon']
+    tracks[(c6, 'AIFI')] = {tau - 6: dict(lat=r['lat'] + dla, lon=r['lon'] + dlo, v=r['v'], r=dict(r['r'])) for tau, r in trk.items() if tau >= 6}
+    print(f'AIFI {c6:%Y%m%d%H}: AIFS {c:%Y%m%d%H} shifted by {dla:+.1f} lat {dlo:+.1f} lon')
+for (c, tech), trk in list(tracks.items()):
+    if tech in ('TVCN', 'AIFS', 'AIFI', 'ECMO') and (c, 'IVCN') in tracks:
+        iv = tracks[(c, 'IVCN')]; its = sorted(t for t in iv if iv[t]['v'])
+        for tau, rec in trk.items():
+            rec['v_own'] = rec['v']
+            if its and its[0] <= tau <= its[-1]:
+                a = max(t for t in its if t <= tau); b = min(t for t in its if t >= tau); w = 0 if a == b else (tau - a) / (b - a)
+                rec['v'] = iv[a]['v'] + (iv[b]['v'] - iv[a]['v']) * w
+tracks = {k: v for k, v in tracks.items() if k[1] != 'IVCN'}
 
 def climo_radii(v):
     r34 = min(130, 45 + 0.9 * (v - 34)) if v > 34 else 0; r50 = min(70, 15 + 0.55 * (v - 50)) if v > 50 else 0; r64 = min(45, 10 + 0.4 * (v - 64)) if v > 64 else 0
@@ -120,7 +150,7 @@ def analyze(c, tech, trk):
         return (hh[0], hh[-1]) if hh else None
     peak_pv = max(pv_series); hp = hs[pv_series.index(peak_pv)]['h']
     vmax = max(p['v'] for p in hs); hv = hs[[p['v'] for p in hs].index(vmax)]['h']
-    return dict(cycle=c.strftime('%Y%m%d%H'), tech=tech, name=NAMES.get(tech, tech), group=GROUP.get(tech, 'gefs' if tech.startswith('A') and tech[1] in 'PC' else 'ecens' if tech.startswith('E') else 'aiens'), has_radii=has_radii,
+    return dict(cycle=c.strftime('%Y%m%d%H'), tech=tech, name=NAMES.get(tech, tech), ivcn=any('v_own' in trk[t] for t in trk), own_peak_v=max(trk[t].get('v_own', trk[t]['v']) for t in trk), group=GROUP.get(tech, 'gefs' if tech.startswith('A') and tech[1] in 'PC' else 'ecens' if tech.startswith('E') else 'aiens'), has_radii=has_radii,
                 last_tau=hs[-1]['h'], cpa_km=round(d[i]), cpa_h=cpa['h'], cpa_t=t_cpa.strftime('%Y-%m-%d %HZ'),
                 cpa_local=(t_cpa + dt.timedelta(hours=TZ)).strftime('%a %d %b %H:%M'), cpa_v=round(cpa['v']), cpa_lat=round(cpa['lat'], 2), cpa_lon=round(cpa['lon'], 2),
                 cpa_brg=round(geo(*PV, cpa['lat'], cpa['lon'])[1]), peak_v=round(vmax), peak_t=(c + dt.timedelta(hours=hv)).strftime('%Y-%m-%d %HZ'),
@@ -173,6 +203,23 @@ for c in cycles:
                          cpa_h_median=wq([r['cpa_h'] for r in aids], ws, 0.5),
                          rain_median=wq([r['rain_mm'] for r in aids], ws, 0.5), rain_q90=wq([r['rain_mm'] for r in aids], ws, 0.9),
                          sites={k: dict(median=wq([r['sites'][k]['kmh'] for r in aids], ws, 0.5), q90=wq([r['sites'][k]['kmh'] for r in aids], ws, 0.9), max=max(r['sites'][k]['kmh'] for r in aids)) for k in SITES})
+    def pick(tech):
+        cand = [r for r in res if r['tech'] in (tech,) + EARLY_OF.get(tech, ()) and r['cycle'] <= c]
+        cand.sort(key=lambda r: (r['cycle'], r['tech'] == tech, r['tech'].endswith('I')), reverse=True)
+        return cand[0] if cand else None
+    for key, techs in (('top5', TOP5), ('top5b', TOP5B)):
+        mem = [m for m in (pick(t) for t in techs) if m]
+        if len(mem) < 3: continue
+        ws = [1 / SIMON_ERR[LATE.get(m['tech'], m['tech'])] ** 2 for m in mem]; n = len(mem)
+        S[key] = dict(n=n, techs=[m['tech'] for m in mem], carried=[m['tech'] for m in mem if m['cycle'] != c], weights={m['tech']: round(w / sum(ws), 3) for m, w in zip(mem, ws)},
+                      within={str(k): round(100 * sum(m['cpa_km'] <= k for m in mem) / n) for k in (100, 200, 300)},
+                      within_w={str(k): round(100 * sum(w for m, w in zip(mem, ws) if m['cpa_km'] <= k) / sum(ws)) for k in (100, 200, 300)},
+                      pv34=round(100 * sum(1 for m in mem if m['pv34']) / n), pv34_w=round(100 * sum(w for m, w in zip(mem, ws) if m['pv34']) / sum(ws)),
+                      cpa_median=wq([m['cpa_km'] for m in mem], [1] * n, 0.5), cpa_h_median=wq([m['cpa_h'] for m in mem], [1] * n, 0.5),
+                      rain_median=wq([m['rain_mm'] for m in mem], [1] * n, 0.5), rain_max=max(m['rain_mm'] for m in mem),
+                      sites={k: dict(median=wq([m['sites'][k]['kmh'] for m in mem], [1] * n, 0.5), max=max(m['sites'][k]['kmh'] for m in mem)) for k in SITES},
+                      members=[dict(tech=m['tech'], name=m['name'], cycle=m['cycle'], cpa_km=m['cpa_km'], cpa_local=m['cpa_local'], cpa_brg=m['cpa_brg'], cpa_v=m['cpa_v'], peak_v=m['peak_v'], pv34=m['pv34'],
+                                    rain_mm=m['rain_mm'], sites=m['sites'], landfall=m['landfall'], ivcn=m['ivcn'], own_peak_v=m['own_peak_v']) for m in mem])
     summary[c] = S
     print(f'\n=== cycle {c}: {len(R)} tracks')
     for r in sorted(R, key=lambda r: r['cpa_km']):
@@ -181,4 +228,4 @@ for c in cycles:
         print(f"{r['tech']:5} {r['name']:28} CPA {r['cpa_km']:5} km {r['cpa_local']} ({r['cpa_v']:3} kt, brg {r['cpa_brg']:3}) peak {r['peak_v']:3} kt | PV {r['pv_peak_kt']:5.1f} kt 34kt:{r['pv34']} | "
               f"amapas {r['sites']['amapas']['kmh']:3} ezapata {r['sites']['ezapata']['kmh']:3} pitillal {r['sites']['pitillal']['kmh']:3} km/h rain {r['rain_mm']:3} mm | {lf}" + ('' if r['has_radii'] else ' [climo radii]'))
     print(json.dumps(S, indent=None)[:2500])
-json.dump(dict(summary=summary, tracks=res, sites=SITES, simon_err=SIMON_ERR), open(OUT, 'w'))
+json.dump(dict(summary=summary, tracks=res, sites=SITES, simon_err=SIMON_ERR, top5=TOP5, top5b=TOP5B), open(OUT, 'w'))
