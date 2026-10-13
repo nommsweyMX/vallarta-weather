@@ -1,0 +1,159 @@
+{
+ "A": {
+  "tech": "EE50",
+  "cycle": "2026101212",
+  "cpa_km": 288,
+  "cpa_local": "Mon 19 Oct 04:00",
+  "cpa_v": 92,
+  "peak_v": 104,
+  "pv34": null,
+  "pv64": null,
+  "rain_mm": 24,
+  "sites": {
+   "amapas": {
+    "kmh": 37,
+    "gust_kmh": 52,
+    "t": "Mon 19 Oct 00:00",
+    "frm": 135.7707828751341
+   },
+   "ezapata": {
+    "kmh": 32,
+    "gust_kmh": 47,
+    "t": "Mon 19 Oct 00:00",
+    "frm": 135.62183971136267
+   },
+   "pitillal": {
+    "kmh": 29,
+    "gust_kmh": 42,
+    "t": "Mon 19 Oct 00:00",
+    "frm": 134.80270382601265
+   }
+  },
+  "landfall": null,
+  "windows": {
+   "swell": [
+    "Thu 15 Oct 18:00",
+    "Mon 19 Oct 12:00"
+   ],
+   "bands": [
+    "Sun 18 Oct 12:00",
+    "Mon 19 Oct 12:00"
+   ],
+   "ts": null,
+   "hu": null,
+   "cpa": "Mon 19 Oct 04:00",
+   "peak": "Mon 19 Oct 04:00"
+  }
+ },
+ "B": {
+  "tech": "GDMI",
+  "cycle": "2026101218",
+  "cpa_km": 92,
+  "cpa_local": "Sun 18 Oct 14:00",
+  "cpa_v": 85,
+  "peak_v": 123,
+  "pv34": [
+   137,
+   152
+  ],
+  "pv64": null,
+  "rain_mm": 133,
+  "sites": {
+   "amapas": {
+    "kmh": 72,
+    "gust_kmh": 100,
+    "t": "Sun 18 Oct 12:00",
+    "frm": 124.56855743852014
+   },
+   "ezapata": {
+    "kmh": 62,
+    "gust_kmh": 90,
+    "t": "Sun 18 Oct 12:00",
+    "frm": 124.20811360631427
+   },
+   "pitillal": {
+    "kmh": 55,
+    "gust_kmh": 80,
+    "t": "Sun 18 Oct 12:00",
+    "frm": 122.2373210051345
+   }
+  },
+  "landfall": null,
+  "windows": {
+   "swell": [
+    "Fri 16 Oct 18:00",
+    "Mon 19 Oct 12:00"
+   ],
+   "bands": [
+    "Sat 17 Oct 18:00",
+    "Mon 19 Oct 18:00"
+   ],
+   "ts": [
+    "Sun 18 Oct 05:00",
+    "Sun 18 Oct 21:00"
+   ],
+   "hu": null,
+   "cpa": "Sun 18 Oct 14:00",
+   "peak": "Sun 18 Oct 14:00"
+  }
+ },
+ "C": {
+  "tech": "HCCA",
+  "cycle": "2026101218",
+  "cpa_km": 74,
+  "cpa_local": "Sun 18 Oct 15:00",
+  "cpa_v": 94,
+  "peak_v": 136,
+  "pv34": [
+   132,
+   167
+  ],
+  "pv64": null,
+  "rain_mm": 178,
+  "sites": {
+   "amapas": {
+    "kmh": 100,
+    "gust_kmh": 125,
+    "t": "Sun 18 Oct 14:00",
+    "frm": 326.40471946957615
+   },
+   "ezapata": {
+    "kmh": 71,
+    "gust_kmh": 103,
+    "t": "Sun 18 Oct 14:00",
+    "frm": 327.0619887382126
+   },
+   "pitillal": {
+    "kmh": 65,
+    "gust_kmh": 94,
+    "t": "Sun 18 Oct 14:00",
+    "frm": 330.79686798281693
+   }
+  },
+  "landfall": {
+   "h": 134,
+   "lat": 19.07,
+   "lon": -104.33,
+   "v": 116,
+   "t": "2026-10-18 08Z",
+   "region": "Michoac\u00e1n / Colima"
+  },
+  "windows": {
+   "swell": [
+    "Fri 16 Oct 18:00",
+    "Mon 19 Oct 18:00"
+   ],
+   "bands": [
+    "Sat 17 Oct 18:00",
+    "Mon 19 Oct 18:00"
+   ],
+   "ts": [
+    "Sun 18 Oct 00:00",
+    "Mon 19 Oct 12:00"
+   ],
+   "hu": null,
+   "cpa": "Sun 18 Oct 15:00",
+   "peak": "Sun 18 Oct 15:00"
+  }
+ }
+}
