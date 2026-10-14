@@ -2,7 +2,8 @@
 Usage: ecmwf_tracks.py OUT.dat PREFIX LAT0 LON0 FILE.bufr [FILE.bufr ...]
 PREFIX: two letters for ensemble tech codes (EE -> EE01..EE50 + EC00 control; AE -> AE01.. + AC00), or four letters for a single run (AIFS, ECMO). The storm is the message whose
 analysis position is closest to LAT0 LON0 (ECMWF numbers invests 70E, 71E, ...)."""
-import sys, math, eccodes as ec
+import sys, math, os, eccodes as ec
+SID = os.environ.get('ECMWF_SID')   # optional: force the storm identifier (e.g. 71E)
 OUT, PREFIX, LAT0, LON0 = sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4]); FILES = sys.argv[5:]
 def dist(la, lo): return math.hypot(la - LAT0, (lo - LON0) * math.cos(math.radians(LAT0)))
 lines = []; shown = False
@@ -42,6 +43,7 @@ for fn in FILES:
                 trk.append((t, a, b, w, p))
             if trk: members.append((mem, trk))
             ec.codes_release(g)
+        if SID and sid != SID: members = []
         if members:
             a0 = [m[1][0] for m in members if m[1][0][0] <= 24]
             if a0:

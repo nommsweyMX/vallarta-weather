@@ -21,12 +21,12 @@ NAMES = {'AVNO': 'GFS', 'AVNI': 'GFS (early)', 'UKX': 'UKMET', 'UKXI': 'UKMET (e
          'HFSA': 'HAFS-A', 'HFAI': 'HAFS-A (early)', 'HFSB': 'HAFS-B', 'HFBI': 'HAFS-B (early)', 'CTCX': 'COAMPS-TC', 'CTCI': 'COAMPS-TC (early)',
          'GDMN': 'Google DeepMind', 'GDMI': 'Google DeepMind (early)', 'AEMN': 'GEFS mean', 'AEMI': 'GEFS mean (early)',
          'HCCA': 'NHC corrected consensus', 'TVCN': 'Track consensus', 'CLP5': 'Climatology-persistence', 'AC00': 'GEFS control',
-         'ECMO': 'ECMWF IFS', 'AIFS': 'ECMWF AIFS (AI)', 'AIFI': 'ECMWF AIFS (AI, early)', 'EEMN': 'ECMWF ens. mean', 'AEMM': 'AIFS ens. mean',
+         'OFCL': 'NHC official forecast', 'ECMO': 'ECMWF IFS', 'AIFS': 'ECMWF AIFS (AI)', 'AIFI': 'ECMWF AIFS (AI, early)', 'EEMN': 'ECMWF ens. mean', 'AEMM': 'AIFS ens. mean',
          'GDM2': 'Google DeepMind (early, 12 h)', 'CEM2': 'Canadian ens. mean (early, 12 h)', 'AEM2': 'GEFS mean (early, 12 h)', 'UKX2': 'UKMET (early, 12 h)', 'NVG2': 'NAVGEM (early, 12 h)', 'CMC2': 'Canadian GEM (early, 12 h)', 'NGX2': 'NAVGEM-X (early, 12 h)'}
 GROUP = {'AVNO': 'global', 'AVNI': 'global', 'UKX': 'global', 'UKXI': 'global', 'CEMN': 'global', 'CEMI': 'global', 'NVGM': 'global', 'NVGI': 'global',
          'HWRF': 'regional', 'HWFI': 'regional', 'HMON': 'regional', 'HMNI': 'regional', 'HFSA': 'regional', 'HFAI': 'regional', 'HFSB': 'regional',
          'HFBI': 'regional', 'CTCX': 'regional', 'CTCI': 'regional', 'GDMN': 'ai', 'GDMI': 'ai', 'AEMN': 'ensmean', 'AEMI': 'ensmean',
-         'HCCA': 'consensus', 'TVCN': 'consensus', 'CLP5': 'climo', 'ECMO': 'global', 'AIFS': 'ai', 'AIFI': 'ai', 'EEMN': 'ensmean', 'AEMM': 'ensmean',
+         'HCCA': 'consensus', 'TVCN': 'consensus', 'CLP5': 'climo', 'OFCL': 'official', 'ECMO': 'global', 'AIFS': 'ai', 'AIFI': 'ai', 'EEMN': 'ensmean', 'AEMM': 'ensmean',
          'GDM2': 'ai', 'CEM2': 'global', 'AEM2': 'ensmean', 'UKX2': 'global', 'NVG2': 'global', 'CMC2': 'global', 'NGX2': 'global'}
 # Simon verification, mean position error 12-36 h (km), from the final report (Figure 2 / Appendix B). Early (interpolated) aids inherit.
 SIMON_ERR = json.loads(os.environ.get('SIMON_ERR', '{}')) or {'GDMN': 33, 'HCCA': 38, 'AIFS': 50, 'TVCN': 51, 'CLP5': 53, 'CEMN': 54, 'AEMN': 57, 'NVGM': 64, 'AVNO': 67,
@@ -46,6 +46,7 @@ def region(la, lo):
     if lo > -98.5: return 'Oaxaca'
     if lo > -101.5: return 'Guerrero'
     if lo > -104.4: return 'Michoacán / Colima'
+    if la < 20.35 and lo > -106.0: return 'Jalisco south coast'
     if la < 21.0 and lo > -106.0: return 'Jalisco (Bahía de Banderas)'
     if la < 22.6 and lo > -106.5: return 'Nayarit'
     if la < 26.5 and lo > -110.0: return 'Sinaloa'
@@ -99,7 +100,8 @@ def climo_radii(v):
     return [r34] * 4, [r50] * 4, [r64] * 4
 
 def hourly(trk):
-    taus = sorted(t for t in trk if t <= 168)
+    taus = sorted(t for t in trk if 0 <= t <= 168)
+    if len(taus) < 2: return [], False
     has_radii = any(trk[t]['r'] for t in taus)
     out = []
     for h in range(taus[0], taus[-1] + 1):

@@ -27,6 +27,7 @@ def region(la, lo):
     if lo > -98.5: return 'Oaxaca'
     if lo > -101.5: return 'Guerrero'
     if lo > -104.4: return 'Michoacán / Colima'
+    if la < 20.35 and lo > -106.0: return 'Jalisco south coast'
     if la < 21.0 and lo > -106.0: return 'Jalisco (Bahía de Banderas)'
     if la < 22.6 and lo > -106.5: return 'Nayarit'
     if la < 26.0 and lo > -110.0: return 'Sinaloa'

@@ -1,0 +1,231 @@
+{
+ "least": {
+  "label": "Least impact (GEFS ensemble mean 00Z): passes 292 km to the SW at Sun 18 Oct 18:00, 37 kt",
+  "tech": "AEMI",
+  "name": "GEFS ensemble mean 00Z",
+  "cycle": "2026101400",
+  "cpa_km": 292,
+  "cpa_local": "Sun 18 Oct 18:00",
+  "cpa_brg": 217,
+  "cpa_v": 37,
+  "peak_v": 49,
+  "own_peak_v": 49,
+  "ivcn": false,
+  "pv34": null,
+  "pv64": null,
+  "rain_mm": 52,
+  "sites": {
+   "amapas": {
+    "kmh": 17,
+    "gust_kmh": 24,
+    "t": "Sun 18 Oct 16:00",
+    "frm": 86.26580882579782
+   },
+   "ezapata": {
+    "kmh": 15,
+    "gust_kmh": 21,
+    "t": "Sun 18 Oct 16:00",
+    "frm": 86.26882295112654
+   },
+   "pitillal": {
+    "kmh": 13,
+    "gust_kmh": 19,
+    "t": "Sun 18 Oct 16:00",
+    "frm": 86.21318916377356
+   }
+  },
+  "landfall": null,
+  "windows": {
+   "swell": null,
+   "bands": [
+    "Sun 18 Oct 06:00",
+    "Mon 19 Oct 18:00"
+   ],
+   "ts": null,
+   "hu": null,
+   "cpa": "Sun 18 Oct 18:00"
+  }
+ },
+ "likely": {
+  "label": "Most likely (median of the five: Canadian ensemble mean 00Z): center 166 km SW at Sun 18 Oct 19:00, 43 kt",
+  "tech": "CEM2",
+  "name": "Canadian ensemble mean 00Z",
+  "cycle": "2026101400",
+  "cpa_km": 166,
+  "cpa_local": "Sun 18 Oct 19:00",
+  "cpa_brg": 213,
+  "cpa_v": 43,
+  "peak_v": 52,
+  "own_peak_v": 52,
+  "ivcn": false,
+  "pv34": null,
+  "pv64": null,
+  "rain_mm": 102,
+  "sites": {
+   "amapas": {
+    "kmh": 33,
+    "gust_kmh": 47,
+    "t": "Sun 18 Oct 18:00",
+    "frm": 83.7483523762998
+   },
+   "ezapata": {
+    "kmh": 29,
+    "gust_kmh": 42,
+    "t": "Sun 18 Oct 18:00",
+    "frm": 83.7702918227144
+   },
+   "pitillal": {
+    "kmh": 25,
+    "gust_kmh": 36,
+    "t": "Sun 18 Oct 18:00",
+    "frm": 83.7570438387217
+   }
+  },
+  "landfall": null,
+  "windows": {
+   "swell": [
+    "Sat 17 Oct 00:00",
+    "Sun 18 Oct 00:00"
+   ],
+   "bands": [
+    "Sun 18 Oct 00:00",
+    "Tue 20 Oct 06:00"
+   ],
+   "ts": null,
+   "hu": null,
+   "cpa": "Sun 18 Oct 19:00"
+  }
+ },
+ "nhc": {
+  "label": "NHC official forecast: center 38 km SW at Sun 18 Oct 11:00, after landfall on the Jalisco coast",
+  "tech": "OFCL",
+  "name": "NHC official forecast 00Z",
+  "cycle": "2026101400",
+  "cpa_km": 38,
+  "cpa_local": "Sun 18 Oct 11:00",
+  "cpa_brg": 235,
+  "cpa_v": 87,
+  "peak_v": 115,
+  "own_peak_v": 115,
+  "ivcn": false,
+  "pv34": [
+   102,
+   120
+  ],
+  "pv64": [
+   110,
+   115
+  ],
+  "rain_mm": 165,
+  "sites": {
+   "amapas": {
+    "kmh": 125,
+    "gust_kmh": 175,
+    "t": "Sun 18 Oct 10:00",
+    "frm": 93.88160565669108
+   },
+   "ezapata": {
+    "kmh": 108,
+    "gust_kmh": 156,
+    "t": "Sun 18 Oct 10:00",
+    "frm": 93.71869210819943
+   },
+   "pitillal": {
+    "kmh": 93,
+    "gust_kmh": 135,
+    "t": "Sun 18 Oct 10:00",
+    "frm": 92.50343744955745
+   }
+  },
+  "landfall": {
+   "h": 98,
+   "lat": 19.17,
+   "lon": -104.53,
+   "v": 112,
+   "t": "2026-10-18 02Z",
+   "region": "Jalisco south coast"
+  },
+  "windows": {
+   "swell": [
+    "Fri 16 Oct 06:00",
+    "Mon 19 Oct 00:00"
+   ],
+   "bands": [
+    "Sat 17 Oct 12:00",
+    "Mon 19 Oct 00:00"
+   ],
+   "ts": [
+    "Sun 18 Oct 00:00",
+    "Sun 18 Oct 19:00"
+   ],
+   "hu": [
+    "Sun 18 Oct 08:00",
+    "Sun 18 Oct 14:00"
+   ],
+   "cpa": "Sun 18 Oct 11:00"
+  }
+ },
+ "worst": {
+  "label": "Worst case (Google DeepMind cyclone model 00Z): center 64 km SW at Sun 18 Oct 08:00, 70 kt after a 110-kt peak",
+  "tech": "GDMI",
+  "name": "Google DeepMind cyclone model 00Z",
+  "cycle": "2026101400",
+  "cpa_km": 64,
+  "cpa_local": "Sun 18 Oct 08:00",
+  "cpa_brg": 232,
+  "cpa_v": 70,
+  "peak_v": 110,
+  "own_peak_v": 110,
+  "ivcn": false,
+  "pv34": [
+   102,
+   116
+  ],
+  "pv64": null,
+  "rain_mm": 217,
+  "sites": {
+   "amapas": {
+    "kmh": 74,
+    "gust_kmh": 103,
+    "t": "Sun 18 Oct 07:00",
+    "frm": 97.85385886750527
+   },
+   "ezapata": {
+    "kmh": 64,
+    "gust_kmh": 92,
+    "t": "Sun 18 Oct 07:00",
+    "frm": 97.69541717535662
+   },
+   "pitillal": {
+    "kmh": 56,
+    "gust_kmh": 81,
+    "t": "Sun 18 Oct 07:00",
+    "frm": 96.63815579887307
+   }
+  },
+  "landfall": {
+   "h": 99,
+   "lat": 19.27,
+   "lon": -104.85,
+   "v": 80,
+   "t": "2026-10-18 03Z",
+   "region": "Jalisco south coast"
+  },
+  "windows": {
+   "swell": [
+    "Fri 16 Oct 06:00",
+    "Mon 19 Oct 18:00"
+   ],
+   "bands": [
+    "Sat 17 Oct 12:00",
+    "Tue 20 Oct 00:00"
+   ],
+   "ts": [
+    "Sun 18 Oct 00:00",
+    "Sun 18 Oct 15:00"
+   ],
+   "hu": null,
+   "cpa": "Sun 18 Oct 08:00"
+  }
+ }
+}
